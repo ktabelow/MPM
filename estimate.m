@@ -43,7 +43,7 @@
 %
 % =========================================================================
 
-function [res] = estimate(i,sdim, dir, t1Files,mtFiles,pdFiles,TE, TEScale, DataScale)
+function [res] = estimate(i,sdim, t1Files,mtFiles,pdFiles,TE, TEScale, DataScale)
 
 
 
@@ -53,18 +53,18 @@ m = [sdim(1), sdim(2), numel(slices)];
 
 T1 = zeros([length(t1Files),m]);
 for k=1:length(t1Files),
-    [T1(k,:,:,:),omega] = loadImageSPM(fullfile(dir,[t1Files{k} '.img']),'slices',slices);
+    [T1(k,:,:,:),omega] = loadImageSPM(fullfile(t1Files{k}),'slices',slices);
 end
  
 MT = zeros([length(mtFiles),m]);
 for k=1:length(mtFiles),
-    [MT(k,:,:,:),omega] = loadImageSPM(fullfile(dir,[mtFiles{k} '.img']),'slices',slices);
+    [MT(k,:,:,:),omega] = loadImageSPM(fullfile(mtFiles{k}),'slices',slices);
 end
 
 
 PD = zeros([length(pdFiles),m]);
 for k=1:length(pdFiles),
-    [PD(k,:,:,:),omega] = loadImageSPM(fullfile(dir,[pdFiles{k} '.img']),'slices',slices);
+    [PD(k,:,:,:),omega] = loadImageSPM(fullfile(pdFiles{k}),'slices',slices);
 end
 
 TE = TE./TEScale; %[t1TE(:)./100; mtTE(:)./100; pdTE(:)./100];
@@ -73,6 +73,8 @@ m0 = [1000/DataScale; 1000/DataScale;1000/DataScale; 0.05*TEScale];
 
 
 %% perform optimisation
+
+% still to insert a control on the mask!
 T1t = reshape(T1, size(T1,1),[]);
 MTt = reshape(MT, size(MT,1),[]);
 PDt = reshape(PD, size(PD,1),[]);
@@ -81,7 +83,7 @@ data = [T1t./DataScale; MTt./DataScale; PDt./DataScale];
 indicator = [ones(length(t1Files),1);2*ones(length(mtFiles),1); 3*ones(length(pdFiles),1)];
 fctn = @(model) FLASHobjFctn2(model,data,TE,indicator);
 
-m0big = kron(ones(size(T1t,2),1),m0);
+m0big = kron(ones(size(T1t,2),1),m0); % has to be changed
 mi1 = GaussNewton(fctn,m0big);
 
 

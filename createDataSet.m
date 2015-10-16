@@ -5,7 +5,7 @@
 %
 % 
 %
-% [dataset] = createDataSet(sdim,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA);
+% [dataset] = createDataSet(sdim,zStart,zEnd, dir,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA);
 % 
 % validate and use the inputs to assembly the necessary struct 
 % to apply the ESTATICSmodel
@@ -13,7 +13,8 @@
 % Input:
 %
 %  sdim     - a vector containing the 3 dimensions of the cubus
-%  dir      - a string containing the folder where the data files are
+%  zStart   - start value on the z axis of the interest volume
+%  zEnd     - end value on the z axis of the interest volume
 %  t1Files  - a string cell array with the names of the T1 images files
 %  pdFiles  - a string cell array with the names of the PD images files
 %  mtFiles  - a string cell array with the names of the MT images files 
@@ -43,7 +44,8 @@
 %  dataset  - a struct that contains:
 %
 %  sdim     - a vector containing the 3 dimensions of the cubus
-%  dir      - a string containing the folder where the data files are
+%  zStart   - start value on the z axis of the interest volume
+%  zEnd     - end value on the z axis of the interest volume
 %  t1Files  - a string cell array with the names of the T1 images files
 %  pdFiles  - a string cell array with the names of the PD images files
 %  mtFiles  - a string cell array with the names of the MT images files 
@@ -61,8 +63,10 @@
 %
 % =========================================================================
 
-function [dataset] = createDataSet(sdim,dir,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA)
-  dataset.dir = dir;
+function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA)
+  %dataset.dir = dir;
+  dataset.zStart = zStart;
+  dataset.zEnd = zEnd;
   
   if isempty(sdim)
       error('need spatial dimensionality of the data'); 
@@ -71,10 +75,12 @@ function [dataset] = createDataSet(sdim,dir,t1Files,pdFiles,mtFiles,maskFile,t1T
        error('need exactly 3 numbers for spatial dimension'); 
   end
   dataset.sdim = sdim;
+  
   if isempty(t1Files)
       error('cell array of T1 files required'); 
   end
   dataset.t1Files = t1Files;
+  
   if isempty(pdFiles)
       error('cell array of PD files required'); 
   end
@@ -87,14 +93,15 @@ function [dataset] = createDataSet(sdim,dir,t1Files,pdFiles,mtFiles,maskFile,t1T
       dataset.mtFiles = mtFiles;
   end
   
-  dataset.maskFile = maskFile;
+  dataset.maskFile = maskFile;  
   if isempty(maskFile)
       dataset.mask=ones(sdim);
   else 
-      slices=1:sdim(3);
-      [mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
+      slices=zStart:zEnd; %1:sdim(3);
+      %[mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
+      [mask(:,:,:),~] = loadImageSPM(fullfile(maskFile) ,'slices',slices);
       mask = round(mask(:));
-      mask = reshape (mask, sdim);
+      mask = reshape (mask, [sdim(1) sdim(2) zEnd-zStart+1]);
       dataset.mask=mask;
       clear mask;
   end

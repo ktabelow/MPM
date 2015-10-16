@@ -19,9 +19,10 @@
 %
 %  dataset     - a struct containing the informations of the model
 % 
-% These informations must contain: 
+% These informations must be contained: 
 %  sdim     - a vector containing the 3 dimensions of the cubus
-%  dir      - a string containing the folder where the data files are
+%  zStart   - start value on the z axis of the interest volume
+%  zEnd     - end value on the z axis of the interest volume
 %  t1Files  - a string cell array with the names of the T1 images files
 %  pdFiles  - a string cell array with the names of the PD images files
 %  mtFiles  - a string cell array with the names of the MT images files 
@@ -70,8 +71,8 @@ if ~isstruct(dataset)
     error('Wrong input data type, struct expected'); 
 end
 % to check if the model struct has at least the requested fields 
-if ~isfield(dataset,{'sdim','dir','nFiles','nv','t1Files','pdFiles','mtFiles', 'TE'}),
-    error('Wrong input data type, struct with fields sdim,dir, nFiles,t1Files,pdFiles,mtFiles, mask, nv, TE expected');    
+if ~isfield(dataset,{'sdim','zStart','zEnd','dir','nFiles','nv','t1Files','pdFiles','mtFiles', 'TE'}),
+    error('Wrong input data type, struct with fields sdim, zStart, zEnd, dir, nFiles,t1Files,pdFiles,mtFiles, mask, nv, TE expected');    
 end
 
 %% sets the default parameters
@@ -91,7 +92,8 @@ if verbose,
     fprintf('verbose = %d \n ', verbose );
     fprintf('TEScale = %d \n', TEScale );
     fprintf('DataScale = %f \n', DataScale );
-    
+    fprintf('zStart = %d \n', dataset.zStart );
+    fprintf('zEnd = %f \n', dataset.zEnd );
 end
 
 %% getting parameters from dataset
@@ -102,28 +104,32 @@ pdFiles = dataset.pdFiles;
 mtFiles = dataset.mtFiles;
 sdim = dataset.sdim;
 TE = dataset.TE;
-dir = dataset.dir;
+zStart = dataset.zStart;
+zEnd = dataset.zEnd;
 
 %% preparing for reading and estimate
 % until now implemented only for levels containing one layer
-numberLayers=1;
-coeff=zeros(nv*numberLayers*sdim(1)*sdim(2),sdim(3)/numberLayers);
-invCov=cell(sdim(3)/numberLayers,1);
+% numberLayers=1;
+coeff=zeros(nv*sdim(1)*sdim(2),(zEnd-zStart+1));
+
+invCov=cell((zEnd-zStart+1)/1,1); %sdim(3)
 if verbose,
     fprintf('Starting the ESTATICS model at %s \n',datestr(now));
     msg = sprintf('Percent done: 0.0');
     fprintf(msg);    
 end
 
-% iterating on the all cubus
-for k=1:sdim(3)/numberLayers
-  i=numberLayers*(k-1)+1:1:numberLayers*k;
-  res=estimate(i,sdim,dir,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
+% iterating on all the layers between zStart and zEnd
+% when zStart = 1 and zEnd = sdim(3) the all cubus is done
+for k=1:(zEnd-zStart+1) %1:sdim(3)
+    
+    i= zStart+k-1;
+  res=estimate(i,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
   coeff(:,k)=res.coeff;  
   invCov{k}=res.invCov;
   if verbose
   % Display the progress
-       percentDone = 100 * k / sdim(3) * numberLayers;        
+       percentDone = 100 * k / (zEnd-zStart+1); %sdim(3) ;        
        reverseStr = repmat(sprintf('\b'), 1, length(msg));
        msg = sprintf('Percent done: %3.1f', percentDone);
        fprintf([reverseStr, msg]);
@@ -131,7 +137,7 @@ for k=1:sdim(3)/numberLayers
 end
 
 
-coeff = reshape (coeff, [nv sdim]);
+coeff = reshape (coeff, [nv sdim(1) sdim(2) (zEnd-zStart+1)]);
 
 if verbose
     fprintf('\n');
@@ -141,17 +147,17 @@ if verbose
 fprintf('getting the invCov matrix: \n');
 end
 
-invC = zeros([nv nv sdim]);
+invC = zeros([nv nv sdim(1) sdim(2) (zEnd-zStart+1)]);
 vec = zeros(1,nv*nv*sdim(1)*sdim(2));
 
-size = nv*sdim(1)*sdim(2);
+sizeV = nv*sdim(1)*sdim(2);
 for i = 1: nv*sdim(1)*sdim(2)
     j = i-1;
-   vec(j*nv+1) = j*size+1 +nv*fix(j/nv); 
-   vec(j*nv+2) = j*size+2 +nv*fix(j/nv); 
-   vec(j*nv+3) = j*size+3 +nv*fix(j/nv); 
+   vec(j*nv+1) = j*sizeV+1 +nv*fix(j/nv); 
+   vec(j*nv+2) = j*sizeV+2 +nv*fix(j/nv); 
+   vec(j*nv+3) = j*sizeV+3 +nv*fix(j/nv); 
    if nv==4
-       vec(j*nv+4) = j*size+4 +nv*fix(j/nv); 
+       vec(j*nv+4) = j*sizeV+4 +nv*fix(j/nv); 
    end
 end
 clear size

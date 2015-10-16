@@ -78,6 +78,10 @@ if verbose,
 end
 %% setting parameters
 
+% taking zStart and zEnd from the model
+zStart = model.zStart;
+zEnd = model.zEnd;
+
 % nv describes the model, with or without mt
 % length of the vector to smooth (# parameters of model)
 nv = model.nv; 
@@ -95,7 +99,8 @@ wghts = wghts(1)./wghts(2:3);
 
 n1 =  model.sdim(1);
 n2 =  model.sdim(2);
-n3 =  model.sdim(3);
+%n3 =  model.sdim(3);
+n3 = (zEnd-zStart+1);
 n = n1*n2*n3;
 
 % initialisation for first step

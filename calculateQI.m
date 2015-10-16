@@ -20,7 +20,6 @@
 % Optional Arguments:
 %
 %  b1File   - filename of the correction field
-%  dir      - folder of the correction file
 %  TR2      - repetition time R2, default: 0
 %  verbose  - additional information, default: true
 %
@@ -30,7 +29,7 @@
 %
 %  b1Map       - correction map
 %  R1          - longitudinal relaxation rate
-%  R2star      - apparant transverse relaxation rate
+%  R2star      - apparent transverse relaxation rate
 %  PD          - effective proton density
 %  delta       - magnetisation transfer saturation
 %
@@ -52,12 +51,11 @@ if ~isstruct(model)
     error('Wrong input data type, struct expected'); 
 end
 % to check if the model struct has the requested fields (to adjust)
-if ~isfield(model,{'modelCoeff','sdim'}),
-    error('Wrong input data type, struct with at least fields modelCoeff, sdim expected');    
+if ~isfield(model,{'modelCoeff','sdim', 'zStart','zEnd'}),
+    error('Wrong input data type, struct with at least fields modelCoeff, sdim , zStart, zEnd expected');    
 end
 
 %% sets the default parameters
-dir = model.dir;
 b1File={};
 TR2 = 0;
 verbose = true;
@@ -70,15 +68,15 @@ end;
 
 %% read B1 correction field
 
-slices = 1:model.sdim(3);
+slices = model.zStart : model.zEnd; %1:model.sdim(3);
 if ~isempty(b1File)
    fprintf('reading correction file from %s \n',b1File{1});    
-  [b1Map(:,:,:),~] = loadImageSPM(fullfile(dir,[b1File{1} '.img']),'slices',slices); %and if it is not img?!? 
+  [b1Map(:,:,:),~] = loadImageSPM(fullfile(b1File{1}),'slices',slices);
   b1Map = b1Map./100; % still to check if is ok
   b1Map(b1Map < 0) = 0;
 else 
     if verbose, fprintf('no B1 correction\n'); end
-    b1Map = ones(model.sdim);
+    b1Map = ones([model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]);
 end
 
 %% get correct flip angles an TR times
@@ -102,11 +100,11 @@ COSalphapd = cos(alphapd);
 clear alphat1 alphapd;
 
 if model.nv == 4 
- enum = reshape(model.modelCoeff(1,:,:,:),model.sdim) - SINalphat1./SINalphapd.* reshape(model.modelCoeff(3,:,:,:),model.sdim);
- denom = reshape(model.modelCoeff(1,:,:,:),model.sdim).*COSalphat1 - SINalphat1./SINalphapd.* reshape(model.modelCoeff(3,:,:,:),model.sdim).* COSalphapd;
+ enum = reshape(model.modelCoeff(1,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]) - SINalphat1./SINalphapd.* reshape(model.modelCoeff(3,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]);
+ denom = reshape(model.modelCoeff(1,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]).*COSalphat1 - SINalphat1./SINalphapd.* reshape(model.modelCoeff(3,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]).* COSalphapd;
 else 
-    enum = reshape(model.modelCoeff(1,:,:,:),model.sdim) - SINalphat1./SINalphapd.* reshape(model.modelCoeff(2,:,:,:),model.sdim);
- denom = reshape(model.modelCoeff(1,:,:,:),model.sdim).*COSalphat1 - SINalphat1./SINalphapd.* reshape(model.modelCoeff(2,:,:,:),model.sdim).* COSalphapd;
+    enum = reshape(model.modelCoeff(1,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]) - SINalphat1./SINalphapd.* reshape(model.modelCoeff(2,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]);
+ denom = reshape(model.modelCoeff(1,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]).*COSalphat1 - SINalphat1./SINalphapd.* reshape(model.modelCoeff(2,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]).* COSalphapd;
 end
 
 E1 = enum./denom;
@@ -121,7 +119,7 @@ if verbose, fprintf('done\n'); end
 %% calculate PD
 
 if verbose, fprintf('calculating PD...'); end
-enum = (1 - COSalphat1 .* E1).*reshape(model.modelCoeff(1,:,:,:),model.sdim)*model.DataScale;
+enum = (1 - COSalphat1 .* E1).*reshape(model.modelCoeff(1,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)])*model.DataScale;
 denom = SINalphat1.*(1-E1);
 
 PD =  enum./denom;
@@ -138,8 +136,8 @@ mtTR = model.TR(length(model.t1Files)+1);
 alphamt = b1Map .* mtFA / 180 * pi;
 E1mt = E1.^(mtTR/t1TR);
 E2mt = E1.^(TR2/t1TR);
-enum = reshape(model.modelCoeff(2,:,:,:),model.sdim) .* model.DataScale - (1-E2mt).*sin(alphamt) .*PD; % 1000 dataScale...
-denom = reshape(model.modelCoeff(2,:,:,:),model.sdim) .* model.DataScale .* cos(alphamt) .*E1mt + PD.* (E2mt-E1mt).*sin(alphamt); % 1000 dataScale...
+enum = reshape(model.modelCoeff(2,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]) .* model.DataScale - (1-E2mt).*sin(alphamt) .*PD; 
+denom = reshape(model.modelCoeff(2,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]) .* model.DataScale .* cos(alphamt) .*E1mt + PD.* (E2mt-E1mt).*sin(alphamt);
 
 delta = 1 - enum./denom;
 clear alphamt enum denom
@@ -155,9 +153,9 @@ qi.model = model;
 qi.b1Map = b1Map;
 qi.R1 = R1;
 if model.nv==4
-    qi.R2star = reshape(model.modelCoeff(4,:,:,:),model.sdim)/model.TEScale; %teScale
+    qi.R2star = reshape(model.modelCoeff(4,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)])/model.TEScale; 
 else
-    qi.R2star = reshape(model.modelCoeff(3,:,:,:),model.sdim)/model.TEScale; %teScale
+    qi.R2star = reshape(model.modelCoeff(3,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)])/model.TEScale; %teScale
 end
 qi.PD = PD;
 qi.delta = delta;
