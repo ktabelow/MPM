@@ -68,8 +68,8 @@ for k=1:length(pdFiles),
 end
 
 TE = TE./TEScale; %[t1TE(:)./100; mtTE(:)./100; pdTE(:)./100];
-m0 = [1000/DataScale; 1000/DataScale;1000/DataScale; 0.05*TEScale];
-
+%m0 = [1000/DataScale; 1000/DataScale;1000/DataScale; 0.05*TEScale];
+m0 = [1000; 1000;1000; 0.05*TEScale];
 
 
 %% perform optimisation

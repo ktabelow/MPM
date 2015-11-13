@@ -41,8 +41,8 @@ t1TR = [22.5, 22.5,22.5,22.5,22.5,22.5];
 % this is the B1 field map coregistered and resliced to t1Files[1]
 b1File = { strcat(dir,'data3/B1r1/rsmuB1map_sMQ03089-0002-00001-000001-01.img')};
 
-zStart = 201;
-zEnd = 204;
+zStart = 1;
+zEnd = 256;
 
 % function [dataset] = createDataSet(sdim,zStart, zEnd, dir,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA)
 dataset = createDataSet(sdim,zStart, zEnd,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA);
@@ -53,6 +53,13 @@ modelMPM3 = estimateESTATICS(dataset);
 % function [modelS] = smoothESTATICS(model, varargin)
 modelMPM3s = smoothESTATICS(modelMPM3);
 
+% new function smoothing only on the elements in mask
+modelMPM3snew = smoothESTATICSmask(modelMPM3);
+
 % function [qi] = calculateQI(model, varargin)
 qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',b1File);
 qiS = calculateQI(modelMPM3s, 'TR2',3.6,'b1File',b1File);
+
+qiSnew = calculateQI(modelMPM3snew, 'TR2',3.6,'b1File',b1File);
+
+

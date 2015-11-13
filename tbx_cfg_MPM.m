@@ -229,19 +229,19 @@ function [out] = spm_local_mpm(job)
     
     % function [modelS] = smoothESTATICS(model, varargin)
     modelMPM3s = smoothESTATICS(modelMPM3);
-    
+    modelMPM3snew = smoothESTATICSmask(modelMPM3);
     
     % function [qi] = calculateQI(model, varargin)
     qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',job.b1File);
     qiS = calculateQI(modelMPM3s, 'TR2',3.6,'b1File',job.b1File);
-    qi
+    qiSnew = calculateQI(modelMPM3snew, 'TR2',3.6,'b1File',job.b1File);
+    qi 
     qiS
-    
-   
+    qiSnew  
 
    
       
-    %spm_smooth_gamma(SPM, I, job.ladjust, job.hmax);
+    
 end
 
 

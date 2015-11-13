@@ -119,7 +119,7 @@ if verbose, fprintf('done\n'); end
 %% calculate PD
 
 if verbose, fprintf('calculating PD...'); end
-enum = (1 - COSalphat1 .* E1).*reshape(model.modelCoeff(1,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)])*model.DataScale;
+enum = (1 - COSalphat1 .* E1).*reshape(model.modelCoeff(1,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]).*model.DataScale;
 denom = SINalphat1.*(1-E1);
 
 PD =  enum./denom;
