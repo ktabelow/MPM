@@ -239,8 +239,13 @@ function [out] = spm_local_mpm(job)
     qiS
     qiSnew  
 
-   
-      
+    big_volume = spm_vol(job.t1Files{1});
+    % function []= write_small_to_file_nii(filename, big_volume,small_volume_data,zStart, zEnd, sdim)
+    write_small_to_file_nii('/Home/azubis/dalonzo','R1_', big_volume, qiSnew.R1, job.zStart, job.zEnd, job.sdim);
+    write_small_to_file_nii('/Home/azubis/dalonzo','R2star_', big_volume, qiSnew.R2star, job.zStart, job.zEnd, job.sdim);
+    write_small_to_file_nii('/Home/azubis/dalonzo','PD_', big_volume, qiSnew.PD, job.zStart, job.zEnd, job.sdim);
+    write_small_to_file_nii('/Home/azubis/dalonzo','delta_', big_volume, qiSnew.delta, job.zStart, job.zEnd, job.sdim);
+         
     
 end
 
