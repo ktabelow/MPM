@@ -43,7 +43,28 @@ b1File = { strcat(dir,'data3/B1r1/rsmuB1map_sMQ03089-0002-00001-000001-01.img')}
 
 zStart = 1;
 zEnd = 256;
-
+kstar = 16;
+hmax = 4 ; %1.25^(kstar/3);
+hakt = gethani (1, 1.25*hmax, 2, 1.25^kstar, [1 1], 1e-4);
+R1 = zeros(sdim);
+R2star = zeros(sdim);
+PD = zeros(sdim);
+delta = zeros(sdim);
+height = 30;
+interval = int64 (height - 2*hmax);
+for startLayerVoxel = 1:interval:sdim(3),
+    
+    zStart = double(startLayerVoxel);
+    fprintf('Starting at %d \n',zStart);
+    
+    if sdim(3)-(startLayerVoxel + height)> 2*hmax,
+        zEnd = double(startLayerVoxel + height); 
+    else
+        zEnd = sdim(3);
+        startLayerVoxel = sdim(3)+1;
+    end
+    fprintf('Ending at at %d \n',zEnd);
+    
 % function [dataset] = createDataSet(sdim,zStart, zEnd, dir,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA)
 dataset = createDataSet(sdim,zStart, zEnd,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA);
 
@@ -51,15 +72,31 @@ dataset = createDataSet(sdim,zStart, zEnd,t1Files,pdFiles,mtFiles,maskFile,t1TR,
 modelMPM3 = estimateESTATICS(dataset);
 
 % function [modelS] = smoothESTATICS(model, varargin)
-modelMPM3s = smoothESTATICS(modelMPM3);
+% modelMPM3s = smoothESTATICS(modelMPM3);
 
 % new function smoothing only on the elements in mask
 modelMPM3snew = smoothESTATICSmask(modelMPM3);
 
 % function [qi] = calculateQI(model, varargin)
 qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',b1File);
-qiS = calculateQI(modelMPM3s, 'TR2',3.6,'b1File',b1File);
+%qiS = calculateQI(modelMPM3s, 'TR2',3.6,'b1File',b1File);
 
 qiSnew = calculateQI(modelMPM3snew, 'TR2',3.6,'b1File',b1File);
 
+if zStart==1
+R1(:,:,zStart:zEnd) = qiSnew.R1;
+R2star(:,:,zStart:zEnd) = qiSnew.R2star;
+PD(:,:,zStart:zEnd) = qiSnew.PD;
+delta(:,:,zStart:zEnd) = qiSnew.delta;
+else 
+    R1(:,:,zStart+hmax:zEnd) = qiSnew.R1(:,:, 1+hmax: (zEnd-zStart+1) );
+R2star(:,:,zStart+hmax:zEnd) = qiSnew.R2star(:,:, 1+hmax: (zEnd-zStart+1) );
+PD(:,:,zStart+hmax:zEnd) = qiSnew.PD(:,:, 1+hmax: (zEnd-zStart+1) );
+delta(:,:,zStart+hmax:zEnd) = qiSnew.delta(:,:, 1+hmax: (zEnd-zStart+1) );
 
+end
+if zEnd==sdim(3),
+    break;
+end
+
+end
