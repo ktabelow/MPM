@@ -49,26 +49,49 @@ function MPM = tbx_cfg_MPM
     sdim.val    = {[322 368 256]};
 
 % ---------------------------------------------------------------------
+% height of the interest level (especially for workstation)
+% ---------------------------------------------------------------------
+    height        = cfg_entry;
+    height.tag     = 'height';
+    height.name    = 'height';
+    height.help    = {'Height of the volume of interest. Please consider the resources of your computer when changing this number!'};
+    height.strtype = 'e';
+    height.num     = [1 1];
+    height.val    = {30};
+    
+    
+% ---------------------------------------------------------------------
+% number of iteration of the smoothing algorithm
+% ---------------------------------------------------------------------
+    kstar        = cfg_entry;
+    kstar.tag     = 'kstar';
+    kstar.name    = 'kstar';
+    kstar.help    = {'Number of iteration of the smoothing algorithm'};
+    kstar.strtype = 'e';
+    kstar.num     = [1 1];
+    kstar.val    = {16};
+    
+% ---------------------------------------------------------------------
 % zStart especially for workstation
 % ---------------------------------------------------------------------
-    zStart        = cfg_entry;
-    zStart.tag     = 'zStart';
-    zStart.name    = 'zStart';
-    zStart.help    = {'Start level of the volume of interest '};
-    zStart.strtype = 'e';
-    zStart.num     = [1 1];
-    zStart.val    = {201};
+%    zStart        = cfg_entry;
+%    zStart.tag     = 'zStart';
+%    zStart.name    = 'zStart';
+%    zStart.help    = {'Start level of the volume of interest '};
+%    zStart.strtype = 'e';
+%    zStart.num     = [1 1];
+%    zStart.val    = {201};
     
 % ---------------------------------------------------------------------
 % zEnd especially for workstation
 % ---------------------------------------------------------------------
-    zEnd        = cfg_entry;
-    zEnd.tag     = 'zEnd';
-    zEnd.name    = 'zEnd';
-    zEnd.help    = {'End level of the volume of interest '};
-    zEnd.strtype = 'e';
-    zEnd.num     = [1 1];
-    zEnd.val    = {225};
+%    zEnd        = cfg_entry;
+%    zEnd.tag     = 'zEnd';
+%    zEnd.name    = 'zEnd';
+%    zEnd.help    = {'End level of the volume of interest '};
+%    zEnd.strtype = 'e';
+%    zEnd.num     = [1 1];
+%    zEnd.val    = {225};
 
 % --------------------------------------------------------------------
 % spm_file maskFile
@@ -209,43 +232,95 @@ function MPM = tbx_cfg_MPM
     MPM         = cfg_exbranch;
     MPM.tag     = 'MPM';
     MPM.name    = 'MPM';
-    MPM.val     = {t1Files mtFiles pdFiles sdim zStart zEnd ...
+    MPM.val     = {t1Files mtFiles pdFiles sdim height kstar ...
                    maskFile b1File t1TR mtTR pdTR ...
                    t1TE mtTE pdTE t1FA mtFA pdFA};
     MPM.help    = {'This toolbox implements multi parameter mapping for SPM.'}';
     MPM.prog    = @spm_local_mpm;
 
 %======================================================================
-function [out] = spm_local_mpm(job)
+function [] = spm_local_mpm(job)
 
     
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
+    %% works on the all cubus, levels by levels
+    
+    % calculates how big the overlapping has to be
+    % to assure a good smoothing
+    
+    hmax = 1.25^(job.kstar/3);
+    hakt = gethani (1, 1.25*hmax, 2, 1.25^job.kstar, [1 1], 1e-4);
+    hdelta = ceil(hakt); % height of half of the overlapping
+    % calculates the interval between the zStart of the different levels
+    interval = int64(job.height - 2*hdelta);
 
-    
-    dataset = createDataSet(job.sdim,job.zStart, job.zEnd, job.t1Files,job.pdFiles,job.mtFiles,char(job.maskFile),job.t1TR,job.pdTR,job.mtTR,job.t1TE,job.pdTE,job.mtTE,job.t1FA,job.pdFA, job.mtFA);
-    
-    % function [model] = estimateESTATICS(dataset, varargin)
-    modelMPM3 = estimateESTATICS(dataset);
-    
-    % function [modelS] = smoothESTATICS(model, varargin)
-    modelMPM3s = smoothESTATICS(modelMPM3);
-    modelMPM3snew = smoothESTATICSmask(modelMPM3);
-    
-    % function [qi] = calculateQI(model, varargin)
-    qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',job.b1File);
-    qiS = calculateQI(modelMPM3s, 'TR2',3.6,'b1File',job.b1File);
-    qiSnew = calculateQI(modelMPM3snew, 'TR2',3.6,'b1File',job.b1File);
-    qi 
-    qiS
-    qiSnew  
+    % preparing result variables
+    R1 = zeros(job.sdim);
+    R2star = zeros(job.sdim);
+    PD = zeros(job.sdim);
+    delta = zeros(job.sdim);
 
-    big_volume = spm_vol(job.t1Files{1});
-    % function []= write_small_to_file_nii(filename, big_volume,small_volume_data,zStart, zEnd, sdim)
-    write_small_to_file_nii('/Home/azubis/dalonzo','R1_', big_volume, qiSnew.R1, job.zStart, job.zEnd, job.sdim);
-    write_small_to_file_nii('/Home/azubis/dalonzo','R2star_', big_volume, qiSnew.R2star, job.zStart, job.zEnd, job.sdim);
-    write_small_to_file_nii('/Home/azubis/dalonzo','PD_', big_volume, qiSnew.PD, job.zStart, job.zEnd, job.sdim);
-    write_small_to_file_nii('/Home/azubis/dalonzo','delta_', big_volume, qiSnew.delta, job.zStart, job.zEnd, job.sdim);
-         
+    % prepares variable to save the all mask
+    totalmask = zeros(job.sdim);
+
+    % start iteration on all the levels
+    for startLayerVoxel = 1:interval:job.sdim(3),
+    
+        zStart = double(startLayerVoxel);
+        fprintf('Starting at %d \n',zStart);
+
+        if job.sdim(3)-(startLayerVoxel + job.height)> 2*hdelta,
+            % in case the next starting point has enough planes after it
+            zEnd = double(startLayerVoxel + job.height); 
+        else
+            % in case the next starting point has NOT enough planes after it
+            zEnd = job.sdim(3);
+            %startLayerVoxel = job.sdim(3)+1;
+        end
+        fprintf('Ending at %d \n',zEnd);
+
+        dataset = createDataSet(job.sdim,zStart, zEnd, job.t1Files,job.pdFiles,job.mtFiles,char(job.maskFile),job.t1TR,job.pdTR,job.mtTR,job.t1TE,job.pdTE,job.mtTE,job.t1FA,job.pdFA, job.mtFA);
+
+        % function [model] = estimateESTATICS(dataset, varargin)
+        modelMPM3 = estimateESTATICS(dataset);
+
+        % function [modelS] = smoothESTATICS(model, varargin)
+        %modelMPM3s = smoothESTATICS(modelMPM3);
+        modelMPM3snew = smoothESTATICSmask(modelMPM3);
+
+        % function [qi] = calculateQI(model, varargin)
+        %qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',job.b1File);
+        %qiS = calculateQI(modelMPM3s, 'TR2',3.6,'b1File',job.b1File);
+        qiSnew = calculateQI(modelMPM3snew, 'TR2',3.6,'b1File',job.b1File);
+        %qi 
+        %qiS
+        %qiSnew  
+        
+        if zStart==1
+            R1(:,:,zStart:zEnd) = qiSnew.R1;
+            R2star(:,:,zStart:zEnd) = qiSnew.R2star;
+            PD(:,:,zStart:zEnd) = qiSnew.PD;
+            delta(:,:,zStart:zEnd) = qiSnew.delta;
+            totalmask(:,:,zStart:zEnd) = qiSnew.model.mask;
+        else 
+                R1(:,:,zStart+hdelta:zEnd) = qiSnew.R1(:,:, 1+hdelta: (zEnd-zStart+1) );
+            R2star(:,:,zStart+hdelta:zEnd) = qiSnew.R2star(:,:, 1+hdelta: (zEnd-zStart+1) );
+            PD(:,:,zStart+hdelta:zEnd) = qiSnew.PD(:,:, 1+hdelta: (zEnd-zStart+1) );
+            delta(:,:,zStart+hdelta:zEnd) = qiSnew.delta(:,:, 1+hdelta: (zEnd-zStart+1) );
+            totalmask(:,:,zStart+hdelta:zEnd) = qiSnew.model.mask(:,:, 1+hdelta: (zEnd-zStart+1) );
+        end
+        if zEnd==job.sdim(3),
+                break;
+        end
+    
+    end
+        big_volume = spm_vol(job.t1Files{1});
+        % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
+        write_small_to_file_nii(pwd,'R1_', big_volume, R1, 1, 256, job.sdim);
+        write_small_to_file_nii(pwd,'R2star_', big_volume, R2star, 1, 256, job.sdim);
+        write_small_to_file_nii(pwd,'PD_', big_volume, PD, 1, 256, job.sdim);
+        write_small_to_file_nii(pwd,'delta_', big_volume, delta, 1, 256,  job.sdim);
+    
     
 end
 

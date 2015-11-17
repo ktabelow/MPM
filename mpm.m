@@ -1,4 +1,6 @@
 % script to run the functions of the ESTATICS model
+
+%% setting variables
 sdim = [322 368 256];
 dir = '/Home/stat/tabelow/projects/MPM/';
 
@@ -41,29 +43,42 @@ t1TR = [22.5, 22.5,22.5,22.5,22.5,22.5];
 % this is the B1 field map coregistered and resliced to t1Files[1]
 b1File = { strcat(dir,'data3/B1r1/rsmuB1map_sMQ03089-0002-00001-000001-01.img')};
 
-zStart = 1;
-zEnd = 256;
+%% works on the all cubus, levels by levels
+% defines how many planes in each level
+height = 30;
+% calculates how big the overlapping has to be
+% to assure a good smoothing
 kstar = 16;
-hmax = 4 ; %1.25^(kstar/3);
+hmax = 1.25^(kstar/3);
 hakt = gethani (1, 1.25*hmax, 2, 1.25^kstar, [1 1], 1e-4);
+hdelta = ceil(hakt); % height of half of the overlapping
+% calculates the interval between the zStart of the different levels
+interval = int64(height - 2*hdelta);
+
+% preparing result variables
 R1 = zeros(sdim);
 R2star = zeros(sdim);
 PD = zeros(sdim);
 delta = zeros(sdim);
-height = 30;
-interval = int64 (height - 2*hmax);
+
+% prepares variable to save the all mask
+totalmask = zeros(sdim);
+
+% start iteration on all the levels
 for startLayerVoxel = 1:interval:sdim(3),
     
     zStart = double(startLayerVoxel);
     fprintf('Starting at %d \n',zStart);
     
-    if sdim(3)-(startLayerVoxel + height)> 2*hmax,
+    if sdim(3)-(startLayerVoxel + height)> 2*hdelta,
+        % in case the next starting point has enough planes after it
         zEnd = double(startLayerVoxel + height); 
     else
+        % in case the next starting point has NOT enough planes after it
         zEnd = sdim(3);
-        startLayerVoxel = sdim(3)+1;
+        % startLayerVoxel = sdim(3)+1;
     end
-    fprintf('Ending at at %d \n',zEnd);
+    fprintf('Ending at %d \n',zEnd);
     
 % function [dataset] = createDataSet(sdim,zStart, zEnd, dir,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA)
 dataset = createDataSet(sdim,zStart, zEnd,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA);
@@ -75,7 +90,7 @@ modelMPM3 = estimateESTATICS(dataset);
 % modelMPM3s = smoothESTATICS(modelMPM3);
 
 % new function smoothing only on the elements in mask
-modelMPM3snew = smoothESTATICSmask(modelMPM3);
+modelMPM3snew = smoothESTATICSmask(modelMPM3, 'verbose', false);
 
 % function [qi] = calculateQI(model, varargin)
 qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',b1File);
@@ -88,12 +103,13 @@ R1(:,:,zStart:zEnd) = qiSnew.R1;
 R2star(:,:,zStart:zEnd) = qiSnew.R2star;
 PD(:,:,zStart:zEnd) = qiSnew.PD;
 delta(:,:,zStart:zEnd) = qiSnew.delta;
+totalmask(:,:,zStart:zEnd) = qiSnew.model.mask;
 else 
-    R1(:,:,zStart+hmax:zEnd) = qiSnew.R1(:,:, 1+hmax: (zEnd-zStart+1) );
-R2star(:,:,zStart+hmax:zEnd) = qiSnew.R2star(:,:, 1+hmax: (zEnd-zStart+1) );
-PD(:,:,zStart+hmax:zEnd) = qiSnew.PD(:,:, 1+hmax: (zEnd-zStart+1) );
-delta(:,:,zStart+hmax:zEnd) = qiSnew.delta(:,:, 1+hmax: (zEnd-zStart+1) );
-
+    R1(:,:,zStart+hdelta:zEnd) = qiSnew.R1(:,:, 1+hdelta: (zEnd-zStart+1) );
+R2star(:,:,zStart+hdelta:zEnd) = qiSnew.R2star(:,:, 1+hdelta: (zEnd-zStart+1) );
+PD(:,:,zStart+hdelta:zEnd) = qiSnew.PD(:,:, 1+hdelta: (zEnd-zStart+1) );
+delta(:,:,zStart+hdelta:zEnd) = qiSnew.delta(:,:, 1+hdelta: (zEnd-zStart+1) );
+totalmask(:,:,zStart+hdelta:zEnd) = qiSnew.model.mask(:,:, 1+hdelta: (zEnd-zStart+1) );
 end
 if zEnd==sdim(3),
     break;
