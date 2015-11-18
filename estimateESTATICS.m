@@ -113,6 +113,7 @@ zEnd = dataset.zEnd;
 coeff=zeros(nv*sdim(1)*sdim(2),(zEnd-zStart+1));
 
 invCov=cell((zEnd-zStart+1)/1,1); %sdim(3)
+
 if verbose,
     fprintf('Starting the ESTATICS model at %s \n',datestr(now));
     msg = sprintf('Percent done: 0.0');
@@ -124,7 +125,9 @@ end
 for k=1:(zEnd-zStart+1) %1:sdim(3)
     
     i= zStart+k-1;
-  res=estimate(i,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
+    maski = dataset.mask(:,:,k);
+  res=estimate(i,maski,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
+%  res=estimate(i,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
   coeff(:,k)=res.coeff;  
   invCov{k}=res.invCov;
   if verbose

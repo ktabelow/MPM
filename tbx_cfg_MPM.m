@@ -47,14 +47,25 @@ function MPM = tbx_cfg_MPM
     sdim.strtype = 'e';
     sdim.num     = [1 3];
     sdim.val    = {[322 368 256]};
-
+    
+% ---------------------------------------------------------------------
+% tr2 for the mt aquisition
+% ---------------------------------------------------------------------
+    tr2        = cfg_entry;
+    tr2.tag     = 'tr2';
+    tr2.name    = 'tr2';
+    tr2.help    = {'TR2>0 for the MT acquisition'};
+    tr2.strtype = 'e';
+    tr2.num     = [1 1];
+    tr2.val    = {3.6};
+    
 % ---------------------------------------------------------------------
 % height of the interest level (especially for workstation)
 % ---------------------------------------------------------------------
     height        = cfg_entry;
     height.tag     = 'height';
     height.name    = 'height';
-    height.help    = {'Height of the volume of interest. Please consider the resources of your computer when changing this number!'};
+    height.help    = {'Height of the level considered in each step. Please consider the resources of your computer when changing this number!'};
     height.strtype = 'e';
     height.num     = [1 1];
     height.val    = {30};
@@ -232,7 +243,7 @@ function MPM = tbx_cfg_MPM
     MPM         = cfg_exbranch;
     MPM.tag     = 'MPM';
     MPM.name    = 'MPM';
-    MPM.val     = {t1Files mtFiles pdFiles sdim height kstar ...
+    MPM.val     = {t1Files mtFiles pdFiles sdim tr2 height kstar ...
                    maskFile b1File t1TR mtTR pdTR ...
                    t1TE mtTE pdTE t1FA mtFA pdFA};
     MPM.help    = {'This toolbox implements multi parameter mapping for SPM.'}';
@@ -260,14 +271,22 @@ function [] = spm_local_mpm(job)
     PD = zeros(job.sdim);
     delta = zeros(job.sdim);
 
-    % prepares variable to save the all mask
+    % prepares variable to save the whole mask
     totalmask = zeros(job.sdim);
-
+    
+    % looking for weights
+    try 
+        wghts=getWeights(job.t1Files{1});
+    catch 
+    wghts = [];
+    end
+    fprintf('Starting the MPM at %s \n',datestr(now));
+    spm_progress_bar('Init',job.sdim(3),'planes completed');
     % start iteration on all the levels
     for startLayerVoxel = 1:interval:job.sdim(3),
-    
+        spm_progress_bar('Set',startLayerVoxel);
         zStart = double(startLayerVoxel);
-        fprintf('Starting at %d \n',zStart);
+        %fprintf('Starting at %d \n',zStart);
 
         if job.sdim(3)-(startLayerVoxel + job.height)> 2*hdelta,
             % in case the next starting point has enough planes after it
@@ -277,21 +296,21 @@ function [] = spm_local_mpm(job)
             zEnd = job.sdim(3);
             %startLayerVoxel = job.sdim(3)+1;
         end
-        fprintf('Ending at %d \n',zEnd);
+        %fprintf('Ending at %d \n',zEnd);
 
         dataset = createDataSet(job.sdim,zStart, zEnd, job.t1Files,job.pdFiles,job.mtFiles,char(job.maskFile),job.t1TR,job.pdTR,job.mtTR,job.t1TE,job.pdTE,job.mtTE,job.t1FA,job.pdFA, job.mtFA);
 
         % function [model] = estimateESTATICS(dataset, varargin)
-        modelMPM3 = estimateESTATICS(dataset);
+        modelMPM3 = estimateESTATICS(dataset, 'verbose', false);
 
         % function [modelS] = smoothESTATICS(model, varargin)
         %modelMPM3s = smoothESTATICS(modelMPM3);
-        modelMPM3snew = smoothESTATICSmask(modelMPM3);
+        modelMPM3snew = smoothESTATICSmask(modelMPM3, 'verbose', false, 'wghts', wghts);
 
         % function [qi] = calculateQI(model, varargin)
         %qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',job.b1File);
         %qiS = calculateQI(modelMPM3s, 'TR2',3.6,'b1File',job.b1File);
-        qiSnew = calculateQI(modelMPM3snew, 'TR2',3.6,'b1File',job.b1File);
+        qiSnew = calculateQI(modelMPM3snew, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
         %qi 
         %qiS
         %qiSnew  
@@ -314,13 +333,15 @@ function [] = spm_local_mpm(job)
         end
     
     end
+    spm_progress_bar('Set',job.sdim(3));
+    spm_progress_bar('Clear');
         big_volume = spm_vol(job.t1Files{1});
         % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
         write_small_to_file_nii(pwd,'R1_', big_volume, R1, 1, 256, job.sdim);
         write_small_to_file_nii(pwd,'R2star_', big_volume, R2star, 1, 256, job.sdim);
         write_small_to_file_nii(pwd,'PD_', big_volume, PD, 1, 256, job.sdim);
         write_small_to_file_nii(pwd,'delta_', big_volume, delta, 1, 256,  job.sdim);
-    
+    fprintf('Ending the MPM at %s \n',datestr(now));
     
 end
 

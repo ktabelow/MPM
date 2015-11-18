@@ -43,16 +43,23 @@ t1TR = [22.5, 22.5,22.5,22.5,22.5,22.5];
 % this is the B1 field map coregistered and resliced to t1Files[1]
 b1File = { strcat(dir,'data3/B1r1/rsmuB1map_sMQ03089-0002-00001-000001-01.img')};
 
+% looking for weights
+try 
+    wghts=getWeights(t1Files{1});
+catch ME
+wghts = [];
+end
+
 %% works on the all cubus, levels by levels
 % defines how many planes in each level
 height = 30;
-% calculates how big the overlapping has to be
+% calculates how big (high) the overlapping has to be
 % to assure a good smoothing
 kstar = 16;
 hmax = 1.25^(kstar/3);
 hakt = gethani (1, 1.25*hmax, 2, 1.25^kstar, [1 1], 1e-4);
 hdelta = ceil(hakt); % height of half of the overlapping
-% calculates the interval between the zStart of the different levels
+% calculates the interval between the zStart values of the different levels
 interval = int64(height - 2*hdelta);
 
 % preparing result variables
@@ -61,14 +68,15 @@ R2star = zeros(sdim);
 PD = zeros(sdim);
 delta = zeros(sdim);
 
-% prepares variable to save the all mask
+% prepares variable to save the whole mask
 totalmask = zeros(sdim);
+
 
 % start iteration on all the levels
 for startLayerVoxel = 1:interval:sdim(3),
     
     zStart = double(startLayerVoxel);
-    fprintf('Starting at %d \n',zStart);
+    %fprintf('Starting at %d \n',zStart);
     
     if sdim(3)-(startLayerVoxel + height)> 2*hdelta,
         % in case the next starting point has enough planes after it
@@ -78,7 +86,7 @@ for startLayerVoxel = 1:interval:sdim(3),
         zEnd = sdim(3);
         % startLayerVoxel = sdim(3)+1;
     end
-    fprintf('Ending at %d \n',zEnd);
+    %fprintf('Ending at %d \n',zEnd);
     
 % function [dataset] = createDataSet(sdim,zStart, zEnd, dir,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA)
 dataset = createDataSet(sdim,zStart, zEnd,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA);
@@ -90,7 +98,7 @@ modelMPM3 = estimateESTATICS(dataset);
 % modelMPM3s = smoothESTATICS(modelMPM3);
 
 % new function smoothing only on the elements in mask
-modelMPM3snew = smoothESTATICSmask(modelMPM3, 'verbose', false);
+modelMPM3snew = smoothESTATICSmask(modelMPM3, 'verbose', false, 'wghts', wghts);
 
 % function [qi] = calculateQI(model, varargin)
 qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',b1File);
