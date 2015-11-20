@@ -31,9 +31,9 @@ pdFA = [5, 5, 5, 5, 5, 5];
 t1FA = [27, 27, 27, 27, 27, 27];
 
 
-mtTE = [2.71,  2.71,  2.71, 5.17,  7.63,10.09];
-pdTE = [2.71,  2.71,  2.71, 5.17,  7.63,10.09];
-t1TE = [2.71,  2.71,  2.71, 5.17,  7.63,10.09];%, 12.55, 15.01];
+mtTE = [2.71, 5.17,  7.63, 10.09 , 12.55, 15.01];
+pdTE = [2.71, 5.17,  7.63, 10.09 , 12.55, 15.01];
+t1TE = [2.71, 5.17,  7.63, 10.09 , 12.55, 15.01];
 
 
 mtTR = [26.1, 26.1,26.1,26.1,26.1,26.1];
@@ -101,7 +101,7 @@ modelMPM3 = estimateESTATICS(dataset);
 modelMPM3snew = smoothESTATICSmask(modelMPM3, 'verbose', false, 'wghts', wghts);
 
 % function [qi] = calculateQI(model, varargin)
-qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',b1File);
+%qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',b1File);
 %qiS = calculateQI(modelMPM3s, 'TR2',3.6,'b1File',b1File);
 
 qiSnew = calculateQI(modelMPM3snew, 'TR2',3.6,'b1File',b1File);

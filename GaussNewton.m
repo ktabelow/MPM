@@ -6,14 +6,14 @@ if nargin==0
     return;
 end
 
-maxIter      = 10;
+maxIter      = 30;
 uStop        = [];
 Jstop        = [];
 paraStop     = [];
-tolJ         = 1e-3;            % for stopping, objective function
-tolU         = 1e-2;            %   - " -     , current value
-tolG         = 1e-2;            %   - " -     , norm of gradient
-LSMaxIter    = 10;              % maximum number of line search iterations
+tolJ         = 1e-4;            % for stopping, objective function
+tolU         = 1e-3;            %   - " -     , current value
+tolG         = 1e-3;            %   - " -     , norm of gradient
+LSMaxIter    = 15;              % maximum number of line search iterations
 LSreduction  = 0;               % minimal reduction in line search
 Plots        = @(task,para) [];
 solver       = [];

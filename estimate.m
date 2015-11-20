@@ -46,9 +46,13 @@
 
 function [res] = estimate(i, maski,sdim, t1Files,mtFiles,pdFiles,TE, TEScale, DataScale)
 
-
-
-
+if ~isempty(mtFiles)
+    nv = 4;
+else
+    nv = 3;
+end
+% if the mask on one level is empty doesn't do anything (to speed things up)
+if sum(maski(:))>0,
 slices = i;
 m = [sdim(1), sdim(2), numel(slices)];
 
@@ -57,11 +61,12 @@ for k=1:length(t1Files),
     [T1(k,:,:,:),omega] = loadImageSPM(fullfile(t1Files{k}),'slices',slices);
 end
  
+if ~isempty(mtFiles)
 MT = zeros([length(mtFiles),m]);
 for k=1:length(mtFiles),
     [MT(k,:,:,:),omega] = loadImageSPM(fullfile(mtFiles{k}),'slices',slices);
 end
-
+end
 
 PD = zeros([length(pdFiles),m]);
 for k=1:length(pdFiles),
@@ -70,61 +75,109 @@ end
 
 TE = TE./TEScale; %[t1TE(:)./100; mtTE(:)./100; pdTE(:)./100];
 %m0 = [1000/DataScale; 1000/DataScale;1000/DataScale; 0.05*TEScale];
-m0 = [1000; 1000;1000; 0.05*TEScale];
-
+if ~isempty(mtFiles)
+    m0 = [1000; 1000;1000; 0.05*TEScale];
+else
+    m0 = [1000; 1000; 0.05*TEScale];
+end
 
 %% perform optimization
 
-% still to insert a control on the mask!
-if sum(maski(:))>0,
-%T1t = reshape(T1(:,logical(maski)), size(T1,1),[]);
-%MTt = reshape(MT(:,logical(maski)), size(MT,1),[]);
-%PDt = reshape(PD(:,logical(maski)), size(PD,1),[]);
-T1t = reshape(T1, size(T1,1),[]);
-MTt = reshape(MT, size(MT,1),[]);
-PDt = reshape(PD, size(PD,1),[]);
-data = [T1t./DataScale; MTt./DataScale; PDt./DataScale];
+
+    % the commented part does the optimisation only on the elements in mask
+    % but it ist too slow...
+    %T1t = reshape(T1(:,logical(maski)), size(T1,1),[]);
+    %MTt = reshape(MT(:,logical(maski)), size(MT,1),[]);
+    %PDt = reshape(PD(:,logical(maski)), size(PD,1),[]);
+    T1t = reshape(T1, size(T1,1),[]); %
+    
+    PDt = reshape(PD, size(PD,1),[]); %
+    if ~isempty(mtFiles)
+        MTt = reshape(MT, size(MT,1),[]); %
+        data = [T1t./DataScale; MTt./DataScale; PDt./DataScale];
 
 
-indicator = [ones(length(t1Files),1);2*ones(length(mtFiles),1); 3*ones(length(pdFiles),1)];
-fctn = @(model) FLASHobjFctn2(model,data,TE,indicator);
+        indicator = [ones(length(t1Files),1);2*ones(length(mtFiles),1); 3*ones(length(pdFiles),1)];
+        fctn = @(model) FLASHobjFctn2(model,data,TE,indicator);
+    
+        % m0big has to be changed if we want a voxel-dipendent starting point
+        m0big = kron(ones(size(T1t,2),1),m0); 
+        mi1 = GaussNewton(fctn,m0big);
 
-m0big = kron(ones(size(T1t,2),1),m0); % has to be changed
-mi1 = GaussNewton(fctn,m0big);
+        %maski = reshape(maski,numel(maski),[]);
+        %maskbig = repelem(maski,4);
+        %m1big = zeros(4*prod(m),1);
 
-%maski = reshape(maski,numel(maski),[]);
-%maskbig = repelem(maski,4);
-%m1big = zeros(4*prod(m),1);
+        % fill in information and set correct dimension
+        %m1big(logical(maskbig),1) = mi1(:,1);
+        %res.coeff=m1big; %
 
-% fill in information and set correct dimension
-%m1big(logical(maskbig),1) = mi1(:,1);
-%res.coeff=m1big; %
+        res.coeff=mi1;
 
-res.coeff=mi1;
+        %% analyze result
 
-%% analyze result
-
-[Dc,para,dD,H] = fctn(mi1);
-sig2 = 2*Dc/(size(TE,1)-numel(m0big));
+        [Dc,para,dD,H] = fctn(mi1);
+        sig2 = 2*Dc/(size(TE,1)-numel(m0big));
 
 
-%iind = 1: length(maski);
-%iind = iind(logical(maski));
-%dia = sparse(iind,iind,ones(length(iind),1),sdim(1)*sdim(2),sdim(1)*sdim(2)); %,sdim(1)*sdim(2),sdim(1)*sdim(2)
-%big_indexing = kron(dia, [1 1 1 1 ; 1 1 1 1; 1 1 1 1 ; 1 1 1 1]);
-%small_indexing = kron(speye(numel(iind)),[1 1 1 1 ; 1 1 1 1; 1 1 1 1 ; 1 1 1 1] );
-%small_invCov = H./sig2;
-%res.invCov = spalloc(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2),numel(small_invCov));
-%res.invCov(logical(big_indexing))=small_invCov(logical(small_indexing));
+        %iind = 1: length(maski);
+        %iind = iind(logical(maski));
+        %dia = sparse(iind,iind,ones(length(iind),1),sdim(1)*sdim(2),sdim(1)*sdim(2)); %,sdim(1)*sdim(2),sdim(1)*sdim(2)
+        %big_indexing = kron(dia, [1 1 1 1 ; 1 1 1 1; 1 1 1 1 ; 1 1 1 1]);
+        %small_indexing = kron(speye(numel(iind)),[1 1 1 1 ; 1 1 1 1; 1 1 1 1 ; 1 1 1 1] );
+        %small_invCov = H./sig2;
+        %res.invCov = spalloc(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2),numel(small_invCov));
+        %res.invCov(logical(big_indexing))=small_invCov(logical(small_indexing));
 
-res.invCov=H./sig2;
-res.para=para;
-res.dD=dD;
-res.omega=omega;
+        res.invCov=H./sig2; %
+        res.para=para;
+        res.dD=dD;
+        res.omega=omega;
+    else 
+        data = [T1t./DataScale; PDt./DataScale];
+
+
+        indicator = [ones(length(t1Files),1); 2*ones(length(pdFiles),1)];
+        fctn = @(model) FLASHobjFctnWithoutMT(model,data,TE,indicator);
+    
+        % m0big has to be changed if we want a voxel-dipendent starting point
+        m0big = kron(ones(size(T1t,2),1),m0); 
+        mi1 = GaussNewton(fctn,m0big);
+
+        %maski = reshape(maski,numel(maski),[]);
+        %maskbig = repelem(maski,4);
+        %m1big = zeros(4*prod(m),1);
+
+        % fill in information and set correct dimension
+        %m1big(logical(maskbig),1) = mi1(:,1);
+        %res.coeff=m1big; %
+
+        res.coeff=mi1;
+
+        %% analyze result
+
+        [Dc,para,dD,H] = fctn(mi1);
+        sig2 = 2*Dc/(size(TE,1)-numel(m0big));
+
+
+        %iind = 1: length(maski);
+        %iind = iind(logical(maski));
+        %dia = sparse(iind,iind,ones(length(iind),1),sdim(1)*sdim(2),sdim(1)*sdim(2)); %,sdim(1)*sdim(2),sdim(1)*sdim(2)
+        %big_indexing = kron(dia, [1 1 1 1 ; 1 1 1 1; 1 1 1 1 ; 1 1 1 1]);
+        %small_indexing = kron(speye(numel(iind)),[1 1 1 1 ; 1 1 1 1; 1 1 1 1 ; 1 1 1 1] );
+        %small_invCov = H./sig2;
+        %res.invCov = spalloc(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2),numel(small_invCov));
+        %res.invCov(logical(big_indexing))=small_invCov(logical(small_indexing));
+
+        res.invCov=H./sig2; %
+        res.para=para;
+        res.dD=dD;
+        res.omega=omega;
+    end
 else
    
-    res.coeff=zeros(4*sdim(1)*sdim(2),1);
-    res.invCov = sparse(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2));
+    res.coeff=zeros(nv*sdim(1)*sdim(2),1);
+    res.invCov = sparse(nv*sdim(1)*sdim(2),nv*sdim(1)*sdim(2));
     
 end
 

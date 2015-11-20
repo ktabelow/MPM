@@ -101,7 +101,12 @@ end
 nv = dataset.nv;
 t1Files = dataset.t1Files;
 pdFiles = dataset.pdFiles;
-mtFiles = dataset.mtFiles;
+if nv==4, 
+    mtFiles = dataset.mtFiles;
+else
+    mtFiles=[];
+end
+    
 sdim = dataset.sdim;
 TE = dataset.TE;
 zStart = dataset.zStart;

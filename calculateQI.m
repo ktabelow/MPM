@@ -80,9 +80,14 @@ else
 end
 
 %% get correct flip angles an TR times
-% still to be changed
+
 t1FA = model.FA(1);
-pdFA = model.FA(length(model.t1Files)+length(model.mtFiles)+1);
+if model.nv==4, 
+    pdFA = model.FA(length(model.t1Files)+length(model.mtFiles)+1); 
+else
+    pdFA = model.FA(length(model.t1Files)+1);
+end
+    
 t1TR = model.TR(1);
 
 

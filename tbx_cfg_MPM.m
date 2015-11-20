@@ -24,7 +24,7 @@ function MPM = tbx_cfg_MPM
     mtFiles.help    = {'Select the MT files.'};
     mtFiles.filter  = 'image';
     mtFiles.ufilter = '.*';
-    mtFiles.num     = [1 Inf];
+    mtFiles.num     = [0 Inf];
 % --------------------------------------------------------------------
 % spm_file pdFiles
 % ---------------------------------------------------------------------
@@ -166,7 +166,7 @@ function MPM = tbx_cfg_MPM
     t1TE.help    = {'relaxation times echo times '};
     t1TE.strtype = 'e';
     t1TE.num     = [1 Inf];
-    t1TE.val    = {[2.71,  2.71,  2.71, 5.17,  7.63,10.09]};
+    t1TE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
     
 % ---------------------------------------------------------------------
 % mtTE 
@@ -177,7 +177,7 @@ function MPM = tbx_cfg_MPM
     mtTE.help    = {'mt echo times '};
     mtTE.strtype = 'e';
     mtTE.num     = [1 Inf];
-    mtTE.val    = {[2.71,  2.71,  2.71, 5.17,  7.63,10.09]};
+    mtTE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
 % ---------------------------------------------------------------------
 % pdTE 
 % ---------------------------------------------------------------------
@@ -187,7 +187,7 @@ function MPM = tbx_cfg_MPM
     pdTE.help    = {'proton density echo times '};
     pdTE.strtype = 'e';
     pdTE.num     = [1 Inf];
-    pdTE.val    = {[2.71,  2.71,  2.71, 5.17,  7.63,10.09]};
+    pdTE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
 % ---------------------------------------------------------------------
 % t1FA 
 % ---------------------------------------------------------------------
@@ -301,7 +301,7 @@ function [] = spm_local_mpm(job)
         dataset = createDataSet(job.sdim,zStart, zEnd, job.t1Files,job.pdFiles,job.mtFiles,char(job.maskFile),job.t1TR,job.pdTR,job.mtTR,job.t1TE,job.pdTE,job.mtTE,job.t1FA,job.pdFA, job.mtFA);
 
         % function [model] = estimateESTATICS(dataset, varargin)
-        modelMPM3 = estimateESTATICS(dataset, 'verbose', false);
+        modelMPM3 = estimateESTATICS(dataset);
 
         % function [modelS] = smoothESTATICS(model, varargin)
         %modelMPM3s = smoothESTATICS(modelMPM3);
@@ -319,13 +319,13 @@ function [] = spm_local_mpm(job)
             R1(:,:,zStart:zEnd) = qiSnew.R1;
             R2star(:,:,zStart:zEnd) = qiSnew.R2star;
             PD(:,:,zStart:zEnd) = qiSnew.PD;
-            delta(:,:,zStart:zEnd) = qiSnew.delta;
+            if ~strcmp(job.mtFiles{1},''), delta(:,:,zStart:zEnd) = qiSnew.delta; end%
             totalmask(:,:,zStart:zEnd) = qiSnew.model.mask;
         else 
                 R1(:,:,zStart+hdelta:zEnd) = qiSnew.R1(:,:, 1+hdelta: (zEnd-zStart+1) );
             R2star(:,:,zStart+hdelta:zEnd) = qiSnew.R2star(:,:, 1+hdelta: (zEnd-zStart+1) );
             PD(:,:,zStart+hdelta:zEnd) = qiSnew.PD(:,:, 1+hdelta: (zEnd-zStart+1) );
-            delta(:,:,zStart+hdelta:zEnd) = qiSnew.delta(:,:, 1+hdelta: (zEnd-zStart+1) );
+            if ~strcmp(job.mtFiles{1},''), delta(:,:,zStart+hdelta:zEnd) = qiSnew.delta(:,:, 1+hdelta: (zEnd-zStart+1) ); end %
             totalmask(:,:,zStart+hdelta:zEnd) = qiSnew.model.mask(:,:, 1+hdelta: (zEnd-zStart+1) );
         end
         if zEnd==job.sdim(3),

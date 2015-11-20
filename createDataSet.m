@@ -76,7 +76,7 @@ function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,mask
   end
   dataset.sdim = sdim;
   
-  if isempty(t1Files)
+  if isempty(t1Files) 
       error('cell array of T1 files required'); 
   end
   dataset.t1Files = t1Files;
@@ -86,8 +86,9 @@ function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,mask
   end
   dataset.pdFiles = pdFiles;
   
-  if isempty(mtFiles)
+  if isempty(mtFiles) || (length(mtFiles)==1 && strcmp(mtFiles{1},''))
       dataset.nv = 3;
+      warning('No MT files');
   else
       dataset.nv = 4;
       dataset.mtFiles = mtFiles;
@@ -116,7 +117,7 @@ function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,mask
      error('one of the PD parameter is wrongly dimensioned');
   end
   
-  if length(mtFA)~=length(mtFiles) || length(mtTR)~=length(mtFiles) || length(mtTE)~=length(mtFiles)
+  if dataset.nv==4 && (length(mtFA)~=length(mtFiles) || length(mtTR)~=length(mtFiles) || length(mtTE)~=length(mtFiles))
      error('one of the MT parameter is wrongly dimensioned');
   end
   
