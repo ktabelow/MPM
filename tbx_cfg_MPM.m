@@ -335,12 +335,12 @@ function [] = spm_local_mpm(job)
     end
     spm_progress_bar('Set',job.sdim(3));
     spm_progress_bar('Clear');
-        big_volume = spm_vol(job.t1Files{1});
+        %big_volume = spm_vol(job.t1Files{1});
         % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
-        write_small_to_file_nii(pwd,'R1_', big_volume, R1, 1, job.sdim(3), job.sdim);
-        write_small_to_file_nii(pwd,'R2star_', big_volume, R2star, 1, job.sdim(3), job.sdim);
-        write_small_to_file_nii(pwd,'PD_', big_volume, PD, 1, job.sdim(3), job.sdim);
-        if ~strcmp(job.mtFiles{1},''),  write_small_to_file_nii(pwd,'delta_', big_volume, delta, 1, job.sdim(3),  job.sdim); end
+        write_small_to_file_nii(pwd,'R1_', spm_vol(job.t1Files{1}), R1, 1, job.sdim(3), job.sdim);
+        write_small_to_file_nii(pwd,'R2star_', spm_vol(job.t1Files{1}), R2star, 1, job.sdim(3), job.sdim);
+        write_small_to_file_nii(pwd,'PD_', spm_vol(job.pdFiles{1}), PD, 1, job.sdim(3), job.sdim);
+        if ~strcmp(job.mtFiles{1},''),  write_small_to_file_nii(pwd,'delta_', spm_vol(job.mtFiles{1}), delta, 1, job.sdim(3),  job.sdim); end
     fprintf('Ending the MPM at %s \n',datestr(now));
     
 end
