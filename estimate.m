@@ -102,7 +102,10 @@ end
     
         % m0big has to be changed if we want a voxel-dipendent starting point
         m0big = kron(ones(size(T1t,2),1),m0); 
-        mi1 = GaussNewton(fctn,m0big);
+        lower = zeros(size(m0big));
+        % mi1 = GaussNewton(fctn,m0big); % old gauss without constraints
+        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',1e-6,'tolG',1e-6,'tolU',1e-6,'lower',lower,'maxIter',10);
+        
 
         %maski = reshape(maski,numel(maski),[]);
         %maskbig = repelem(maski,4);
@@ -129,7 +132,7 @@ end
         %res.invCov = spalloc(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2),numel(small_invCov));
         %res.invCov(logical(big_indexing))=small_invCov(logical(small_indexing));
 
-        res.invCov=H./sig2; %
+        res.invCov=H/sig2; %res.invCov=H./sig2;
         res.para=para;
         res.dD=dD;
         res.omega=omega;
@@ -142,7 +145,9 @@ end
     
         % m0big has to be changed if we want a voxel-dipendent starting point
         m0big = kron(ones(size(T1t,2),1),m0); 
-        mi1 = GaussNewton(fctn,m0big);
+        lower = zeros(size(m0big));
+        % mi1 = GaussNewton(fctn,m0big);
+        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',1e-6,'tolG',1e-6,'tolU',1e-6,'lower',lower,'maxIter',10);
 
         %maski = reshape(maski,numel(maski),[]);
         %maskbig = repelem(maski,4);
@@ -169,7 +174,7 @@ end
         %res.invCov = spalloc(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2),numel(small_invCov));
         %res.invCov(logical(big_indexing))=small_invCov(logical(small_indexing));
 
-        res.invCov=H./sig2; %
+        res.invCov=H/sig2; %
         res.para=para;
         res.dD=dD;
         res.omega=omega;
