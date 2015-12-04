@@ -301,7 +301,7 @@ function [] = spm_local_mpm(job)
         dataset = createDataSet(job.sdim,zStart, zEnd, job.t1Files,job.pdFiles,job.mtFiles,char(job.maskFile),job.t1TR,job.pdTR,job.mtTR,job.t1TE,job.pdTE,job.mtTE,job.t1FA,job.pdFA, job.mtFA);
 
         % function [model] = estimateESTATICS(dataset, varargin)
-        modelMPM3 = estimateESTATICS(dataset);
+        modelMPM3 = estimateESTATICS(dataset,'verbose', true);
 
         % function [modelS] = smoothESTATICS(model, varargin)
         %modelMPM3s = smoothESTATICS(modelMPM3);
@@ -333,6 +333,10 @@ function [] = spm_local_mpm(job)
         end
     
     end
+    R2star(isnan(R2star))=0;
+    PD(isnan(PD))=0;
+    if ~strcmp(job.mtFiles{1},''), delta(isnan(delta))=0; end
+    R1(isnan(R1))=0;
     spm_progress_bar('Set',job.sdim(3));
     spm_progress_bar('Clear');
         %big_volume = spm_vol(job.t1Files{1});

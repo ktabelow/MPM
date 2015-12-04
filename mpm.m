@@ -98,13 +98,13 @@ modelMPM3 = estimateESTATICS(dataset);
 % modelMPM3s = smoothESTATICS(modelMPM3);
 
 % new function smoothing only on the elements in mask
-modelMPM3snew = smoothESTATICSmask(modelMPM3, 'verbose', false, 'wghts', wghts);
+modelMPM3snew = smoothESTATICSmask(modelMPM3, 'wghts', wghts);
 
 % function [qi] = calculateQI(model, varargin)
 %qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',b1File);
 %qiS = calculateQI(modelMPM3s, 'TR2',3.6,'b1File',b1File);
 
-qiSnew = calculateQI(modelMPM3snew, 'TR2',3.6,'b1File',b1File);
+qiSnew = calculateQI(modelMPM3snew, 'TR2',3.6,'b1File',b1File,'verbose', false);
 
 if zStart==1
 R1(:,:,zStart:zEnd) = qiSnew.R1;
@@ -124,3 +124,9 @@ if zEnd==sdim(3),
 end
 
 end
+
+R2star(isnan(R2star))=0;
+PD(isnan(PD))=0;
+delta(isnan(delta))=0;
+R1(isnan(R1))=0;
+
