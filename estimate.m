@@ -147,7 +147,7 @@ end
         m0big = kron(ones(size(T1t,2),1),m0); 
         lower = zeros(size(m0big));
         % mi1 = GaussNewton(fctn,m0big);
-        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',1e-6,'tolG',1e-6,'tolU',1e-6,'lower',lower,'maxIter',10);
+        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',1e-3,'tolG',1e-2,'tolU',1e-2,'lower',lower,'maxIter',10);
 
         %maski = reshape(maski,numel(maski),[]);
         %maskbig = repelem(maski,4);

@@ -32,35 +32,37 @@ end
 if isempty(uStop), uStop = uc; end
 if isempty(Jstop) || isempty(paraStop),
     [Jstop,paraStop] = fctn(uStop); Jstop = abs(Jstop) + (Jstop == 0);
+    Jstop = paraStop.Dcs;
     Plots('stop',paraStop);
 end;
 if verbose
 fprintf('[ maxIter=%s / tolJ=%s / tolU=%s / tolG=%s / length(yc)=%d ]\n',...
   num2str(maxIter),num2str(tolJ),num2str(tolU),num2str(tolG),length(uc));
 fprintf('%4s %9s %9s %9s %9s %9s %2s %9s\n','iter','Jc','Jold-Jc','norm(dJ)','Dc','Rc','LS','Active');
-fprintf('%4d %9.2e %9.2e %9.2e %9.2e %9.2e\n',-1,Jstop,0,0,paraStop.Dc,paraStop.Rc)
+fprintf('%4d %9.2e %9.2e %9.2e %9.2e %9.2e\n',-1,sum(Jstop),0,0,paraStop.Dc,paraStop.Rc)
 end
 % evaluate objective function for starting values and plots
 [Jc,para,dJ,H] = fctn(uc); 
 Plots('start',para);
-iter = 0; uOld = 0*uc; Jold = Jc; u0 = uc; LSiter = 0;
+iter = 0; uOld = 0*uc; Jold = para.Dcs; u0 = uc; LSiter = 0;
 
 % initialize
 STOP = zeros(5,1);
 
-Active = (uc<=lower)|(uc>=upper);
+Active    = (uc<=lower)|(uc>=upper);
 while 1
     Plots(iter,para);
     % some output
     if verbose
         fprintf('%4d %9.2e %9.2e %9.2e %9.2e %9.2e %2d\t%2d\n',...
-        iter,Jc,Jold-Jc,norm(dJ),para.Dc,para.Rc,LSiter,nnz(Active));
+        iter,Jc,sum(abs(Jold-Jc)),norm(dJ),para.Dc,para.Rc,LSiter,nnz(Active));
     end
+    
     % check stopping rules
-    STOP(1) = (iter>0) && abs(Jold-Jc)   <= tolJ*(1+abs(Jstop));
+    STOP(1) = (iter>0) && all(abs(Jold-para.Dcs)   <= tolJ*(1+abs(Jstop)));
     STOP(2) = (iter>0) && (norm(uc-uOld) <= tolU*(1+norm(u0)));
-    STOP(3) = norm(dJ)                   <= tolG*(1+abs(Jstop));
-    STOP(4) = norm(dJ)                   <= 1e6*eps;
+    STOP(3) = all(norm(para.dDs)                   <= tolG*(1+abs(Jstop)));
+    STOP(4) = all(norm(para.dDs)                   <= 1e6*eps);
     STOP(5) = (iter >= maxIter);
     
     if all(STOP(1:3)) || any(STOP(4:5)), break;  end;
@@ -128,11 +130,11 @@ end
 if verbose
 fprintf('%s\nSTOPPING:\n',ones(1,70)*char('-'));
 fprintf('%d[ %-10s=%16.8e <= %-25s=%16.8e]\n',STOP(1),...
-  '(Jold-Jc)',(Jold-Jc),'tolJ*(1+|Jstop|)'   ,tolJ*(1+abs(Jstop)));
+  '(Jold-Jc)',max(Jold-Jc),'tolJ*(1+|Jstop|)'   ,tolJ*max(1+abs(Jstop)));
 fprintf('%d[ %-10s=%16.8e <= %-25s=%16.8e]\n',STOP(2),...
   '|yc-yOld|',norm(uc-uOld),'tolU*(1+norm(yc)) ',tolU*(1+norm(uc)));
 fprintf('%d[ %-10s=%16.8e <= %-25s=%16.8e]\n',STOP(3),...
-  '|dJ|',norm(dJ),'tolG*(1+abs(Jstop))',tolG*(1+abs(Jstop)));
+  '|dJ|',norm(dJ),'tolG*(1+abs(Jstop))',min(tolG*(1+abs(Jstop))));
 fprintf('%d[ %-10s=%16.8e <= %-25s=%16.8e]\n',STOP(4),...
   'norm(dJ)',norm(dJ),'eps',1e3*eps);
 fprintf('%d[ %-10s=  %-14d >= %-25s=  %-14d]\n',STOP(5),...
@@ -161,7 +163,6 @@ function runMinimalExample
     x0 = [0;0; 1;1];
     xopt = ProjGaussNewton(fctn,x0,'upper',u,'lower',l,'verbose',true);
     
-    xopt,
     
     
     

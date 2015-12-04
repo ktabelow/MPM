@@ -19,9 +19,10 @@ doDerivative = (nargout>2);
 % evaluate forward model
 pred = model(indicator,:) .* exp(-TE*model(3,:));
 res  = pred(:) - data(:);
-Dc   = 0.5*(res'*res);
+Dcs  = sum(res.^2,1); % misfit for each voxel
+Dc   = 0.5*sum(Dcs);
 
-para = struct('omega',[],'m',[],'Dc',Dc,'Rc',0.0,'res',res);
+para = struct('omega',[],'m',[],'Dc',Dc,'Dcs',Dcs,'Rc',0.0,'res',res);
 if not(doDerivative)
     dD = [];
     H  = [];
@@ -40,7 +41,15 @@ else
     J = sdiag(exp(-TE*model(3,:)))*A;
     
     dD = J'*res;
-    H  = J'*J + 1e-3*speye(numel(model));
+    para.dDs = sqrt(sum(reshape(dD,3,[]).^2,1));
+    H  = J'*J + 1e-4*speye(numel(model));
 end
     
 
+
+    
+ 
+    
+    
+    
+end
