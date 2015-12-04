@@ -129,4 +129,8 @@ R2star(isnan(R2star))=0;
 PD(isnan(PD))=0;
 delta(isnan(delta))=0;
 R1(isnan(R1))=0;
-
+ % set all values of the voxels outside the mask to 0
+    R1(totalmask<1)=0;
+    R2star(totalmask<1)=0;
+    PD(totalmask<1)=0;
+    delta(totalmask<1)=0; 
