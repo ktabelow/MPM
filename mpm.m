@@ -98,7 +98,7 @@ modelMPM3 = estimateESTATICS(dataset);
 % modelMPM3s = smoothESTATICS(modelMPM3);
 
 % new function smoothing only on the elements in mask
-modelMPM3snew = smoothESTATICSmask(modelMPM3, 'wghts', wghts);
+modelMPM3snew = smoothESTATICSmask(modelMPM3, 'wghts', wghts,'verbose', false);
 
 % function [qi] = calculateQI(model, varargin)
 %qi = calculateQI(modelMPM3, 'TR2',3.6,'b1File',b1File);

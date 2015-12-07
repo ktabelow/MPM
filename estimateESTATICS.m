@@ -116,7 +116,7 @@ zEnd = dataset.zEnd;
 % until now implemented only for levels containing one layer
 % numberLayers=1;
 coeff=zeros(nv*sdim(1)*sdim(2),(zEnd-zStart+1));
-
+sigma2 = zeros(nv*nv*sdim(1)*sdim(2),(zEnd-zStart+1));%
 invCov=cell((zEnd-zStart+1)/1,1); %sdim(3)
 
 if verbose,
@@ -135,6 +135,7 @@ for k=1:(zEnd-zStart+1) %1:sdim(3)
 %  res=estimate(i,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
   coeff(:,k)=res.coeff;  
   invCov{k}=res.invCov;
+  sigma2(:,k)=res.sig2;
   if verbose
   % Display the progress
        percentDone = 100 * k / (zEnd-zStart+1); %sdim(3) ;        
@@ -146,7 +147,7 @@ end
 
 
 coeff = reshape (coeff, [nv sdim(1) sdim(2) (zEnd-zStart+1)]);
-
+sigma2 = reshape (sigma2, [nv nv sdim(1) sdim(2) (zEnd-zStart+1)]);
 if verbose
     fprintf('\n');
 end
@@ -168,11 +169,12 @@ for i = 1: nv*sdim(1)*sdim(2)
        vec(j*nv+4) = j*sizeV+4 +nv*fix(j/nv); 
    end
 end
-clear size
+clear sizeV
 
 for k=1:length(invCov)  
-        invC(:,:,:,:,k) = reshape(full(invCov{k}(vec)),[nv nv sdim(1) sdim(2)]);
+        invC(:,:,:,:,k) = reshape(full(invCov{k}(vec)),[nv nv sdim(1) sdim(2)]);        
 end
+
 
 if verbose,
 fprintf('finished at: %s \n',datestr(now));
@@ -180,7 +182,7 @@ end
 
 model = dataset;
 model.modelCoeff = coeff;
-model.invCov = invC;
+model.invCov = invC./sigma2;
 model.TEScale = TEScale;
 model.DataScale = DataScale;
 

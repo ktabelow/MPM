@@ -1,5 +1,5 @@
   
-function [Dc,para,dD,H] = FLASHobjFctn2(model,data,TE,indicator)
+function [Dc,para,dD,H,J] = FLASHobjFctn2(model,data,TE,indicator)
 %
 % Input
 % model - [T1(0); MT(0); PD(0); R2*] column vector

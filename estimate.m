@@ -119,8 +119,8 @@ end
 
         %% analyze result
 
-        [Dc,para,dD,H] = fctn(mi1);
-        sig2 = 2*Dc/(size(TE,1)-numel(m0big));
+        [~,para,dD,H,J] = fctn(mi1);
+        sig2 = para.Dcs/(size(TE,1)-numel(m0));
 
 
         %iind = 1: length(maski);
@@ -131,8 +131,10 @@ end
         %small_invCov = H./sig2;
         %res.invCov = spalloc(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2),numel(small_invCov));
         %res.invCov(logical(big_indexing))=small_invCov(logical(small_indexing));
-
-        res.invCov=H/sig2; %res.invCov=H./sig2;
+        res.invCov=J'*J;
+        res.sig2 = repelem(sig2,16);
+        %res.invCov=J'*J./sig2;
+        %res.invCov=H/sig2; %res.invCov=H./sig2;
         res.para=para;
         res.dD=dD;
         res.omega=omega;
@@ -161,8 +163,8 @@ end
 
         %% analyze result
 
-        [Dc,para,dD,H] = fctn(mi1);
-        sig2 = 2*Dc/(size(TE,1)-numel(m0big));
+        [~,para,dD,H,J] = fctn(mi1);
+        sig2 = para.Dcs/(size(TE,1)-numel(m0));
 
 
         %iind = 1: length(maski);
@@ -174,7 +176,7 @@ end
         %res.invCov = spalloc(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2),numel(small_invCov));
         %res.invCov(logical(big_indexing))=small_invCov(logical(small_indexing));
 
-        res.invCov=H/sig2; %
+        res.invCov=J'*J./sig2; %
         res.para=para;
         res.dD=dD;
         res.omega=omega;
