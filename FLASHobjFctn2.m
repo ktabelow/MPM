@@ -1,5 +1,5 @@
   
-function [Dc,para,dD,H,J] = FLASHobjFctn2(model,data,TE,indicator)
+function [Dc,para,dD,H,Hstar] = FLASHobjFctn2(model,data,TE,indicator)
 %
 % Input
 % model - [T1(0); MT(0); PD(0); R2*] column vector
@@ -43,7 +43,8 @@ else
     
     dD = J'*res(:);
     para.dDs = sqrt(sum(reshape(dD,4,[]).^2,1));
-    H  = J'*J + 1e-4*speye(numel(model));
+    Hstar = J'*J;
+    H  = Hstar + 1e-4*speye(numel(model));
 end
     
 end

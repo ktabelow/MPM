@@ -1,4 +1,4 @@
-function [Dc,para,dD,H] = FLASHobjFctnWithoutMT(model,data,TE,indicator)
+function [Dc,para,dD,H, Hstar] = FLASHobjFctnWithoutMT(model,data,TE,indicator)
 %
 % Input
 % model - [T1(0); PD(0); R2*] column vector
@@ -18,7 +18,7 @@ doDerivative = (nargout>2);
 
 % evaluate forward model
 pred = model(indicator,:) .* exp(-TE*model(3,:));
-res  = pred(:) - data(:);
+res  = pred - data;
 Dcs  = sum(res.^2,1); % misfit for each voxel
 Dc   = 0.5*sum(Dcs);
 
@@ -40,9 +40,10 @@ else
     
     J = sdiag(exp(-TE*model(3,:)))*A;
     
-    dD = J'*res;
+    dD = J'*res(:);
     para.dDs = sqrt(sum(reshape(dD,3,[]).^2,1));
-    H  = J'*J + 1e-4*speye(numel(model));
+    Hstar = J'*J;
+    H  = Hstar + 1e-4*speye(numel(model));
 end
     
 

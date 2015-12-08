@@ -119,7 +119,7 @@ end
 
         %% analyze result
 
-        [~,para,dD,H,J] = fctn(mi1);
+        [~,para,dD,~,Hstar] = fctn(mi1); % ~ is for H, Hstar contains only J'*J
         sig2 = para.Dcs/(size(TE,1)-numel(m0));
 
 
@@ -131,8 +131,8 @@ end
         %small_invCov = H./sig2;
         %res.invCov = spalloc(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2),numel(small_invCov));
         %res.invCov(logical(big_indexing))=small_invCov(logical(small_indexing));
-        res.invCov=J'*J;
-        res.sig2 = repelem(sig2,16);
+        res.invCov=Hstar;
+        res.sig2 = repelem(sig2,nv*nv);
         %res.invCov=J'*J./sig2;
         %res.invCov=H/sig2; %res.invCov=H./sig2;
         res.para=para;
@@ -163,7 +163,7 @@ end
 
         %% analyze result
 
-        [~,para,dD,H,J] = fctn(mi1);
+        [~,para,dD,~,Hstar] = fctn(mi1); % ~ is for H, Hstar contains only J'*J
         sig2 = para.Dcs/(size(TE,1)-numel(m0));
 
 
@@ -176,7 +176,8 @@ end
         %res.invCov = spalloc(4*sdim(1)*sdim(2),4*sdim(1)*sdim(2),numel(small_invCov));
         %res.invCov(logical(big_indexing))=small_invCov(logical(small_indexing));
 
-        res.invCov=J'*J./sig2; %
+        res.invCov=Hstar; %
+        res.sig2 = repelem(sig2,nv*nv);
         res.para=para;
         res.dD=dD;
         res.omega=omega;
@@ -185,7 +186,7 @@ else
    
     res.coeff=zeros(nv*sdim(1)*sdim(2),1);
     res.invCov = sparse(nv*sdim(1)*sdim(2),nv*sdim(1)*sdim(2));
-    
+    res.sig2=zeros(nv*nv*sdim(1)*sdim(2),1);
 end
 
  end
