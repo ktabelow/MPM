@@ -39,7 +39,12 @@
 %  res - struct containing 
 % 
 %  modelCoeff -  the coefficients of the ESTATICS model for the level,
-%  invCov     -  inverse covariance matrix
+%  invCov     -  inverse covariance matrix (unscaled) = J'*J
+%                attention!: this matrix is sparse and the nv*nv 
+%                single matrices are blocks on the diagonal  
+%  sig2       -  vector containing the sigma2 term
+%                attention!: this vector already contains nv*nv*nvoxel values
+%                 
 %  
 %
 % =========================================================================

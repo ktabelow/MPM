@@ -63,6 +63,7 @@ kstar = 16;
 alpha = 0.05;
 wghts = [];
 verbose = true;
+lambda = [];
 
 %% overwrites default parameters, if present
 
@@ -86,8 +87,10 @@ zEnd = model.zEnd;
 % nv describes the model, with or without mt
 % length of the vector to smooth (# parameters of model)
 nv = model.nv; 
-% determine a suitable adaptation bandwidth
-lambda = nv*finv(1-alpha, nv, model.nFiles - nv);
+% determine a suitable adaptation bandwidth, if not specified
+if isempty(lambda)
+  lambda = nv*finv(1-alpha, nv, model.nFiles - nv);
+end
 
 % adjust for non-isotropic voxel if necessary
 if isempty(wghts)

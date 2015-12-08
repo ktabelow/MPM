@@ -69,7 +69,7 @@ end;
 %% read B1 correction field
 
 slices = model.zStart : model.zEnd; %1:model.sdim(3);
-if ~isempty(b1File)
+if ~isempty(b1File) || (length(b1File)==1 && strcmp(b1File{1},''))
    if verbose,fprintf('reading correction file from %s \n',b1File{1}); end   
   [b1Map(:,:,:),~] = loadImageSPM(fullfile(b1File{1}),'slices',slices);
   b1Map = b1Map./100; % still to check if is ok
@@ -151,7 +151,7 @@ else
 end
 
 
-% else delta = null;
+
 if verbose, fprintf('done\n'); end
 %% prepare output
 qi.model = model;

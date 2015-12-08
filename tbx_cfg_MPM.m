@@ -25,6 +25,8 @@ function MPM = tbx_cfg_MPM
     mtFiles.filter  = 'image';
     mtFiles.ufilter = '.*';
     mtFiles.num     = [0 Inf];
+    mtFiles.val     = {[]};
+    
 % --------------------------------------------------------------------
 % spm_file pdFiles
 % ---------------------------------------------------------------------
@@ -46,7 +48,8 @@ function MPM = tbx_cfg_MPM
     sdim.help    = {'Dimension of the cubus. '};
     sdim.strtype = 'e';
     sdim.num     = [1 3];
-    sdim.val    = {[322 368 256]};
+    % sdim.val    = {[322 368 256]};
+    sdim.val    = {[0 0 0]};
     
 % ---------------------------------------------------------------------
 % tr2 for the mt aquisition
@@ -83,6 +86,17 @@ function MPM = tbx_cfg_MPM
     kstar.val    = {16};
     
 % ---------------------------------------------------------------------
+% adaptation bandwidth of the smoothing algorithm
+% ---------------------------------------------------------------------
+    lambda        = cfg_entry;
+    lambda.tag     = 'lambda';
+    lambda.name    = 'lambda';
+    lambda.help    = {'Adaptation bandwidth of the smoothing algorithm'};
+    lambda.strtype = 'e';
+    lambda.num     = [0 Inf];
+    lambda.val    = {[]};
+    
+% ---------------------------------------------------------------------
 % zStart especially for workstation
 % ---------------------------------------------------------------------
 %    zStart        = cfg_entry;
@@ -114,6 +128,7 @@ function MPM = tbx_cfg_MPM
     maskFile.filter  = 'image';
     maskFile.ufilter = '.*';
     maskFile.num     = [0 1];
+    maskFile.val     = {[]};
 % --------------------------------------------------------------------
 % spm_file b1File
 % ---------------------------------------------------------------------
@@ -124,6 +139,7 @@ function MPM = tbx_cfg_MPM
     b1File.filter  = 'image';
     b1File.ufilter = '.*';
     b1File.num     = [0 1];
+    b1File.val     = {[]};
     
 % ---------------------------------------------------------------------
 % t1TR 
@@ -131,10 +147,11 @@ function MPM = tbx_cfg_MPM
     t1TR        = cfg_entry;
     t1TR.tag     = 't1TR';
     t1TR.name    = 't1TR';
-    t1TR.help    = {'relaxation times '};
+    t1TR.help    = {'Relaxation times. Please insert a value for each t1File. If not specified, the program will try to read it from the .nii file. '};
     t1TR.strtype = 'e';
-    t1TR.num     = [1 Inf];
-    t1TR.val    = {[22.5 22.5 22.5 22.5 22.5 22.5]};
+    t1TR.num     = [0 Inf];
+   % t1TR.val    = {[22.5 22.5 22.5 22.5 22.5 22.5]};
+    t1TR.val    = {[]};
     
 % ---------------------------------------------------------------------
 % mtTR 
@@ -142,20 +159,22 @@ function MPM = tbx_cfg_MPM
     mtTR        = cfg_entry;
     mtTR.tag     = 'mtTR';
     mtTR.name    = 'mtTR';
-    mtTR.help    = {'magnetisation transfer '};
+    mtTR.help    = {'Magnetisation transfer. Please insert a value for each mtFile. If not specified, the program will try to read it from the .nii file. '};
     mtTR.strtype = 'e';
-    mtTR.num     = [1 Inf];
-    mtTR.val    = {[26.1 26.1 26.1 26.1 26.1 26.1]};
+    mtTR.num     = [0 Inf];
+   % mtTR.val    = {[26.1 26.1 26.1 26.1 26.1 26.1]};
+    mtTR.val    = {[]};
 % ---------------------------------------------------------------------
 % pdTR 
 % ---------------------------------------------------------------------
     pdTR        = cfg_entry;
     pdTR.tag     = 'pdTR';
     pdTR.name    = 'pdTR';
-    pdTR.help    = {'proton density '};
+    pdTR.help    = {'Proton density. Please insert a value for each pdFile. If not specified, the program will try to read it from the .nii file. '};
     pdTR.strtype = 'e';
-    pdTR.num     = [1 Inf];
-    pdTR.val    = {[22.5 22.5 22.5 22.5 22.5 22.5]};
+    pdTR.num     = [0 Inf];
+   % pdTR.val    = {[22.5 22.5 22.5 22.5 22.5 22.5]};
+    pdTR.val    = {[]};
         
 % ---------------------------------------------------------------------
 % t1TE 
@@ -163,10 +182,11 @@ function MPM = tbx_cfg_MPM
     t1TE        = cfg_entry;
     t1TE.tag     = 't1TE';
     t1TE.name    = 't1TE';
-    t1TE.help    = {'relaxation times echo times '};
+    t1TE.help    = {'Relaxation times echo times. Please insert a value for each t1File. If not specified, the program will try to read it from the .nii file. '};
     t1TE.strtype = 'e';
-    t1TE.num     = [1 Inf];
-    t1TE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
+    t1TE.num     = [0 Inf];
+   % t1TE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
+    t1TE.val    = {[]};
     
 % ---------------------------------------------------------------------
 % mtTE 
@@ -174,30 +194,33 @@ function MPM = tbx_cfg_MPM
     mtTE        = cfg_entry;
     mtTE.tag     = 'mtTE';
     mtTE.name    = 'mtTE';
-    mtTE.help    = {'mt echo times '};
+    mtTE.help    = {'Mt echo times. Please insert a value for each mtFile. If not specified, the program will try to read it from the .nii file. '};
     mtTE.strtype = 'e';
-    mtTE.num     = [1 Inf];
-    mtTE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
+    mtTE.num     = [0 Inf];
+   % mtTE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
+    mtTE.val    = {[]};
 % ---------------------------------------------------------------------
 % pdTE 
 % ---------------------------------------------------------------------
     pdTE        = cfg_entry;
     pdTE.tag     = 'pdTE';
     pdTE.name    = 'pdTE';
-    pdTE.help    = {'proton density echo times '};
+    pdTE.help    = {'Proton density echo times.Please insert a value for each pdFile. If not specified, the program will try to read it from the .nii file. '};
     pdTE.strtype = 'e';
-    pdTE.num     = [1 Inf];
-    pdTE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
+    pdTE.num     = [0 Inf];
+    % pdTE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
+    pdTE.val    = {[]};
 % ---------------------------------------------------------------------
 % t1FA 
 % ---------------------------------------------------------------------
     t1FA        = cfg_entry;
     t1FA.tag     = 't1FA';
     t1FA.name    = 't1FA';
-    t1FA.help    = {'relaxation times flip angle '};
+    t1FA.help    = {'Relaxation times flip angle. Please insert a value for each t1File. If not specified, the program will try to read it from the .nii file. '};
     t1FA.strtype = 'e';
-    t1FA.num     = [1 Inf];
-    t1FA.val    = {[27, 27, 27, 27, 27, 27]};
+    t1FA.num     = [0 Inf];
+   % t1FA.val    = {[27, 27, 27, 27, 27, 27]};
+    t1FA.val    = {[]};
     
 % ---------------------------------------------------------------------
 % mtFA 
@@ -205,20 +228,22 @@ function MPM = tbx_cfg_MPM
     mtFA        = cfg_entry;
     mtFA.tag     = 'mtFA';
     mtFA.name    = 'mtFA';
-    mtFA.help    = {'mt flip angle '};
+    mtFA.help    = {'Mt flip angle. Please insert a value for each mtFile. If not specified, the program will try to read it from the .nii file. '};
     mtFA.strtype = 'e';
-    mtFA.num     = [1 Inf];
-    mtFA.val    = {[5,5,5,5,5,5]};
+    mtFA.num     = [0 Inf];
+   % mtFA.val    = {[5,5,5,5,5,5]};
+    mtFA.val    = {[]};
 % ---------------------------------------------------------------------
 % pdFA 
 % ---------------------------------------------------------------------
     pdFA        = cfg_entry;
     pdFA.tag     = 'pdFA';
     pdFA.name    = 'pdFA';
-    pdFA.help    = {'proton density  flip angle '};
+    pdFA.help    = {'Proton density flip angle. Please insert a value for each pdFile. If not specified, the program will try to read it from the .nii file. '};
     pdFA.strtype = 'e';
-    pdFA.num     = [1 Inf];
-    pdFA.val    = {[5,5,5,5,5,5]};
+    pdFA.num     = [0 Inf];
+   % pdFA.val    = {[5,5,5,5,5,5]};
+    pdFA.val    = {[]};
         
         
 
@@ -243,7 +268,7 @@ function MPM = tbx_cfg_MPM
     MPM         = cfg_exbranch;
     MPM.tag     = 'MPM';
     MPM.name    = 'MPM';
-    MPM.val     = {t1Files mtFiles pdFiles sdim tr2 height kstar ...
+    MPM.val     = {t1Files mtFiles pdFiles sdim tr2 height kstar lambda ...
                    maskFile b1File t1TR mtTR pdTR ...
                    t1TE mtTE pdTE t1FA mtFA pdFA};
     MPM.help    = {'This toolbox implements multi parameter mapping for SPM.'}';
@@ -254,7 +279,7 @@ function [] = spm_local_mpm(job)
 
     
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
-   
+    
     mpmESTATICS(job);
     
 end

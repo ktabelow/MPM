@@ -69,8 +69,10 @@ function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,mask
   dataset.zEnd = zEnd;
   
   if isempty(sdim)
-      error('need spatial dimensionality of the data'); 
+      error('need spatial dimensionality of the data');    
   end
+  
+  
   if ~isnumeric(sdim)|| length(sdim)~=3
        error('need exactly 3 numbers for spatial dimension'); 
   end
@@ -88,15 +90,15 @@ function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,mask
   
   if isempty(mtFiles) || (length(mtFiles)==1 && strcmp(mtFiles{1},''))
       dataset.nv = 3;
-      warning('No MT files');
+      fprintf('Model without MT files');
   else
       dataset.nv = 4;
       dataset.mtFiles = mtFiles;
   end
   
   dataset.maskFile = maskFile;  
-  if isempty(maskFile)
-      dataset.mask=ones(sdim);
+  if isempty(maskFile) || (length(maskFile)==1 && strcmp(maskFile{1},''))
+      dataset.mask=ones([sdim(1) sdim(2) zEnd-zStart+1]);
   else 
       slices=zStart:zEnd; %1:sdim(3);
       %[mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
@@ -109,17 +111,46 @@ function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,mask
   
   dataset.nFiles = length(t1Files)+ length(pdFiles) + length(mtFiles);
   
-  if length(t1FA)~=length(t1Files) || length(t1TR)~=length(t1Files) || length(t1TE)~=length(t1Files)
-     error('one of the T1 parameter is wrongly dimensioned');
+  if isempty(t1FA) || length(t1FA)~=length(t1Files) 
+     t1FA = getParameter(t1Files,'FA');
   end
   
-  if length(pdFA)~=length(pdFiles) || length(pdTR)~=length(pdFiles) || length(pdTE)~=length(pdFiles)
-     error('one of the PD parameter is wrongly dimensioned');
+  if isempty(t1TR) || length(t1TR)~=length(t1Files) 
+       t1TR = getParameter(t1Files,'TR');
   end
   
-  if dataset.nv==4 && (length(mtFA)~=length(mtFiles) || length(mtTR)~=length(mtFiles) || length(mtTE)~=length(mtFiles))
-     error('one of the MT parameter is wrongly dimensioned');
+  if isempty(t1TE) ||length(t1TE)~=length(t1Files)
+       t1TE = getParameter(t1Files,'TE');
   end
+  
+  
+  if isempty(pdFA) || length(pdFA)~=length(pdFiles) 
+     pdFA = getParameter(pdFiles,'FA');
+  end
+  
+  if isempty(pdTR) || length(pdTR)~=length(pdFiles) 
+       pdTR = getParameter(pdFiles,'TR');
+  end
+  
+  if isempty(pdTE) ||length(pdTE)~=length(pdFiles)
+       pdTE = getParameter(pdFiles,'TE');
+  end
+  
+  if dataset.nv==4
+    if isempty(mtFA) || length(mtFA)~=length(mtFiles) 
+     mtFA = getParameter(mtFiles,'FA');
+    end
+  
+    if isempty(mtTR) || length(mtTR)~=length(mtFiles) 
+       mtTR = getParameter(mtFiles,'TR');
+    end
+  
+    if isempty(mtTE) ||length(mtTE)~=length(mtFiles)
+       mtTE = getParameter(mtFiles,'TE');
+    end
+  end
+  
+  
   
   if dataset.nv==4
       dataset.FA = [t1FA(:); mtFA(:); pdFA(:)];
