@@ -75,6 +75,7 @@ end;
 if verbose,
     fprintf('verbose = %d \n ', verbose );
     fprintf('kstar = %d \n', kstar );
+    fprintf('lambda = %d \n', lambda );
     fprintf('alpha = %f \n', alpha );
     
 end

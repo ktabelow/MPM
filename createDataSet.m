@@ -113,40 +113,67 @@ function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,mask
   
   if isempty(t1FA) || length(t1FA)~=length(t1Files) 
      t1FA = getParameter(t1Files,'FA');
+     if length(t1FA)~=length(t1Files), 
+         error('There was an error reading the FA values from the the t1Files. Insert it correctly in the batch file!'); 
+     end
   end
   
   if isempty(t1TR) || length(t1TR)~=length(t1Files) 
-       t1TR = getParameter(t1Files,'TR');
+     t1TR = getParameter(t1Files,'TR');
+     if length(t1TR)~=length(t1Files), 
+         error('There was an error reading the TR values from the the t1Files. Insert it correctly in the batch file!'); 
+     end
   end
   
   if isempty(t1TE) ||length(t1TE)~=length(t1Files)
        t1TE = getParameter(t1Files,'TE');
+       if length(t1TE)~=length(t1Files), 
+         error('There was an error reading the TE values from the the t1Files. Insert it correctly in the batch file!'); 
+       end
   end
   
   
   if isempty(pdFA) || length(pdFA)~=length(pdFiles) 
      pdFA = getParameter(pdFiles,'FA');
+     if length(pdFA)~=length(pdFiles), 
+         error('There was an error reading the FA values from the the pdFiles. Insert it correctly in the batch file!'); 
+     end
   end
   
   if isempty(pdTR) || length(pdTR)~=length(pdFiles) 
-       pdTR = getParameter(pdFiles,'TR');
+     pdTR = getParameter(pdFiles,'TR');
+      if length(pdTR)~=length(pdFiles), 
+         error('There was an error reading the TR values from the the pdFiles. Insert it correctly in the batch file!'); 
+     end
   end
   
   if isempty(pdTE) ||length(pdTE)~=length(pdFiles)
-       pdTE = getParameter(pdFiles,'TE');
+     pdTE = getParameter(pdFiles,'TE');
+     if length(pdTE)~=length(pdFiles), 
+         error('There was an error reading the TE values from the the pdFiles. Insert it correctly in the batch file!'); 
+     end
   end
   
   if dataset.nv==4
     if isempty(mtFA) || length(mtFA)~=length(mtFiles) 
      mtFA = getParameter(mtFiles,'FA');
+     if length(mtFA)~=length(mtFiles), 
+         error('There was an error reading the FA values from the the mtFiles. Insert it correctly in the batch file!'); 
+     end
     end
   
     if isempty(mtTR) || length(mtTR)~=length(mtFiles) 
        mtTR = getParameter(mtFiles,'TR');
+       if length(mtTR)~=length(mtFiles), 
+         error('There was an error reading the TR values from the the mtFiles. Insert it correctly in the batch file!'); 
+       end
     end
   
     if isempty(mtTE) ||length(mtTE)~=length(mtFiles)
        mtTE = getParameter(mtFiles,'TE');
+       if length(mtTE)~=length(mtFiles), 
+         error('There was an error reading the TE values from the the mtFiles. Insert it correctly in the batch file!'); 
+       end
     end
   end
   

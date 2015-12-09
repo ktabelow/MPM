@@ -118,6 +118,9 @@ clear enum denom COSalphapd SINalphapd;
 
 R1 = -log(E1)/t1TR;
 
+R1(imag(R1)>0)=nan; %
+R1 = real(R1);
+
 if verbose, fprintf('done\n'); end
 
 
@@ -146,6 +149,8 @@ denom = reshape(model.modelCoeff(2,:,:,:),[model.sdim(1) model.sdim(2) (model.zE
 
 delta = 1 - enum./denom;
 clear alphamt enum denom
+delta(imag(delta)>0)=nan; %
+delta = real(delta);
 else
     delta = [];
 end

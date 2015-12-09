@@ -37,7 +37,7 @@
 
 function [] = mpmESTATICS(job)
 
- %% works on the all cubus, levels by levels
+ %% works on the all volume, level by level
     
     % calculates how big the overlapping has to be
     % to assure a good smoothing    
