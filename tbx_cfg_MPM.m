@@ -24,8 +24,8 @@ function MPM = tbx_cfg_MPM
     mtFiles.help    = {'Select the MT files.'};
     mtFiles.filter  = 'image';
     mtFiles.ufilter = '.*';
-    mtFiles.num     = [0 Inf];
-    mtFiles.val     = {[]};
+    mtFiles.num     = [1 Inf];
+%    mtFiles.val     = {[]};
     
 % --------------------------------------------------------------------
 % spm_file pdFiles
@@ -96,6 +96,17 @@ function MPM = tbx_cfg_MPM
     lambda.num     = [0 Inf];
     lambda.val    = {[]};
     
+% ---------------------------------------------------------------------
+% precision for the estatics algorithm
+% ---------------------------------------------------------------------
+    tol        = cfg_entry;
+    tol.tag     = 'tol';
+    tol.name    = 'tol';
+    tol.help    = {'Tolerance level to stop the convergence in the ESTATIC algorithm optimisation. A smaller value will deliver better results, but will take longer. On the contrary a value too big will produce artifacts. We advise to leave the default value and repeat with a smaller value, in case of stripes in the output.'};
+    tol.strtype = 'e';
+    tol.num     = [1 1];
+    tol.val    = {1e-5};
+   
 % ---------------------------------------------------------------------
 % zStart especially for workstation
 % ---------------------------------------------------------------------
@@ -245,34 +256,48 @@ function MPM = tbx_cfg_MPM
    % pdFA.val    = {[5,5,5,5,5,5]};
     pdFA.val    = {[]};
         
-        
+% ---------------------------------------------------------------------        
+% branch with MT files
+% ---------------------------------------------------------------------
+     MT_branch         = cfg_exbranch;
+     MT_branch.tag     = 'MT_branch';
+     MT_branch.name    = 'Model with t1, pd and mt files';
+     MT_branch.val     = {t1Files mtFiles pdFiles sdim tr2 height kstar lambda ...
+                          tol maskFile b1File t1TR mtTR pdTR ...
+                          t1TE mtTE pdTE t1FA mtFA pdFA};
+     MT_branch.help    = {'This toolbox implements multi parameter mapping for a dataset with T1,PD and MT files.'}';
+     MT_branch.prog    = @spm_local_mpm;
+     
+% ---------------------------------------------------------------------        
+% branch without MT files
+% ---------------------------------------------------------------------
+     withoutMT_branch         = cfg_exbranch;
+     withoutMT_branch.tag     = 'withoutMT_branch';
+     withoutMT_branch.name    = 'Model without mt files';
+     withoutMT_branch.val     = {t1Files pdFiles sdim tr2 height kstar lambda ...
+                                tol maskFile b1File t1TR mtTR pdTR ...
+                                t1TE mtTE pdTE t1FA mtFA pdFA};
+     withoutMT_branch.help    = {'This toolbox implements multi parameter mapping for a dataset with T1,PD and MT files.'}';
+     withoutMT_branch.prog    = @spm_local_mpm2;
 
 % ---------------------------------------------------------------------
-% fwhm Bias FWHM
+%   MPM toolbox
 % ---------------------------------------------------------------------
-%     kernel       = cfg_menu;
-%     kernel.tag     = 'kernel';
-%     kernel.name    = 'Location kernel';
-%     kernel.help    = {'Choice of location kernel'};
-%     kernel.val     = {2};
-%     kernel.labels = {'Uniform'
-%                      'Epanechnikov'
-%                      'Biweight'
-%                      'Triweight'               
-%                      'Gauss'}';
-%     kernel.values = {0 1 2 3 4};
-
-% ---------------------------------------------------------------------
-% 
-% ---------------------------------------------------------------------
-    MPM         = cfg_exbranch;
+    MPM         = cfg_choice;
     MPM.tag     = 'MPM';
-    MPM.name    = 'MPM';
-    MPM.val     = {t1Files mtFiles pdFiles sdim tr2 height kstar lambda ...
-                   maskFile b1File t1TR mtTR pdTR ...
-                   t1TE mtTE pdTE t1FA mtFA pdFA};
+    MPM.name    = 'MPM Multi-parameter Mapping';
+    MPM.values     = {MT_branch withoutMT_branch};
     MPM.help    = {'This toolbox implements multi parameter mapping for SPM.'}';
-    MPM.prog    = @spm_local_mpm;
+%    MPM.prog    = @spm_local_mpm;
+
+%     MPM         = cfg_exbranch;
+%     MPM.tag     = 'MPM';
+%     MPM.name    = 'MPM';
+%     MPM.val     = {t1Files mtFiles pdFiles sdim tr2 height kstar lambda ...
+%                    tol maskFile b1File t1TR mtTR pdTR ...
+%                    t1TE mtTE pdTE t1FA mtFA pdFA};
+%     MPM.help    = {'This toolbox implements multi parameter mapping for SPM.'}';
+% %     MPM.prog    = @spm_local_mpm;
 
 %======================================================================
 function [] = spm_local_mpm(job)
@@ -284,7 +309,14 @@ function [] = spm_local_mpm(job)
     
 end
 
+function [] = spm_local_mpm2(job)
 
+    
+    if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
+    job.mtFiles = [];
+    mpmESTATICS(job);
+    
+end
 
 
 

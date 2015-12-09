@@ -14,21 +14,22 @@
 %
 % 
 %
-% function [res] = estimate(i, maski, sdim, dir,t1Files,pdFiles,mtFiles,TE, TEScale, DataScale)
+% function [res] = estimate(i, tolerance, maski, sdim, dir,t1Files,pdFiles,mtFiles,TE, TEScale, DataScale)
 % 
 % estimate the 4 3D parameters of the ESTATICSmodel
 %
 % Input:
 %
-%  i       - the slice on which the estimation is done
-%  maski   - submask of the level i
-%  sdim    - dimension
-%  dir     - string with the name of the folder containing the files
-%  t1Files -
-%  pdFiles - input files
-%  mtFile  -
-%  TE      - echo times vector
-%  TEScale - scaling factor for TE
+%  i         - the slice on which the estimation is done
+%  tolerance - to stop the GaussNewton algorithm
+%  maski     - submask of the level i
+%  sdim      - dimension
+%  dir       - string with the name of the folder containing the files
+%  t1Files   -
+%  pdFiles   - input files
+%  mtFile    -
+%  TE        - echo times vector
+%  TEScale   - scaling factor for TE
 %  DataScale - scaling factor for data
 %
 %
@@ -49,7 +50,7 @@
 %
 % =========================================================================
 
-function [res] = estimate(i, maski,sdim, t1Files,mtFiles,pdFiles,TE, TEScale, DataScale)
+function [res] = estimate(i, tolerance, maski,sdim, t1Files,mtFiles,pdFiles,TE, TEScale, DataScale)
 
 if ~isempty(mtFiles)
     nv = 4;
@@ -109,7 +110,7 @@ end
         m0big = kron(ones(size(T1t,2),1),m0); 
         lower = zeros(size(m0big));
         % mi1 = GaussNewton(fctn,m0big); % old gauss without constraints
-        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',1e-5,'tolG',1e-4,'tolU',1e-4,'lower',lower,'maxIter',10);
+        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',tolerance,'tolG',tolerance,'tolU',tolerance,'lower',lower,'maxIter',10);
         
 
         %maski = reshape(maski,numel(maski),[]);
@@ -154,7 +155,7 @@ end
         m0big = kron(ones(size(T1t,2),1),m0); 
         lower = zeros(size(m0big));
         % mi1 = GaussNewton(fctn,m0big);
-        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',1e-5,'tolG',1e-4,'tolU',1e-4,'lower',lower,'maxIter',10);
+        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',tolerance,'tolG',tolerance,'tolU',tolerance,'lower',lower,'maxIter',10);
 
         %maski = reshape(maski,numel(maski),[]);
         %maskbig = repelem(maski,4);

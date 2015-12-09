@@ -90,7 +90,7 @@ function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,mask
   
   if isempty(mtFiles) || (length(mtFiles)==1 && strcmp(mtFiles{1},''))
       dataset.nv = 3;
-      fprintf('Model without MT files');
+      %fprintf('Model without MT files');
   else
       dataset.nv = 4;
       dataset.mtFiles = mtFiles;

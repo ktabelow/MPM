@@ -42,7 +42,8 @@
 %
 %  TEScale   - factor to scale the echo times, default: 100
 %  dataScale - factor to scale the data, default: 1000
-%  verbose - additional information, default: true
+%  verbose   - additional information, default: true
+%  tolerance - to stop the GaussNewton algorithm
 %
 % Output:
 %
@@ -80,6 +81,7 @@ end
 TEScale = 100;
 DataScale = 1000;
 verbose = true;
+tolerance = 1e-5;
 
 %% overwrites default parameters, if present
 
@@ -89,9 +91,8 @@ end;
 %% a little information
 
 if verbose,
-    fprintf('verbose = %d \n ', verbose );
-    fprintf('TEScale = %d \n', TEScale );
-    fprintf('DataScale = %f \n', DataScale );
+    fprintf('verbose = %d \n ', verbose );    
+    fprintf('tolerance = %f \n', DataScale );
     fprintf('zStart = %d \n', dataset.zStart );
     fprintf('zEnd = %f \n', dataset.zEnd );
 end
@@ -131,7 +132,7 @@ for k=1:(zEnd-zStart+1) %1:sdim(3)
     
     i= zStart+k-1;
     maski = dataset.mask(:,:,k);
-  res=estimate(i,maski,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
+  res=estimate(i,tolerance,maski,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
 %  res=estimate(i,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
   coeff(:,k)=res.coeff;  
   invCov{k}=res.invCov;

@@ -95,7 +95,7 @@ function [] = mpmESTATICS(job)
         
         % estimate from all the data 4 parameter 
         % function [model] = estimateESTATICS(dataset, varargin)
-        modelMPM3 = estimateESTATICS(dataset,'verbose', false);
+        modelMPM3 = estimateESTATICS(dataset,'verbose', false, 'tolerance', job.tol);
         
         % smooth and calculate the final four parameters with the functions
         % function [modelS] = smoothESTATICSmask(model, varargin)
