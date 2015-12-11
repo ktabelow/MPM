@@ -73,10 +73,9 @@ end;
 %% a little information
 
 if verbose,
-    fprintf('verbose = %d \n ', verbose );
-    fprintf('kstar = %d \n', kstar );
-    fprintf('lambda = %d \n', lambda );
-    fprintf('alpha = %f \n', alpha );
+    fprintf('   verbose = %d \n', verbose );
+    fprintf('   kstar = %d \n', kstar );
+    fprintf('   alpha = %f \n', alpha );
     
 end
 %% setting parameters
@@ -91,6 +90,10 @@ nv = model.nv;
 % determine a suitable adaptation bandwidth, if not specified
 if isempty(lambda)
   lambda = nv*finv(1-alpha, nv, model.nFiles - nv);
+end
+
+if verbose,
+    fprintf('   lambda = %f \n', lambda );
 end
 
 % adjust for non-isotropic voxel if necessary
@@ -149,7 +152,7 @@ mccores= cast(str2double(getenv('OMP_NUM_THREADS')),'int32');
 hmax = 1.25^(kstar/3);
 
 if verbose,
-    fprintf('Starting the smoothing process ...\n\n');
+    fprintf('Starting the smoothing process ...\n');
     msg = sprintf('Percent done: 0.0');
     fprintf(msg);
     protocol=cell(1,kstar);

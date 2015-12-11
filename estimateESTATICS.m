@@ -91,10 +91,10 @@ end;
 %% a little information
 
 if verbose,
-    fprintf('verbose = %d \n ', verbose );    
-    fprintf('tolerance = %f \n', DataScale );
-    fprintf('zStart = %d \n', dataset.zStart );
-    fprintf('zEnd = %f \n', dataset.zEnd );
+    fprintf('   verbose = %d \n', verbose );    
+    fprintf('   tolerance = %f \n', tolerance );
+    fprintf('   zStart = %d \n', dataset.zStart );
+    fprintf('   zEnd = %d \n', dataset.zEnd );
 end
 
 %% getting parameters from dataset
