@@ -71,6 +71,11 @@ delta = zeros(sdim);
 % prepares variable to save the whole mask
 totalmask = zeros(sdim);
 
+% prepare to save the whole invCov directly in the file
+invCov=zeros([4 4 sdim]);
+save('test.mat','invCov','-v7.3')
+m = matfile('test.mat','Writable',true);
+clear invCov;
 
 % start iteration on all the levels
 for startLayerVoxel = 1:interval:sdim(3),
@@ -112,12 +117,18 @@ R2star(:,:,zStart:zEnd) = qiSnew.R2star;
 PD(:,:,zStart:zEnd) = qiSnew.PD;
 delta(:,:,zStart:zEnd) = qiSnew.delta;
 totalmask(:,:,zStart:zEnd) = qiSnew.model.mask;
+
+m.invCov(:,:,:,:,zStart:zEnd)=modelMPM3.invCov;
+
 else 
     R1(:,:,zStart+hdelta:zEnd) = qiSnew.R1(:,:, 1+hdelta: (zEnd-zStart+1) );
 R2star(:,:,zStart+hdelta:zEnd) = qiSnew.R2star(:,:, 1+hdelta: (zEnd-zStart+1) );
 PD(:,:,zStart+hdelta:zEnd) = qiSnew.PD(:,:, 1+hdelta: (zEnd-zStart+1) );
 delta(:,:,zStart+hdelta:zEnd) = qiSnew.delta(:,:, 1+hdelta: (zEnd-zStart+1) );
 totalmask(:,:,zStart+hdelta:zEnd) = qiSnew.model.mask(:,:, 1+hdelta: (zEnd-zStart+1) );
+
+m.invCov(:,:,:,:,zStart+hdelta:zEnd)=modelMPM3.invCov(:,:,:,:,1+hdelta: (zEnd-zStart+1) );
+
 end
 if zEnd==sdim(3),
     break;

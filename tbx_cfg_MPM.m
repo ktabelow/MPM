@@ -56,7 +56,7 @@ function MPM = tbx_cfg_MPM
 % ---------------------------------------------------------------------
     tr2        = cfg_entry;
     tr2.tag     = 'tr2';
-    tr2.name    = 'tr2';
+    tr2.name    = 'TR2';
     tr2.help    = {'TR2>0 for the MT acquisition'};
     tr2.strtype = 'e';
     tr2.num     = [1 1];
@@ -80,7 +80,7 @@ function MPM = tbx_cfg_MPM
     kstar        = cfg_entry;
     kstar.tag     = 'kstar';
     kstar.name    = 'kstar';
-    kstar.help    = {'Number of iteration of the smoothing algorithm'};
+    kstar.help    = {'Number of iteration of the smoothing algorithm. If 0 no smoothing will be performed.'};
     kstar.strtype = 'e';
     kstar.num     = [1 1];
     kstar.val    = {16};
@@ -152,6 +152,20 @@ function MPM = tbx_cfg_MPM
     b1File.num     = [0 1];
     b1File.val     = {[]};
     
+% ---------------------------------------------------------------------
+% save ESTATICS modell - if it is on, the ESTATICS model parameter and
+% relevant data are written
+% ---------------------------------------------------------------------
+saveESTATICS   = cfg_menu;
+saveESTATICS.tag     = 'saveESTATICS';
+saveESTATICS.name    = 'Save the ESTATICS model?';
+saveESTATICS.help    = {'This option enables to save the ESTATICS model. If activated, it will save a model.mat file with all the necessary information about the ESTATICS model and a set of .nii files with the parameters produced by the model. Activating this option will slow down the process and requires the user to have enough free memory to save the files (up to a few GB). Once the model is saved, it can be used in the toolbox branch "Use an existing ESTATICS model" to repeat the smoothing algorithm with other kstar and lambda values.'};
+saveESTATICS.labels = {
+               'No'
+               'Yes'
+}';
+saveESTATICS.values = {0 1};
+saveESTATICS.val    = {0};
 % ---------------------------------------------------------------------
 % t1TR 
 % ---------------------------------------------------------------------
@@ -256,16 +270,29 @@ function MPM = tbx_cfg_MPM
    % pdFA.val    = {[5,5,5,5,5,5]};
     pdFA.val    = {[]};
         
+    
+% --------------------------------------------------------------------
+% .mat file containing an ESTATIC model
+% ---------------------------------------------------------------------
+    ESTAmodel         = cfg_files;
+    ESTAmodel.tag     = 'ESTAmodel';
+    ESTAmodel.name    = 'ESTATICS model';
+    ESTAmodel.help    = {'Select the .mat file containing the ESTATICS model produced by the mpm toolbox.'};
+    ESTAmodel.filter  = '.mat';
+    ESTAmodel.ufilter = '.*';
+    ESTAmodel.num     = [1 1];
+    %ESTAmodel.val     = {[]};
+    
 % ---------------------------------------------------------------------        
 % branch with MT files
 % ---------------------------------------------------------------------
      MT_branch         = cfg_exbranch;
      MT_branch.tag     = 'MT_branch';
      MT_branch.name    = 'Model with t1, pd and mt files';
-     MT_branch.val     = {t1Files mtFiles pdFiles sdim tr2 height kstar lambda ...
-                          tol maskFile b1File t1TR mtTR pdTR ...
+     MT_branch.val     = {t1Files mtFiles pdFiles sdim maskFile tr2 height kstar lambda ...
+                          tol b1File saveESTATICS t1TR mtTR pdTR ...
                           t1TE mtTE pdTE t1FA mtFA pdFA};
-     MT_branch.help    = {'This toolbox implements multi parameter mapping for a dataset with T1,PD and MT files.'}';
+     MT_branch.help    = {'This branch implements multi parameter mapping for a dataset with T1,PD and MT files.'}';
      MT_branch.prog    = @spm_local_mpm;
      
 % ---------------------------------------------------------------------        
@@ -274,11 +301,21 @@ function MPM = tbx_cfg_MPM
      withoutMT_branch         = cfg_exbranch;
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without mt files';
-     withoutMT_branch.val     = {t1Files pdFiles sdim tr2 height kstar lambda ...
-                                tol maskFile b1File t1TR mtTR pdTR ...
-                                t1TE mtTE pdTE t1FA mtFA pdFA};
-     withoutMT_branch.help    = {'This toolbox implements multi parameter mapping for a dataset with T1,PD and MT files.'}';
-     withoutMT_branch.prog    = @spm_local_mpm2;
+     withoutMT_branch.val     = {t1Files pdFiles sdim maskFile tr2 height kstar lambda ...
+                                tol b1File saveESTATICS t1TR pdTR ... 
+                                t1TE pdTE t1FA pdFA}; 
+     withoutMT_branch.help    = {'This branch implements multi parameter mapping for a dataset without MT files.'}';
+     withoutMT_branch.prog    = @spm_local_mpm_noMT;
+
+% ---------------------------------------------------------------------        
+% branch using an existing ESTATICS model
+% ---------------------------------------------------------------------
+     ESTAmodel_branch         = cfg_exbranch;
+     ESTAmodel_branch.tag     = 'ESTAmodel_branch';
+     ESTAmodel_branch.name    = 'Use an existing ESTATICS model';
+     ESTAmodel_branch.val     = {ESTAmodel height kstar lambda b1File tr2};
+     ESTAmodel_branch.help    = {'This branch implements the smoothing and final calculation step of the mpm method given an existing ESTATICS model.'}';
+     ESTAmodel_branch.prog    = @spm_local_mpm_givenESTATICS;
 
 % ---------------------------------------------------------------------
 %   MPM toolbox
@@ -286,7 +323,7 @@ function MPM = tbx_cfg_MPM
     MPM         = cfg_choice;
     MPM.tag     = 'MPM';
     MPM.name    = 'MPM Multi-parameter Mapping';
-    MPM.values     = {MT_branch withoutMT_branch};
+    MPM.values     = {MT_branch withoutMT_branch ESTAmodel_branch};
     MPM.help    = {'This toolbox implements multi parameter mapping for SPM.'}';
 %    MPM.prog    = @spm_local_mpm;
 
@@ -309,16 +346,26 @@ function [] = spm_local_mpm(job)
     
 end
 
-function [] = spm_local_mpm2(job)
+function [] = spm_local_mpm_noMT(job)
 
     
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
     job.mtFiles = [];
+    job.mtTR = [];
+    job.mtTE = [];
+    job.mtFA = [];
     mpmESTATICS(job);
     
 end
 
+function [] = spm_local_mpm_givenESTATICS(job)
 
+    
+    if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
+    
+    mpm_givenESTATICS(job);
+    
+end
 
 end
 

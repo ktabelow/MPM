@@ -5,7 +5,7 @@
 %
 % 
 %
-% [dataset] = createDataSet(sdim,zStart,zEnd, dir,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA);
+% [dataset] = createDataSet(sdim,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA);
 % 
 % validate and use the inputs to assembly the necessary struct 
 % to apply the ESTATICSmodel
@@ -13,8 +13,6 @@
 % Input:
 %
 %  sdim     - a vector containing the 3 dimensions of the cubus
-%  zStart   - start value on the z axis of the interest volume
-%  zEnd     - end value on the z axis of the interest volume
 %  t1Files  - a string cell array with the names of the T1 images files
 %  pdFiles  - a string cell array with the names of the PD images files
 %  mtFiles  - a string cell array with the names of the MT images files 
@@ -44,8 +42,6 @@
 %  dataset  - a struct that contains:
 %
 %  sdim     - a vector containing the 3 dimensions of the cubus
-%  zStart   - start value on the z axis of the interest volume
-%  zEnd     - end value on the z axis of the interest volume
 %  t1Files  - a string cell array with the names of the T1 images files
 %  pdFiles  - a string cell array with the names of the PD images files
 %  mtFiles  - a string cell array with the names of the MT images files 
@@ -63,10 +59,8 @@
 %
 % =========================================================================
 
-function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA)
+function [dataset] = createDataSet(sdim,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA)
   %dataset.dir = dir;
-  dataset.zStart = zStart;
-  dataset.zEnd = zEnd;
   
   if isempty(sdim)
       error('need spatial dimensionality of the data');    
@@ -97,17 +91,17 @@ function [dataset] = createDataSet(sdim,zStart,zEnd,t1Files,pdFiles,mtFiles,mask
   end
   
   dataset.maskFile = maskFile;  
-  if isempty(maskFile) || (length(maskFile)==1 && strcmp(maskFile{1},''))
-      dataset.mask=ones([sdim(1) sdim(2) zEnd-zStart+1]);
-  else 
-      slices=zStart:zEnd; %1:sdim(3);
-      %[mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
-      [mask(:,:,:),~] = loadImageSPM(fullfile(maskFile) ,'slices',slices);
-      mask = round(mask(:));
-      mask = reshape (mask, [sdim(1) sdim(2) zEnd-zStart+1]);
-      dataset.mask=mask;
-      clear mask;
-  end
+  % if isempty(maskFile) || (length(maskFile)==1 && strcmp(maskFile{1},''))
+  %    dataset.mask=ones([sdim(1) sdim(2) zEnd-zStart+1]);
+  %else 
+  %    slices=zStart:zEnd; %1:sdim(3);
+  %    %[mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
+  %    [mask(:,:,:),~] = loadImageSPM(fullfile(maskFile) ,'slices',slices);
+  %    mask = round(mask(:));
+  %    mask = reshape (mask, [sdim(1) sdim(2) zEnd-zStart+1]);
+  %    dataset.mask=mask;
+  %    clear mask;
+  %end
   
   dataset.nFiles = length(t1Files)+ length(pdFiles) + length(mtFiles);
   
