@@ -178,10 +178,10 @@ function [] = mpm_givenESTATICS(job)
         % function [qi] = calculateQI(model, varargin)
         % (if kstar is 0, the smoothing step isn't done)
         if job.kstar~=0, 
-            modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', true, 'wghts', wghts, 'lambda',job.lambda); 
+            modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'lambda',job.lambda); 
             qiSnew = calculateQI(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
         else
-            qiSnew = calculateQI(modelMPM, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', true);
+            qiSnew = calculateQI(modelMPM, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
         end
         
         

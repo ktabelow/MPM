@@ -234,7 +234,7 @@ function [] = mpmESTATICS(job)
         
         %% estimate from all the data the 4or3 parameter 
         % function [model] = estimateESTATICS(dataset, varargin)
-        modelMPM = estimateESTATICS(dataset,'verbose', true, 'tolerance', job.tol);
+        modelMPM = estimateESTATICS(dataset,'verbose', false, 'tolerance', job.tol);
         
         %% save .nii file with the 4or3 parameters and DataScale and TEScale in the .mat
         if job.saveESTA==1,        
