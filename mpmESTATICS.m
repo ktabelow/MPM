@@ -56,7 +56,7 @@ function [] = mpmESTATICS(job)
     hdelta = ceil(hakt); % height of half of the overlapping
     
     % check for the input height and adjust it if too big or too small
-    if job.height>job.sdim(3),
+    if abs(job.height)>job.sdim(3),
         job.height = job.sdim(3);
     elseif job.height<0,
         job.height = abs(job.height);
@@ -154,6 +154,12 @@ function [] = mpmESTATICS(job)
                 for i=1:dataset.sdim(3),
                 Ni4.dat(:,:,i) = zeroValues(:,:,i);
                 end
+        % add the name of the file to the .mat file
+        if dataset.nv==4,
+            meta.modelCoeff = {wV1.fname, wV2.fname, wV3.fname, wV4.fname};
+        else
+            meta.modelCoeff = {wV1.fname, wV2.fname, wV4.fname};
+        end
         
         catch ME
             fprintf(ME.message);
@@ -230,10 +236,11 @@ function [] = mpmESTATICS(job)
         % function [model] = estimateESTATICS(dataset, varargin)
         modelMPM = estimateESTATICS(dataset,'verbose', true, 'tolerance', job.tol);
         
-        %% save .nii file with the 4or3 parameters
+        %% save .nii file with the 4or3 parameters and DataScale and TEScale in the .mat
         if job.saveESTA==1,        
          try
-          % still to do: saving .nii incrementally
+           meta.TEScale = modelMPM.TEScale;
+           meta.DataScale = modelMPM.DataScale;
           if zStart==1,
               Ni1.dat(:,:,1:zEnd) = reshape(modelMPM.modelCoeff(1,:,:,:),[job.sdim(1), job.sdim(2), zEnd]);
               Ni2.dat(:,:,1:zEnd) = reshape(modelMPM.modelCoeff(2,:,:,:),[job.sdim(1), job.sdim(2), zEnd]);

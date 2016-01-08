@@ -156,16 +156,16 @@ function MPM = tbx_cfg_MPM
 % save ESTATICS modell - if it is on, the ESTATICS model parameter and
 % relevant data are written
 % ---------------------------------------------------------------------
-saveESTATICS   = cfg_menu;
-saveESTATICS.tag     = 'saveESTATICS';
-saveESTATICS.name    = 'Save the ESTATICS model?';
-saveESTATICS.help    = {'This option enables to save the ESTATICS model. If activated, it will save a model.mat file with all the necessary information about the ESTATICS model and a set of .nii files with the parameters produced by the model. Activating this option will slow down the process and requires the user to have enough free memory to save the files (up to a few GB). Once the model is saved, it can be used in the toolbox branch "Use an existing ESTATICS model" to repeat the smoothing algorithm with other kstar and lambda values.'};
-saveESTATICS.labels = {
+saveESTA   = cfg_menu;
+saveESTA.tag     = 'saveESTA';
+saveESTA.name    = 'Save the ESTATICS model?';
+saveESTA.help    = {'This option enables to save the ESTATICS model. If activated, it will save a model.mat file with all the necessary information about the ESTATICS model and a set of .nii files with the parameters produced by the model. Activating this option will slow down the process and requires the user to have enough free memory to save the files (up to a few GB). Once the model is saved, it can be used in the toolbox branch "Use an existing ESTATICS model" to repeat the smoothing algorithm with other kstar and lambda values.'};
+saveESTA.labels = {
                'No'
                'Yes'
 }';
-saveESTATICS.values = {0 1};
-saveESTATICS.val    = {0};
+saveESTA.values = {0 1};
+saveESTA.val    = {0};
 % ---------------------------------------------------------------------
 % t1TR 
 % ---------------------------------------------------------------------
@@ -290,7 +290,7 @@ saveESTATICS.val    = {0};
      MT_branch.tag     = 'MT_branch';
      MT_branch.name    = 'Model with t1, pd and mt files';
      MT_branch.val     = {t1Files mtFiles pdFiles sdim maskFile tr2 height kstar lambda ...
-                          tol b1File saveESTATICS t1TR mtTR pdTR ...
+                          tol b1File saveESTA t1TR mtTR pdTR ...
                           t1TE mtTE pdTE t1FA mtFA pdFA};
      MT_branch.help    = {'This branch implements multi parameter mapping for a dataset with T1,PD and MT files.'}';
      MT_branch.prog    = @spm_local_mpm;
@@ -302,7 +302,7 @@ saveESTATICS.val    = {0};
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without mt files';
      withoutMT_branch.val     = {t1Files pdFiles sdim maskFile tr2 height kstar lambda ...
-                                tol b1File saveESTATICS t1TR pdTR ... 
+                                tol b1File saveESTA t1TR pdTR ... 
                                 t1TE pdTE t1FA pdFA}; 
      withoutMT_branch.help    = {'This branch implements multi parameter mapping for a dataset without MT files.'}';
      withoutMT_branch.prog    = @spm_local_mpm_noMT;
@@ -354,6 +354,7 @@ function [] = spm_local_mpm_noMT(job)
     job.mtTR = [];
     job.mtTE = [];
     job.mtFA = [];
+    job.saveESTA
     mpmESTATICS(job);
     
 end
