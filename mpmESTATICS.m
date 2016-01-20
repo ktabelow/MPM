@@ -221,14 +221,25 @@ function [] = mpmESTATICS(job)
         %% read the mask between zStart and zEnd
         if isempty(dataset.maskFile) || (length(dataset.maskFile)==1 && strcmp(dataset.maskFile{1},''))
             dataset.mask=ones([dataset.sdim(1) dataset.sdim(2) zEnd-zStart+1]);
+            if zStart==1, fprintf('no mask file - working on all voxels\n'); end
         else 
-            slices=zStart:zEnd; %1:sdim(3);
-            %[mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
-            [mask(:,:,:),~] = loadImageSPM(fullfile(dataset.maskFile) ,'slices',slices);
-            mask = round(mask(:));
-            mask = reshape (mask, [dataset.sdim(1) dataset.sdim(2) zEnd-zStart+1]);
-            dataset.mask=mask;
-            clear mask;
+            if zStart==1,
+                V1 = spm_vol(dataset.maskFile);
+                maskdim=V1.dim;
+            end
+            if dataset.sdim~=maskdim,
+                dataset.mask=ones([dataset.sdim(1) dataset.sdim(2) zEnd-zStart+1]);
+                if zStart==1, fprintf('no correct dimension in mask file - working on all voxels\n'); end
+            else
+                if zStart==1, fprintf('correct mask file\n'); end
+                slices=zStart:zEnd; %1:sdim(3);
+                %[mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
+                [mask(:,:,:),~] = loadImageSPM(fullfile(dataset.maskFile) ,'slices',slices);
+                mask = round(mask(:));
+                mask = reshape (mask, [dataset.sdim(1) dataset.sdim(2) zEnd-zStart+1]);
+                dataset.mask=mask;
+                clear mask;
+            end
         end
         
         
@@ -345,6 +356,9 @@ function [] = mpmESTATICS(job)
     if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')),  write_small_to_file_nii(pwd,'delta_', spm_vol(job.mtFiles{1}), delta, 1, job.sdim(3),  job.sdim); end
     catch
         error('it was not possible to save the resulting .nii files. Check to have writing rights in the current directory')
+    end
+    if job.saveESTA==1,
+        clear invCov;
     end
     fprintf('Ending the MPM at %s \n',datestr(now));
 

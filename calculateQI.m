@@ -74,16 +74,19 @@ if ~isempty(b1File) || (length(b1File)==1 && ~strcmp(b1File{1},'')) % || model.s
    V1 = spm_vol(b1File{1});
    b1dim=V1.dim;
     if model.sdim==b1dim,
-        if verbose, fprintf('reading correction file from %s \n',b1File{1}); end   
+        if model.zStart==1, fprintf('reading correction file from %s \n',b1File{1}); end
+        %if verbose, fprintf('reading correction file from %s \n',b1File{1}); end   
         [b1Map(:,:,:),~] = loadImageSPM(fullfile(b1File{1}),'slices',slices);
         b1Map = b1Map./100; % still to check if is ok
         b1Map(b1Map < 0) = 0;
     else
-        if verbose, fprintf('no correct B1 correction file\n'); end
-    b1Map = ones([model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]);
+        if model.zStart==1, fprintf('no correct B1 correction file - setting all to 1\n'); end
+        %if verbose, fprintf('no correct B1 correction file\n'); end
+        b1Map = ones([model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]);
     end
 else 
-    if verbose, fprintf('no B1 correction\n'); end
+    if model.zStart==1, fprintf('no B1 correction file- setting all to 1\n'); end
+    %if verbose, fprintf('no B1 correction\n'); end
     b1Map = ones([model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]);
 end
 
