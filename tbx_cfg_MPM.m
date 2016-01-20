@@ -354,7 +354,7 @@ function [] = spm_local_mpm_noMT(job)
     job.mtTR = [];
     job.mtTE = [];
     job.mtFA = [];
-    job.saveESTA
+    job.saveESTA;
     mpmESTATICS(job);
     
 end
