@@ -52,7 +52,7 @@ function [] = mpm_givenESTATICS(job)
     
     fprintf('Loading data...\n');
     meta=matfile(char(job.ESTAmodel));
-    coeffFiles = meta.modelCoeff;
+%     coeffFiles = meta.modelCoeff; %
     modelMPM.nv = meta.nv;
     modelMPM.nFiles = meta.nFiles;
     modelMPM.t1Files = meta.t1Files;
@@ -66,9 +66,9 @@ function [] = mpm_givenESTATICS(job)
     modelMPM.TEScale = meta.TEScale;
     modelMPM.DataScale = meta.DataScale;
     
-    Vt1 = spm_vol(modelMPM.t1Files{1});
-    Vpd = spm_vol(modelMPM.pdFiles{1});
-    if modelMPM.nv==4, Vmt = spm_vol(modelMPM.mtFiles{1}); end
+    Vt1 = spm_vol(modelMPM.t1Files{1}); 
+    Vpd = spm_vol(modelMPM.pdFiles{1});  
+    if modelMPM.nv==4, Vmt = spm_vol(modelMPM.mtFiles{1}); end 
    
     sdim = meta.sdim;
     modelMPM.sdim = sdim; 
@@ -127,7 +127,7 @@ function [] = mpm_givenESTATICS(job)
         spm_progress_bar('Set',startLayerVoxel);
         
         zStart = double(startLayerVoxel);        
-
+        fprintf('on level %d \n', zStart);
         if sdim(3)-(startLayerVoxel + job.height)> 2*hdelta,
             % in case the next starting point has enough planes after it
             zEnd = double(startLayerVoxel + job.height); 
@@ -140,34 +140,46 @@ function [] = mpm_givenESTATICS(job)
         modelMPM.zEnd = zEnd;
         
         %% read the mask, model coefficients and invCov between zStart and zEnd
-        if isempty(meta.maskFile) || (length(meta.maskFile)==1 && strcmp(meta.maskFile{1},''))
-            meta.mask=ones([sdim(1) sdim(2) zEnd-zStart+1]);
-        else 
+%         if isempty(meta.maskFile) || (length(meta.maskFile)==1 && strcmp(meta.maskFile{1},''))
+%             meta.mask=ones([sdim(1) sdim(2) zEnd-zStart+1]);
+%         else 
             slices=zStart:zEnd; %1:sdim(3);
             %[mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
-            [mask(:,:,:),~] = loadImageSPM(fullfile(meta.maskFile) ,'slices',slices);
-            mask = round(mask(:));
-            mask = reshape (mask, [sdim(1) sdim(2) zEnd-zStart+1]);
-            modelMPM.mask=mask;
+            if isfield(modelMPM, 'mask'),
+                modelMPM= rmfield(modelMPM,'mask');
+            end
+            mask=meta.mask(:,:,slices);
+            modelMPM.mask = mask;
             clear mask;
+%             [mask(:,:,:),~] = loadImageSPM(fullfile(meta.maskFile) ,'slices',slices);
+%             mask = round(mask(:));
+%             mask = reshape (mask, [sdim(1) sdim(2) zEnd-zStart+1]);
+%             modelMPM.mask=mask;
+%             clear mask;
             if isfield(modelMPM, 'modelCoeff'),
                 modelMPM= rmfield(modelMPM,'modelCoeff');
+            end                  
+            modelCoeff(1,:,:,:) = meta.modelCoeff(1,:,:,slices);
+            modelCoeff(2,:,:,:) = meta.modelCoeff(2,:,:,slices);
+            modelCoeff(3,:,:,:) = meta.modelCoeff(3,:,:,slices);
+%             [modelMPM.modelCoeff(1,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{1}) ,'slices',slices);
+%             [modelMPM.modelCoeff(2,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{2}) ,'slices',slices);
+%             [modelMPM.modelCoeff(3,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{3}) ,'slices',slices);
+            if meta.nv==4,  
+                modelCoeff(4,:,:,:) = meta.modelCoeff(4,:,:,slices);
+%                 [modelMPM.modelCoeff(4,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{4}) ,'slices',slices);            
             end
+            modelMPM.modelCoeff = modelCoeff;
+            clear modelCoeff;
+            
             if isfield(modelMPM, 'invCov'),
                 modelMPM= rmfield(modelMPM,'invCov');
-            end          
-            
-            [modelMPM.modelCoeff(1,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{1}) ,'slices',slices);
-            [modelMPM.modelCoeff(2,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{2}) ,'slices',slices);
-            [modelMPM.modelCoeff(3,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{3}) ,'slices',slices);
-            if meta.nv==4,                
-                [modelMPM.modelCoeff(4,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{4}) ,'slices',slices);            
-            end
-            invCov=meta.invCov(:,:,:,:,slices);
+            end    
+            invCov=meta.invCov(:,:,:,:,slices);            
             modelMPM.invCov=invCov;
             clear invCov;
             
-        end
+%         end
         
         
         

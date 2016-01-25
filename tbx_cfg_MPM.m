@@ -159,7 +159,7 @@ function MPM = tbx_cfg_MPM
 saveESTA   = cfg_menu;
 saveESTA.tag     = 'saveESTA';
 saveESTA.name    = 'Save the ESTATICS model?';
-saveESTA.help    = {'This option enables to save the ESTATICS model. If activated, it will save a model.mat file with all the necessary information about the ESTATICS model and a set of .nii files with the parameters produced by the model. Activating this option will slow down the process and requires the user to have enough free memory to save the files (up to a few GB). Once the model is saved, it can be used in the toolbox branch "Use an existing ESTATICS model" to repeat the smoothing algorithm with other kstar and lambda values.'};
+saveESTA.help    = {'This option enables to save the ESTATICS model. If activated, it will save a model.mat file with all the necessary information about the ESTATICS model. Activating this option will slow down the process and requires the user to have enough free memory to save the files (up to a few GB). Once the model is saved, it can be used in the toolbox branch "Use an existing ESTATICS model" to repeat the smoothing algorithm with other kstar and lambda values.'};
 saveESTA.labels = {
                'No'
                'Yes'
@@ -316,6 +316,16 @@ saveESTA.val    = {0};
      ESTAmodel_branch.val     = {ESTAmodel height kstar lambda b1File tr2};
      ESTAmodel_branch.help    = {'This branch implements the smoothing and final calculation step of the mpm method given an existing ESTATICS model.'}';
      ESTAmodel_branch.prog    = @spm_local_mpm_givenESTATICS;
+     
+% ---------------------------------------------------------------------        
+% branch producing .nii file from an existing ESTATICS model
+% ---------------------------------------------------------------------
+     extractNII_branch         = cfg_exbranch;
+     extractNII_branch.tag     = 'extractNII_branch';
+     extractNII_branch.name    = 'Produce nii files using an existing ESTATICS model';
+     extractNII_branch.val     = {ESTAmodel};
+     extractNII_branch.help    = {'This branch produces the nii files of the estimated parameter given an existing ESTATICS model. No smoothing applied or final parameters calculated.'}';
+     extractNII_branch.prog    = @spm_local_mpm_extractNII;
 
 % ---------------------------------------------------------------------
 %   MPM toolbox
@@ -323,7 +333,7 @@ saveESTA.val    = {0};
     MPM         = cfg_choice;
     MPM.tag     = 'MPM';
     MPM.name    = 'MPM Multi-parameter Mapping';
-    MPM.values     = {MT_branch withoutMT_branch ESTAmodel_branch};
+    MPM.values     = {MT_branch withoutMT_branch ESTAmodel_branch extractNII_branch};
     MPM.help    = {'This toolbox implements multi parameter mapping for SPM.'}';
 %    MPM.prog    = @spm_local_mpm;
 
@@ -368,6 +378,14 @@ function [] = spm_local_mpm_givenESTATICS(job)
     
 end
 
+function [] = spm_local_mpm_extractNII(job)
+
+    
+    if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
+    
+    mpm_extractNII(job);
+    
+end
 end
 
 
