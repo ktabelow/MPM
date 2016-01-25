@@ -45,7 +45,9 @@ function MPM = tbx_cfg_MPM
     sdim        = cfg_entry;
     sdim.tag     = 'sdim';
     sdim.name    = 'sdim';
-    sdim.help    = {'Dimension of the cubus. '};
+    sdim.help    = {'Dimension of the cubus. ' ...
+        'If  the vector [0 0 0] is not changed, the spatial dimension will be read from the first t1 file. ' ...
+        ' '};
     sdim.strtype = 'e';
     sdim.num     = [1 3];
     % sdim.val    = {[322 368 256]};
@@ -68,7 +70,9 @@ function MPM = tbx_cfg_MPM
     height        = cfg_entry;
     height.tag     = 'height';
     height.name    = 'height';
-    height.help    = {'Height of the level considered in each step. Please consider the resources of your computer when changing this number!'};
+    height.help    = {'Height of the level considered in each step. ' ...
+                      'Please consider the resources of your computer when changing this number!' ...
+                      ' '};
     height.strtype = 'e';
     height.num     = [1 1];
     height.val    = {30};
@@ -80,7 +84,9 @@ function MPM = tbx_cfg_MPM
     kstar        = cfg_entry;
     kstar.tag     = 'kstar';
     kstar.name    = 'kstar';
-    kstar.help    = {'Number of iteration of the smoothing algorithm. If 0 no smoothing will be performed.'};
+    kstar.help    = {'Number of iteration of the smoothing algorithm. ' ...
+                     'If 0 no smoothing will be performed. ' ...
+                     ' '};
     kstar.strtype = 'e';
     kstar.num     = [1 1];
     kstar.val    = {16};
@@ -91,7 +97,8 @@ function MPM = tbx_cfg_MPM
     lambda        = cfg_entry;
     lambda.tag     = 'lambda';
     lambda.name    = 'lambda';
-    lambda.help    = {'Adaptation bandwidth of the smoothing algorithm'};
+    lambda.help    = {'Adaptation bandwidth of the smoothing algorithm' ...
+                      ' '};
     lambda.strtype = 'e';
     lambda.num     = [0 Inf];
     lambda.val    = {[]};
@@ -102,7 +109,11 @@ function MPM = tbx_cfg_MPM
     tol        = cfg_entry;
     tol.tag     = 'tol';
     tol.name    = 'tol';
-    tol.help    = {'Tolerance level to stop the convergence in the ESTATIC algorithm optimisation. A smaller value will deliver better results, but will take longer. On the contrary a value too big will produce artifacts. We advise to leave the default value and repeat with a smaller value, in case of stripes in the output.'};
+    tol.help    = {'Tolerance level to stop the convergence in the ESTATIC algorithm optimisation.' ...
+                   'A smaller value will deliver better results, but will take longer. ' ...
+                   'On the contrary a value too big will produce artifacts. ' ...
+                   'We advise to leave the default value and repeat with a smaller value, in case of stripes in the output. ' ... 
+                   ' '};
     tol.strtype = 'e';
     tol.num     = [1 1];
     tol.val    = {1e-5};
@@ -159,7 +170,15 @@ function MPM = tbx_cfg_MPM
 saveESTA   = cfg_menu;
 saveESTA.tag     = 'saveESTA';
 saveESTA.name    = 'Save the ESTATICS model?';
-saveESTA.help    = {'This option enables to save the ESTATICS model. If activated, it will save a model.mat file with all the necessary information about the ESTATICS model. Activating this option will slow down the process and requires the user to have enough free memory to save the files (up to a few GB). Once the model is saved, it can be used in the toolbox branch "Use an existing ESTATICS model" to repeat the smoothing algorithm with other kstar and lambda values.'};
+saveESTA.help    = {'This option enables to save the ESTATICS model. ' ...
+                    'If activated, it will save a ESTATICS_model_filename.mat file ' ...
+                    'with all the necessary information about the ESTATICS model.' ...
+                    'Activating this option will slow down the process and ' ...
+                    'requires the user to have enough free memory to save the file (up to a few GB). ' ...
+                    'Once the model is saved, it can be used in the toolbox branch' ...
+                    ' "Use an existing ESTATICS model" to repeat the smoothing algorithm ' ...
+                    'with other kstar and lambda values.' ...
+                    ' '};
 saveESTA.labels = {
                'No'
                'Yes'
@@ -172,7 +191,8 @@ saveESTA.val    = {0};
     t1TR        = cfg_entry;
     t1TR.tag     = 't1TR';
     t1TR.name    = 't1TR';
-    t1TR.help    = {'Relaxation times. Please insert a value for each t1File. If not specified, the program will try to read it from the .nii file. '};
+    t1TR.help    = {'Relaxation times. Please insert a value for each t1File. ' ...
+                    'If not specified, the program will try to read it from the .nii file. '};
     t1TR.strtype = 'e';
     t1TR.num     = [0 Inf];
    % t1TR.val    = {[22.5 22.5 22.5 22.5 22.5 22.5]};
@@ -184,7 +204,8 @@ saveESTA.val    = {0};
     mtTR        = cfg_entry;
     mtTR.tag     = 'mtTR';
     mtTR.name    = 'mtTR';
-    mtTR.help    = {'Magnetisation transfer. Please insert a value for each mtFile. If not specified, the program will try to read it from the .nii file. '};
+    mtTR.help    = {'Magnetisation transfer. Please insert a value for each mtFile. ' ...
+                    'If not specified, the program will try to read it from the .nii file. '};
     mtTR.strtype = 'e';
     mtTR.num     = [0 Inf];
    % mtTR.val    = {[26.1 26.1 26.1 26.1 26.1 26.1]};
@@ -195,7 +216,8 @@ saveESTA.val    = {0};
     pdTR        = cfg_entry;
     pdTR.tag     = 'pdTR';
     pdTR.name    = 'pdTR';
-    pdTR.help    = {'Proton density. Please insert a value for each pdFile. If not specified, the program will try to read it from the .nii file. '};
+    pdTR.help    = {'Proton density. Please insert a value for each pdFile. ' ...
+                    'If not specified, the program will try to read it from the .nii file. '};
     pdTR.strtype = 'e';
     pdTR.num     = [0 Inf];
    % pdTR.val    = {[22.5 22.5 22.5 22.5 22.5 22.5]};
@@ -207,7 +229,8 @@ saveESTA.val    = {0};
     t1TE        = cfg_entry;
     t1TE.tag     = 't1TE';
     t1TE.name    = 't1TE';
-    t1TE.help    = {'Relaxation times echo times. Please insert a value for each t1File. If not specified, the program will try to read it from the .nii file. '};
+    t1TE.help    = {'Relaxation times echo times. Please insert a value for each t1File. ' ...
+        'If not specified, the program will try to read it from the .nii file. '};
     t1TE.strtype = 'e';
     t1TE.num     = [0 Inf];
    % t1TE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
@@ -219,7 +242,8 @@ saveESTA.val    = {0};
     mtTE        = cfg_entry;
     mtTE.tag     = 'mtTE';
     mtTE.name    = 'mtTE';
-    mtTE.help    = {'Mt echo times. Please insert a value for each mtFile. If not specified, the program will try to read it from the .nii file. '};
+    mtTE.help    = {'Mt echo times. Please insert a value for each mtFile. ' ...
+        'If not specified, the program will try to read it from the .nii file. '};
     mtTE.strtype = 'e';
     mtTE.num     = [0 Inf];
    % mtTE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
@@ -230,7 +254,8 @@ saveESTA.val    = {0};
     pdTE        = cfg_entry;
     pdTE.tag     = 'pdTE';
     pdTE.name    = 'pdTE';
-    pdTE.help    = {'Proton density echo times.Please insert a value for each pdFile. If not specified, the program will try to read it from the .nii file. '};
+    pdTE.help    = {'Proton density echo times.Please insert a value for each pdFile. ' ...
+        'If not specified, the program will try to read it from the .nii file. '};
     pdTE.strtype = 'e';
     pdTE.num     = [0 Inf];
     % pdTE.val    = {[2.71, 5.17,  7.63, 10.09 , 12.55, 15.01]};
@@ -241,7 +266,8 @@ saveESTA.val    = {0};
     t1FA        = cfg_entry;
     t1FA.tag     = 't1FA';
     t1FA.name    = 't1FA';
-    t1FA.help    = {'Relaxation times flip angle. Please insert a value for each t1File. If not specified, the program will try to read it from the .nii file. '};
+    t1FA.help    = {'Relaxation times flip angle. Please insert a value for each t1File. ' ...
+        'If not specified, the program will try to read it from the .nii file. '};
     t1FA.strtype = 'e';
     t1FA.num     = [0 Inf];
    % t1FA.val    = {[27, 27, 27, 27, 27, 27]};
@@ -253,7 +279,8 @@ saveESTA.val    = {0};
     mtFA        = cfg_entry;
     mtFA.tag     = 'mtFA';
     mtFA.name    = 'mtFA';
-    mtFA.help    = {'Mt flip angle. Please insert a value for each mtFile. If not specified, the program will try to read it from the .nii file. '};
+    mtFA.help    = {'Mt flip angle. Please insert a value for each mtFile. ' ...
+        'If not specified, the program will try to read it from the .nii file. '};
     mtFA.strtype = 'e';
     mtFA.num     = [0 Inf];
    % mtFA.val    = {[5,5,5,5,5,5]};
@@ -264,7 +291,8 @@ saveESTA.val    = {0};
     pdFA        = cfg_entry;
     pdFA.tag     = 'pdFA';
     pdFA.name    = 'pdFA';
-    pdFA.help    = {'Proton density flip angle. Please insert a value for each pdFile. If not specified, the program will try to read it from the .nii file. '};
+    pdFA.help    = {'Proton density flip angle. Please insert a value for each pdFile. ' ...
+        'If not specified, the program will try to read it from the .nii file. '};
     pdFA.strtype = 'e';
     pdFA.num     = [0 Inf];
    % pdFA.val    = {[5,5,5,5,5,5]};
@@ -324,7 +352,8 @@ saveESTA.val    = {0};
      extractNII_branch.tag     = 'extractNII_branch';
      extractNII_branch.name    = 'Get nii files from ESTATICS model';
      extractNII_branch.val     = {ESTAmodel height};
-     extractNII_branch.help    = {'This branch produces the nii files of the estimated parameter given an existing ESTATICS model. No smoothing applied or final parameters calculated.'}';
+     extractNII_branch.help    = {'This branch produces the nii files of the estimated parameter ' ...
+         'given an existing ESTATICS model. No smoothing applied or final parameters calculated.'}';
      extractNII_branch.prog    = @spm_local_mpm_extractNII;
 
 % ---------------------------------------------------------------------

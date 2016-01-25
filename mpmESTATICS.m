@@ -103,64 +103,6 @@ function [] = mpmESTATICS(job)
             filename = strcat('ESTATICS_model_',fname,'.mat');
             save(filename,'invCov','-v7.3');
             meta = matfile(filename,'Writable',true);
-         % S_t1         
-%          wV1        = V; 
-%          dt        = [spm_type('float32'),spm_platform('bigend')];
-%          dm        = V(1).dim;
-%          Ni1        = nifti;
-%          Ni1.mat    = V(1).mat;
-%          Ni1.mat0    = V(1).mat;
-%          wV1.fname    = fullfile(pwd,['ESTATICS_S_t1_' fname '.nii']);
-%          Ni1.dat      = file_array(wV1.fname,dm,dt, 0,1,0);
-%          create(Ni1);
-%          zeroValues = zeros(dataset.sdim);
-%          for i=1:dataset.sdim(3),
-%          Ni1.dat(:,:,i) = zeroValues(:,:,i);
-%          end
-         
-         % S_pd         
-%          wV2        = V;          
-%          Ni2        = nifti;
-%          Ni2.mat    = V(1).mat;
-%          Ni2.mat0    = V(1).mat;
-%          wV2.fname    = fullfile(pwd,['ESTATICS_S_pd_' fname '.nii']);
-%          Ni2.dat      = file_array(wV2.fname,dm,dt, 0,1,0);
-%          create(Ni2);
-%          for i=1:dataset.sdim(3),
-%          Ni2.dat(:,:,i) = zeroValues(:,:,i);
-%          end
-%          
-%          if dataset.nv==4,
-                 % S_mt                
-%                 wV3        = V;          
-%                 Ni3        = nifti;
-%                 Ni3.mat    = V(1).mat;
-%                 Ni3.mat0    = V(1).mat;
-%                 wV3.fname    = fullfile(pwd,['ESTATICS_S_mt_' fname '.nii']);
-%                 Ni3.dat      = file_array(wV3.fname,dm,dt, 0,1,0);
-%                 create(Ni3);
-%                 for i=1:dataset.sdim(3),
-%                    Ni3.dat(:,:,i) = zeroValues(:,:,i);
-%                 end
-%          end
-         
-         % R2star  
-%                 wV4        = V;          
-%                 Ni4        = nifti;
-%                 Ni4.mat    = V(1).mat;
-%                 Ni4.mat0    = V(1).mat;
-%                 wV4.fname    = fullfile(pwd,['ESTATICS_R2star_' fname '.nii']);
-%                 Ni4.dat      = file_array(wV4.fname,dm,dt, 0,1,0);
-%                 create(Ni4);
-%                 for i=1:dataset.sdim(3),
-%                 Ni4.dat(:,:,i) = zeroValues(:,:,i);
-%                 end
-        % add the name of the file to the .mat file
-%         if dataset.nv==4,
-%             meta.modelCoeff = {wV1.fname, wV2.fname, wV3.fname, wV4.fname};
-%         else
-%             meta.modelCoeff = {wV1.fname, wV2.fname, wV4.fname};
-%         end
         
         catch ME
             fprintf(ME.message);
@@ -255,39 +197,23 @@ function [] = mpmESTATICS(job)
            meta.TEScale = modelMPM.TEScale;
            meta.DataScale = modelMPM.DataScale;
           if zStart==1,
-%               fprintf('saving coefficient on level zstart\n');
-%               size(meta.modelCoeff)
-%               size(modelMPM.modelCoeff)
-%                size(meta.modelCoeff(1,:,:,1:zEnd))
-%                size(modelMPM.modelCoeff(1,:,:,:))
               meta.modelCoeff(1,:,:,1:zEnd) = modelMPM.modelCoeff(1,:,:,:);
               meta.modelCoeff(2,:,:,1:zEnd) = modelMPM.modelCoeff(2,:,:,:);
-%               Ni1.dat(:,:,1:zEnd) = reshape(modelMPM.modelCoeff(1,:,:,:),[job.sdim(1), job.sdim(2), zEnd]);
-%               Ni2.dat(:,:,1:zEnd) = reshape(modelMPM.modelCoeff(2,:,:,:),[job.sdim(1), job.sdim(2), zEnd]);
               if dataset.nv==4,
                   meta.modelCoeff(3,:,:,1:zEnd) = modelMPM.modelCoeff(3,:,:,:);
                   meta.modelCoeff(4,:,:,1:zEnd) = modelMPM.modelCoeff(4,:,:,:);
-%                   Ni3.dat(:,:,1:zEnd) = reshape(modelMPM.modelCoeff(3,:,:,:),[job.sdim(1), job.sdim(2), zEnd]);
-%                   Ni4.dat(:,:,1:zEnd) = reshape(modelMPM.modelCoeff(4,:,:,:),[job.sdim(1), job.sdim(2), zEnd]);
               else
                    meta.modelCoeff(3,:,:,1:zEnd) = modelMPM.modelCoeff(3,:,:,:);
-%                   Ni4.dat(:,:,1:zEnd) = reshape(modelMPM.modelCoeff(3,:,:,:),[job.sdim(1), job.sdim(2), zEnd]);
               end
             
           else 
-              fprintf('saving coefficient on level %d \n',zStart);
               meta.modelCoeff(1,:,:,zStart+hdelta:zEnd) = modelMPM.modelCoeff(1,:,:, 1+hdelta: (zEnd-zStart+1)); 
               meta.modelCoeff(2,:,:,zStart+hdelta:zEnd) = modelMPM.modelCoeff(2,:,:, 1+hdelta: (zEnd-zStart+1)); 
-%               Ni1.dat(:,:,zStart+hdelta:zEnd) = reshape(modelMPM.modelCoeff(1,:,:, 1+hdelta: (zEnd-zStart+1)),[job.sdim(1), job.sdim(2), zEnd-zStart+1-hdelta] ); 
-%               Ni2.dat(:,:,zStart+hdelta:zEnd) = reshape(modelMPM.modelCoeff(2,:,:, 1+hdelta: (zEnd-zStart+1)),[job.sdim(1), job.sdim(2), zEnd-zStart+1-hdelta] ); 
               if dataset.nv==4,
                   meta.modelCoeff(3,:,:,zStart+hdelta:zEnd) = modelMPM.modelCoeff(3,:,:, 1+hdelta: (zEnd-zStart+1)); 
                   meta.modelCoeff(4,:,:,zStart+hdelta:zEnd) = modelMPM.modelCoeff(4,:,:, 1+hdelta: (zEnd-zStart+1)) ; 
-%                   Ni3.dat(:,:,zStart+hdelta:zEnd) = reshape(modelMPM.modelCoeff(3,:,:,1+hdelta: (zEnd-zStart+1)),[job.sdim(1), job.sdim(2), zEnd-zStart+1-hdelta] ); 
-%                   Ni4.dat(:,:,zStart+hdelta:zEnd) = reshape(modelMPM.modelCoeff(4,:,:,1+hdelta: (zEnd-zStart+1)),[job.sdim(1), job.sdim(2), zEnd-zStart+1-hdelta] ); 
               else
                   meta.modelCoeff(3,:,:,zStart+hdelta:zEnd) = modelMPM.modelCoeff(3,:,:, 1+hdelta: (zEnd-zStart+1)); 
-%                   Ni4.dat(:,:,zStart+hdelta:zEnd) = reshape(modelMPM.modelCoeff(3,:,:,1+hdelta: (zEnd-zStart+1)),[job.sdim(1), job.sdim(2), zEnd-zStart+1-hdelta] ); 
               end
           end
          catch ME
