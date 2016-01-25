@@ -322,8 +322,8 @@ saveESTA.val    = {0};
 % ---------------------------------------------------------------------
      extractNII_branch         = cfg_exbranch;
      extractNII_branch.tag     = 'extractNII_branch';
-     extractNII_branch.name    = 'Produce nii files using an existing ESTATICS model';
-     extractNII_branch.val     = {ESTAmodel};
+     extractNII_branch.name    = 'Get nii files from ESTATICS model';
+     extractNII_branch.val     = {ESTAmodel height};
      extractNII_branch.help    = {'This branch produces the nii files of the estimated parameter given an existing ESTATICS model. No smoothing applied or final parameters calculated.'}';
      extractNII_branch.prog    = @spm_local_mpm_extractNII;
 

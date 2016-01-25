@@ -22,15 +22,17 @@
 %
 %  The ESTAmodel must contain:
 %
-%  maskFile        - the complete name of the file containing the mask 
+%  maskFile        - the complete name of the file containing the mask
+%  mask            - the mask
+%  invCov          - inverse covariance matrix
 %  t1Files 
 %  mtFiles         - original input files
 %  pdFiles 
 %  nFiles          - number of original imput files
 %  sdim            - spatial dimensionality of the data 
 %  nv              - number of parameters (3 or 4)
-%  modelCoeff      - a cell array containing the complete name of the nii
-%                    file that contain the values of parameters
+%  modelCoeff      - a 3 or 4 dimensional array containing the vauels of
+%                    the parameters
 %  TR
 %  TE              - arrays containing the relaxation rate, flip angle and echo time  
 %  FA
@@ -127,7 +129,7 @@ function [] = mpm_givenESTATICS(job)
         spm_progress_bar('Set',startLayerVoxel);
         
         zStart = double(startLayerVoxel);        
-        fprintf('on level %d \n', zStart);
+%         fprintf('on level %d \n', zStart);
         if sdim(3)-(startLayerVoxel + job.height)> 2*hdelta,
             % in case the next starting point has enough planes after it
             zEnd = double(startLayerVoxel + job.height); 

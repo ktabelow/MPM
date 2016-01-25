@@ -255,7 +255,7 @@ function [] = mpmESTATICS(job)
            meta.TEScale = modelMPM.TEScale;
            meta.DataScale = modelMPM.DataScale;
           if zStart==1,
-              fprintf('saving coefficient on level zstart\n');
+%               fprintf('saving coefficient on level zstart\n');
 %               size(meta.modelCoeff)
 %               size(modelMPM.modelCoeff)
 %                size(meta.modelCoeff(1,:,:,1:zEnd))
