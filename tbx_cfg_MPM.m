@@ -317,7 +317,7 @@ saveESTA.val    = {0};
      MT_branch         = cfg_exbranch;
      MT_branch.tag     = 'MT_branch';
      MT_branch.name    = 'Model with t1, pd and mt files';
-     MT_branch.val     = {t1Files mtFiles pdFiles sdim maskFile tr2 height kstar lambda ...
+     MT_branch.val     = {t1Files mtFiles pdFiles maskFile tr2 height kstar lambda ...
                           tol b1File saveESTA t1TR mtTR pdTR ...
                           t1TE mtTE pdTE t1FA mtFA pdFA};
      MT_branch.help    = {'This branch implements multi parameter mapping for a dataset with T1,PD and MT files.'}';
@@ -329,7 +329,7 @@ saveESTA.val    = {0};
      withoutMT_branch         = cfg_exbranch;
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without mt files';
-     withoutMT_branch.val     = {t1Files pdFiles sdim maskFile tr2 height kstar lambda ...
+     withoutMT_branch.val     = {t1Files pdFiles maskFile tr2 height kstar lambda ...
                                 tol b1File saveESTA t1TR pdTR ... 
                                 t1TE pdTE t1FA pdFA}; 
      withoutMT_branch.help    = {'This branch implements multi parameter mapping for a dataset without MT files.'}';
@@ -380,7 +380,7 @@ function [] = spm_local_mpm(job)
 
     
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
-    
+    job.sdim = [0 0 0];
     mpmESTATICS(job);
     
 end
@@ -393,7 +393,7 @@ function [] = spm_local_mpm_noMT(job)
     job.mtTR = [];
     job.mtTE = [];
     job.mtFA = [];
-    job.saveESTA;
+    job.sdim = [0 0 0];
     mpmESTATICS(job);
     
 end
