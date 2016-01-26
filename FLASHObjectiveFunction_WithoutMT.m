@@ -1,4 +1,4 @@
-function [Dc,para,dD,H, Hstar] = FLASHobjFctnWithoutMT(model,data,TE,indicator)
+function [Dc,para,dD,H, Hstar] = FLASHObjectiveFunction_WithoutMT(model,data,TE,indicator)
 %
 % Input
 % model - [T1(0); PD(0); R2*] column vector
