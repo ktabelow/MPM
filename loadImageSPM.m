@@ -71,12 +71,12 @@ PI = '/Home/stat/tabelow/projects/MPM/data/T1/s2013-10-31_14-54-151539-00001-002
 
 figure(1); clf;
 subplot(1,3,1)
-imgmontage(I,omega,m1);
+%imgmontage(I,omega,m1);
 
 subplot(1,3,2)
-imgmontage(I2,omega2,m2);
+%imgmontage(I2,omega2,m2);
 colormap gray
 
 subplot(1,3,3)
-imgmontage(I3,omega3,m3);
+%imgmontage(I3,omega3,m3);
 colormap gray
