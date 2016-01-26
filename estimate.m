@@ -7,8 +7,8 @@
 % matlab Implementation of the R function estimateESTATICS.r in package qMRI
 % written by K. Tabelow and J. Polzehl (?)
 %
-% from Lars Ruthotto mpmESTATICS script
-% calls functions loadImageSPM, GaussNewton, FLASHobjFctn, FLASHobjFctn2, 
+% from Lars Ruthotto 
+% functions loadImageSPM, GaussNewton, FLASHobjFctn, FLASHobjFctn2, 
 % Armijo  all written by Lars Ruthotto
 % http://www.mathcs.emory.edu/~lruthot/
 %
