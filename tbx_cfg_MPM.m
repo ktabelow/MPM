@@ -44,14 +44,14 @@ function MPM = tbx_cfg_MPM
 % ---------------------------------------------------------------------
 % sdim spatial dimensions
 % ---------------------------------------------------------------------
-    sdim         = cfg_entry;
-    sdim.tag     = 'sdim';
-    sdim.name    = 'dim';
-    sdim.help    = {'Spatial dimension of the data volumes.' ...
-                    'If  the default vector [0 0 0] is not changed, the spatial dimension will be defined by the first T1w volumes.'};
-    sdim.strtype = 'e';
-    sdim.num     = [1 3];
-    sdim.val     = {[0 0 0]};
+%     sdim         = cfg_entry;
+%     sdim.tag     = 'sdim';
+%     sdim.name    = 'dim';
+%     sdim.help    = {'Spatial dimension of the data volumes.' ...
+%                     'If  the default vector [0 0 0] is not changed, the spatial dimension will be defined by the first T1w volumes.'};
+%     sdim.strtype = 'e';
+%     sdim.num     = [1 3];
+%     sdim.val     = {[0 0 0]};
     
 % ---------------------------------------------------------------------
 % tr2 for the mt aquisition
@@ -71,7 +71,7 @@ function MPM = tbx_cfg_MPM
     height.tag     = 'height';
     height.name    = 'Number of slices processed';
     height.help    = {'Type a number of slices that are to be processed at once.' ...
-                      'This option saves memory and is neccessary when your computer has only very limited hardware resources. This comes at the cost of computation time, as smoothing is then performed on overlapping slices more then once to guarantee correct 3D results. If memory is no problem on your computer (e.g. on a large compute custer), you might be able to process the full volumes at once. However, typically 16GB memory are not much for volumes of spatial dimension 256x256x256 ...' ...
+                      'This option saves memory and is necessary when your computer has only very limited hardware resources. This comes at the cost of computation time, as smoothing is then performed on overlapping slices more then once to guarantee correct 3D results. If memory is no problem on your computer (e.g. on a large compute custer), you might be able to process the full volumes at once. However, typically 16GB memory are not much for volumes of spatial dimension 256x256x256 ...' ...
                       ' '};
     height.strtype = 'e';
     height.num     = [1 1];
@@ -175,14 +175,10 @@ function MPM = tbx_cfg_MPM
     saveESTA.tag     = 'saveESTA';
     saveESTA.name    = 'Save the ESTATICS model?';
     saveESTA.help    = {'This option enables to save the ESTATICS model. ' ...
-                        'If activated, the ESTATICS parameter ar saved to a ESTATICS_model_filename.mat file ' ...
-                        'with all the necessary information about the ESTATICS model.' ...
-                        'Activating this option will slow down the computation and ' ...
-                        'requires enough disk space to save the file (up to some GB, as the covariance matrix has to be saved as well.). ' ...
-                        'Once the model is saved, it can be used in the toolbox branch' ...
-                        ' "Use an existing ESTATICS model" to repeat the smoothing algorithm ' ...
-                        'with other kstar and lambda values.' ...
-                        ' '};
+                        'If activated, the ESTATICS parameters are saved to a ESTATICS_model_filename.mat file with all the necessary information about the ESTATICS model.' ...
+                        'Activating this option will slow down the computation and requires enough disk space to save the file (up to some GB, as the covariance matrix has to be saved as well.).' ...
+                        'Once the model is saved, it can be used in the toolbox branch "Use an existing ESTATICS model" to repeat the smoothing algorithm with other adaptation bandwidth values and number of iterations.' ...
+                      ' '};
     saveESTA.labels  = {'No'
                        'Yes'};
     saveESTA.values  = {0 1};
@@ -195,7 +191,8 @@ function MPM = tbx_cfg_MPM
     t1TR.tag     = 't1TR';
     t1TR.name    = 'TR values for T1 weighted volumes';
     t1TR.help    = {'Repetition times of the T1w volumes. Please insert a value for each T1 weighted volume. ' ...
-                    'If not specified, the toolbox will try to read it from the description field in the header of the image files. '};
+                    'If not specified, the toolbox will try to read it from the description field in the header of the image files. ' ...
+                    'This description has to contain a part like TR=22.5ms/TE=2.71ms/FA=27deg'};
     t1TR.strtype = 'e';
     t1TR.num     = [0 Inf];
     t1TR.val     = {[]};
@@ -207,7 +204,8 @@ function MPM = tbx_cfg_MPM
     mtTR.tag     = 'mtTR';
     mtTR.name    = 'TR values for MT weighted volumes';
     mtTR.help    = {'Repetition times of the MTw volumes. Please insert a value for each MT weighted volume. ' ...
-                    'If not specified, the toolbox will try to read it from the description field in the header of the image files.'};
+                    'If not specified, the toolbox will try to read it from the description field in the header of the image files. ' ...
+                    'This description has to contain a part like TR=22.5ms/TE=2.71ms/FA=27deg'};
     mtTR.strtype = 'e';
     mtTR.num     = [0 Inf];
     mtTR.val     = {[]};
@@ -218,7 +216,8 @@ function MPM = tbx_cfg_MPM
     pdTR.tag     = 'pdTR';
     pdTR.name    = 'TR values for PD weighted volumes';
     pdTR.help    = {'Repetition times of the PDw volumes. Please insert a value for each PD weighted volume.  ' ...
-                    'If not specified, the toolbox will try to read it from the description field in the header of the image files.'};
+                    'If not specified, the toolbox will try to read it from the description field in the header of the image files. ' ...
+                    'This description has to contain a part like TR=22.5ms/TE=2.71ms/FA=27deg'};
     pdTR.strtype = 'e';
     pdTR.num     = [0 Inf];
     pdTR.val     = {[]};
@@ -230,7 +229,8 @@ function MPM = tbx_cfg_MPM
     t1TE.tag     = 't1TE';
     t1TE.name    = 'TE values for the T1w volumes';
     t1TE.help    = {'Echo times for the sequence of T1w images. Please insert a value for each T1 weighted volume. ' ...
-                    'If not specified, the toolbox will try to read it from the description field in the header of the image files.'};
+                    'If not specified, the toolbox will try to read it from the description field in the header of the image files.' ...
+                    'This description has to contain a part like TR=22.5ms/TE=2.71ms/FA=27deg'};
     t1TE.strtype = 'e';
     t1TE.num     = [0 Inf];
     t1TE.val     = {[]};
@@ -242,7 +242,8 @@ function MPM = tbx_cfg_MPM
     mtTE.tag     = 'mtTE';
     mtTE.name    = 'TE values for the MTw volumes';
     mtTE.help    = {'Echo times for the sequence of MTw images. Please insert a value for each MT weighted volume. ' ...
-                    'If not specified, the toolbox will try to read it from the description field in the header of the image files.'};
+                    'If not specified, the toolbox will try to read it from the description field in the header of the image files. ' ...
+                    'This description has to contain a part like TR=22.5ms/TE=2.71ms/FA=27deg'};
     mtTE.strtype = 'e';
     mtTE.num     = [0 Inf];
     mtTE.val     = {[]};
@@ -254,7 +255,8 @@ function MPM = tbx_cfg_MPM
     pdTE.tag     = 'pdTE';
     pdTE.name    = 'TE values for the PDw volumes';
     pdTE.help    = {'Echo times for the sequence of PDw images. Please insert a value for each PD weighted volume. ' ...
-                    'If not specified, the toolbox will try to read it from the description field in the header of the image files.'};
+                    'If not specified, the toolbox will try to read it from the description field in the header of the image files. ' ...
+                    'This description has to contain a part like TR=22.5ms/TE=2.71ms/FA=27deg'};
     pdTE.strtype = 'e';
     pdTE.num     = [0 Inf];
     pdTE.val     = {[]};
@@ -266,7 +268,8 @@ function MPM = tbx_cfg_MPM
     t1FA.tag     = 't1FA';
     t1FA.name    = 'FA values for the T1w volumes';
     t1FA.help    = {'Flip angle for the T1w volumes. Please insert a value for each T1w volume. ' ...
-                    'If not specified, the toolbox will try to read it from the description field in the header of the image files.'};
+                    'If not specified, the toolbox will try to read it from the description field in the header of the image files. ' ...
+                    'This description has to contain a part like TR=22.5ms/TE=2.71ms/FA=27deg'};
     t1FA.strtype = 'e';
     t1FA.num     = [0 Inf];
     t1FA.val     = {[]};
@@ -278,7 +281,8 @@ function MPM = tbx_cfg_MPM
     mtFA.tag     = 'mtFA';
     mtFA.name    = 'FA values for the MTw volumes';
     mtFA.help    = {'Flip angle for the MTw volumes. Please insert a value for each MTw volume. ' ...
-                    'If not specified, the toolbox will try to read it from the description field in the header of the image files.'};
+                    'If not specified, the toolbox will try to read it from the description field in the header of the image files. ' ...
+                    'This description has to contain a part like TR=22.5ms/TE=2.71ms/FA=27deg'};
     mtFA.strtype = 'e';
     mtFA.num     = [0 Inf];
     mtFA.val     = {[]};
@@ -289,7 +293,8 @@ function MPM = tbx_cfg_MPM
     pdFA.tag     = 'pdFA';
     pdFA.name    = 'FA values for the PDw volumes';
     pdFA.help    = {'Flip angle for the PDw volumes. Please insert a value for each PDw volume. ' ...
-                    'If not specified, the toolbox will try to read it from the description field in the header of the image files.'};
+                    'If not specified, the toolbox will try to read it from the description field in the header of the image files. ' ...
+                    'This description has to contain a part like TR=22.5ms/TE=2.71ms/FA=27deg'};
     pdFA.strtype = 'e';
     pdFA.num     = [0 Inf];
     pdFA.val     = {[]};
