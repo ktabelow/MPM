@@ -70,7 +70,11 @@ end;
 
 
 slices = model.zStart : model.zEnd; %1:model.sdim(3);
-if ~isempty(b1File) || (length(b1File)==1 && ~strcmp(b1File{1},'')) % || model.sdim==b1dim
+if (length(b1File)==1 && strcmp(b1File{1},''))
+    if model.zStart==1, fprintf('no B1 correction file - no correction will be performed\n'); end
+    %if verbose, fprintf('no B1 correction\n'); end
+    b1Map = ones([model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]);
+elseif ~isempty(b1File)   % || model.sdim==b1dim
    V1 = spm_vol(b1File{1});
    b1dim=V1.dim;
     if model.sdim==b1dim,
@@ -80,12 +84,12 @@ if ~isempty(b1File) || (length(b1File)==1 && ~strcmp(b1File{1},'')) % || model.s
         b1Map = b1Map./100; % still to check if is ok
         b1Map(b1Map < 0) = 0;
     else
-        if model.zStart==1, fprintf('no correct B1 correction file - setting all to 1\n'); end
+        if model.zStart==1, fprintf('no correct dimension in B1 correction file - no correction will be performed\n'); end
         %if verbose, fprintf('no correct B1 correction file\n'); end
         b1Map = ones([model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]);
     end
 else 
-    if model.zStart==1, fprintf('no B1 correction file- setting all to 1\n'); end
+    if model.zStart==1, fprintf('no B1 correction file selected - no correction will be performed\n'); end
     %if verbose, fprintf('no B1 correction\n'); end
     b1Map = ones([model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)]);
 end
