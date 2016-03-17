@@ -329,7 +329,7 @@ function MPM = tbx_cfg_MPM
      withoutMT_branch         = cfg_exbranch;
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without MTw volumes';
-     withoutMT_branch.val     = {t1Files pdFiles maskFile tr2 height kstar lambda ...
+     withoutMT_branch.val     = {t1Files pdFiles maskFile height kstar lambda ...
                                 tol b1File saveESTA t1TR pdTR ... 
                                 t1TE pdTE t1FA pdFA}; 
      withoutMT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset without MTw volumes.'};
@@ -383,6 +383,7 @@ function [] = spm_local_mpm_noMT(job)
     job.mtTR = [];
     job.mtTE = [];
     job.mtFA = [];
+    job.tr2 = 1;
     job.sdim = [0 0 0];
     mpmESTATICS(job);
     
