@@ -3,8 +3,12 @@
 % =========================================================================
 % 2015/10/6
 %
-% matlab Implementation of the R function smoothESTATICS.r in package qMRI
-% written by K. Tabelow and J. Polzehl (?)
+% matlab Implementation written by C. D'Alonzo 
+% of the R function estimateESTATICS.r in package qMRI written by K. Tabelow
+%
+% FORTRAN code written by J. Polzehl
+% 
+%
 %
 % calls the Fortran subroutine vaws2.f to perform the smoothing algorithm;
 % vaws2.f works with OpenMP, in order not to have problems 
