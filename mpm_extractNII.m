@@ -15,6 +15,7 @@
 %  
 %  ESTAmodel       - a file containing the metadata
 %  height          - height of the region of interest 
+%  odir            - output directory   
 %
 %  The ESTAmodel must contain:
 %
@@ -27,7 +28,7 @@
 %  nFiles          - number of original imput files
 %  sdim            - spatial dimensionality of the data 
 %  nv              - number of parameters (3 or 4)
-%  modelCoeff      - a 3 or 4 dimensional array containing the vauels of
+%  modelCoeff      - a 3 or 4 dimensional array containing the values of
 %                    the parameters
 %  TR
 %  TE              - arrays containing the relaxation rate, flip angle and echo time  
@@ -80,7 +81,7 @@ function [] = mpm_extractNII(job)
          Ni1        = nifti;
          Ni1.mat    = V(1).mat;
          Ni1.mat0    = V(1).mat;
-         wV1.fname    = fullfile(pwd,['ESTATICS_S_t1_' fname '.nii']);
+         wV1.fname    = fullfile(job.odir{1},['ESTATICS_S_t1_' fname '.nii']);
          Ni1.dat      = file_array(wV1.fname,dm,dt, 0,1,0);
          create(Ni1);
          zeroValues = zeros(sdim);
@@ -93,7 +94,7 @@ function [] = mpm_extractNII(job)
          Ni2        = nifti;
          Ni2.mat    = V(1).mat;
          Ni2.mat0    = V(1).mat;
-         wV2.fname    = fullfile(pwd,['ESTATICS_S_pd_' fname '.nii']);
+         wV2.fname    = fullfile(job.odir{1},['ESTATICS_S_pd_' fname '.nii']);
          Ni2.dat      = file_array(wV2.fname,dm,dt, 0,1,0);
          create(Ni2);
          for i=1:sdim(3),
@@ -106,7 +107,7 @@ function [] = mpm_extractNII(job)
                 Ni3        = nifti;
                 Ni3.mat    = V(1).mat;
                 Ni3.mat0    = V(1).mat;
-                wV3.fname    = fullfile(pwd,['ESTATICS_S_mt_' fname '.nii']);
+                wV3.fname    = fullfile(job.odir{1},['ESTATICS_S_mt_' fname '.nii']);
                 Ni3.dat      = file_array(wV3.fname,dm,dt, 0,1,0);
                 create(Ni3);
                 for i=1:sdim(3),
@@ -119,7 +120,7 @@ function [] = mpm_extractNII(job)
                 Ni4        = nifti;
                 Ni4.mat    = V(1).mat;
                 Ni4.mat0    = V(1).mat;
-                wV4.fname    = fullfile(pwd,['ESTATICS_R2star_' fname '.nii']);
+                wV4.fname    = fullfile(job.odir{1},['ESTATICS_R2star_' fname '.nii']);
                 Ni4.dat      = file_array(wV4.fname,dm,dt, 0,1,0);
                 create(Ni4);
                 for i=1:sdim(3),

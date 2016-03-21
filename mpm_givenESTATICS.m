@@ -19,6 +19,7 @@
 %  kstar           - number of steps for the smoothing algorithm (if 0 no smoothing)          
 %  lambda          - adaptation bandwidth
 %  b1File          - correction field
+%  odir            - output directory
 %
 %  The ESTAmodel must contain:
 %
@@ -238,10 +239,10 @@ function [] = mpm_givenESTATICS(job)
     try
     % write 3 or 4 files for R1, PD, R2star and in case delta
     % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
-    write_small_to_file_nii(pwd,'R1_', Vt1, R1, 1, sdim(3), sdim);
-    write_small_to_file_nii(pwd,'R2star_', Vt1, R2star, 1, sdim(3), sdim);
-    write_small_to_file_nii(pwd,'PD_', Vpd, PD, 1, sdim(3), sdim);
-    if modelMPM.nv==4,  write_small_to_file_nii(pwd,'delta_', Vmt, delta, 1, sdim(3), sdim); end
+    write_small_to_file_nii(job.odir{1},'R1_', Vt1, R1, 1, sdim(3), sdim);
+    write_small_to_file_nii(job.odir{1},'R2star_', Vt1, R2star, 1, sdim(3), sdim);
+    write_small_to_file_nii(job.odir{1},'PD_', Vpd, PD, 1, sdim(3), sdim);
+    if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'delta_', Vmt, delta, 1, sdim(3), sdim); end
     catch
         error('it was not possible to save the resulting .nii files. Check to have writing rights in the current directory')
     end

@@ -24,6 +24,7 @@
 %  lambda          - adaptation bandwidth
 %  maskFile        - mask containing the voxel to consider
 %  b1File          - correction field
+%  odir            - output directory
 %  t1TR mtTR pdTR  
 %  t1TE mtTE pdTE  - parameter (read from file if empty)
 %  t1FA mtFA pdFA
@@ -100,7 +101,7 @@ function [] = mpmESTATICS(job)
         invCov=zeros([dataset.nv dataset.nv job.sdim]);
         try
             [~,fname,~] = spm_fileparts(V.fname);
-            filename = strcat('ESTATICS_model_',fname,'.mat');
+            filename = strcat(job.odir{1},filesep,'ESTATICS_model_',fname,'.mat');
             save(filename,'invCov','-v7.3');
             meta = matfile(filename,'Writable',true);
         
@@ -294,10 +295,10 @@ function [] = mpmESTATICS(job)
     try
     % write 3 or 4 files for R1, PD, R2star and in case delta
     % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
-    write_small_to_file_nii(pwd,'R1_', spm_vol(job.t1Files{1}), R1, 1, job.sdim(3), job.sdim);
-    write_small_to_file_nii(pwd,'R2star_', spm_vol(job.t1Files{1}), R2star, 1, job.sdim(3), job.sdim);
-    write_small_to_file_nii(pwd,'PD_', spm_vol(job.pdFiles{1}), PD, 1, job.sdim(3), job.sdim);
-    if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')),  write_small_to_file_nii(pwd,'delta_', spm_vol(job.mtFiles{1}), delta, 1, job.sdim(3),  job.sdim); end
+    write_small_to_file_nii(job.odir{1},'R1_', spm_vol(job.t1Files{1}), R1, 1, job.sdim(3), job.sdim);
+    write_small_to_file_nii(job.odir{1},'R2star_', spm_vol(job.t1Files{1}), R2star, 1, job.sdim(3), job.sdim);
+    write_small_to_file_nii(job.odir{1},'PD_', spm_vol(job.pdFiles{1}), PD, 1, job.sdim(3), job.sdim);
+    if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')),  write_small_to_file_nii(job.odir{1},'delta_', spm_vol(job.mtFiles{1}), delta, 1, job.sdim(3),  job.sdim); end
     catch
         error('it was not possible to save the resulting .nii files. Check to have writing rights in the current directory')
     end
