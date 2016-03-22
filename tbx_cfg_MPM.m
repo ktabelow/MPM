@@ -380,6 +380,9 @@ function [] = spm_local_mpm(job)
     
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
     job.sdim = [0 0 0];
+    
+    mpm_assert_output_directory(job.odir{1});
+    
     mpmESTATICS(job);
     
 end
@@ -388,6 +391,8 @@ function [] = spm_local_mpm_noMT(job)
 
     
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
+    mpm_assert_output_directory(job.odir{1});
+    
     job.mtFiles = [];
     job.mtTR = [];
     job.mtTE = [];
@@ -403,6 +408,8 @@ function [] = spm_local_mpm_givenESTATICS(job)
     
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
     
+    mpm_assert_output_directory(job.odir{1});
+    
     mpm_givenESTATICS(job);
     
 end
@@ -412,9 +419,26 @@ function [] = spm_local_mpm_extractNII(job)
     
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
     
+    mpm_assert_output_directory(job.odir{1});
+    
     mpm_extractNII(job);
     
 end
+
+function [] = mpm_assert_output_directory(odir)
+        % checks if it is possible to write to the chosen output directory
+    timestamp = datestr(now);
+    timestamp = strrep(timestamp,' ','_');
+    timestamp = strrep(timestamp,'-','_');
+    timestamp = strrep(timestamp,':','_');
+    try mkdir(odir,timestamp);
+    catch ME
+        fprintf(ME.message);
+        error('You cannot write to the chosen output directory. Please choose another!');
+    end
+    rmdir(fullfile(odir,timestamp));
+end
+
 end
 
 
