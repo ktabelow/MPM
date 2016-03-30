@@ -176,11 +176,11 @@ if verbose, fprintf('done\n'); end
 %% prepare output
 qi.model = model;
 qi.b1Map = b1Map;
-qi.R1 = R1;
+qi.R1 = R1*1000;
 if model.nv==4
-    qi.R2star = reshape(model.modelCoeff(4,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)])/model.TEScale; 
+    qi.R2star = 1000*reshape(model.modelCoeff(4,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)])/model.TEScale; 
 else
-    qi.R2star = reshape(model.modelCoeff(3,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)])/model.TEScale; %teScale
+    qi.R2star = 1000*reshape(model.modelCoeff(3,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)])/model.TEScale; %teScale
 end
 qi.PD = PD;
 qi.delta = delta;
