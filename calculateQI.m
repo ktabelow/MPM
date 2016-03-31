@@ -80,7 +80,8 @@ elseif ~isempty(b1File)   % || model.sdim==b1dim
     if model.sdim==b1dim,
         if model.zStart==1, fprintf('reading correction file from %s \n',b1File{1}); end
         %if verbose, fprintf('reading correction file from %s \n',b1File{1}); end   
-        [b1Map(:,:,:),~] = loadImageSPM(fullfile(b1File{1}),'slices',slices);
+        %[b1Map(:,:,:),~] = loadImageSPM(fullfile(b1File{1}),'slices',slices);
+        b1Map(:,:,:) = MPM_read_coregistered_vol(spm_vol(b1File{1}),spm_vol(model.pdFiles{1}),'slices',slices);
         b1Map = b1Map./100; % still to check if is ok
         b1Map(b1Map < 0) = 0;
     else

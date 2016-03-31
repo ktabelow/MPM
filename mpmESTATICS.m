@@ -23,7 +23,8 @@
 %  kstar           - number of steps for the smoothing algorithm (if 0 no smoothing)          
 %  lambda          - adaptation bandwidth
 %  maskFile        - mask containing the voxel to consider
-%  b1File          - correction field
+%  b1FileA         - amplitude image (correction field)
+%  b1FileB         - phase image (correction field)
 %  odir            - output directory
 %  t1TR mtTR pdTR  
 %  t1TE mtTE pdTE  - parameter (read from file if empty)
@@ -92,7 +93,57 @@ function [] = mpmESTATICS(job)
     
     % prepares the data        
         dataset = createDataSet(job.sdim,job.t1Files,job.pdFiles,job.mtFiles,char(job.maskFile),job.t1TR,job.pdTR,job.mtTR,job.t1TE,job.pdTE,job.mtTE,job.t1FA,job.pdFA, job.mtFA);
-        
+    
+    % if amplitude and phase image are both present, 
+    % produces the b1 correction field with the same dimensionality of the data 
+    
+    if (isempty(job.b1FileA) || (length(job.b1FileA)==1 && strcmp(job.b1FileA{1},'')) ) || ...
+            (isempty(job.b1FileP) || (length(job.b1FileP)==1 && strcmp(job.b1FileP{1},'')) )
+        job.b1File = [];
+    else
+        try
+            fprintf('\nProducing coregistered correction field... \n');
+            pdVol = spm_vol(job.pdFiles{1});
+        b1_aTMat = MPM_get_coreg_matrix(spm_vol(job.b1FileA{1}),pdVol);
+        b1Vol = MPM_read_coregistered_vol(spm_vol(job.b1FileP{1}),pdVol,'affinetransMatrix',b1_aTMat);
+        fprintf('\nSaving the coregistered correction field file... \n');
+        write_small_to_file_nii(job.odir{1},'b1File_registeredTo_', pdVol,b1Vol,1, job.sdim(3), job.sdim);
+        [~, nam, ~] = spm_fileparts(pdVol.fname);
+        job.b1File = {fullfile(job.odir{1},strcat('b1File_registeredTo_',nam,'.nii'))};
+        catch ME
+           fprintf(ME.message);
+            fprintf('\nSomething went wrong when registering and saving the correction field file. No correction field will be applied. \n');
+             job.b1File = [];
+        end
+    end
+    % coregister the images
+    % NB the files are not modified (not even the headers), but the saved
+    % matrices are used later to read the datas
+    if job.coregIM==1,
+        fprintf('\nCoregistering mask... \n');
+        dataset.mask_aTMat = MPM_get_coreg_matrix(spm_vol(fullfile(dataset.maskFile)),spm_vol(job.pdFiles{1}));
+        dataset.t1_aTMat = zeros(4,4, length(job.t1Files));
+        dataset.pd_aTMat = zeros(4,4, length(job.pdFiles));
+        fprintf('\nCoregistering T1w files... \n');
+        for k=1:length(job.t1Files),
+            dataset.t1_aTMat(:,:,k) = MPM_get_coreg_matrix(spm_vol(fullfile(job.t1Files{k})),spm_vol(job.pdFiles{1}));
+        end
+        fprintf('\nCoregistering PDw files... \n');
+        for k=1:length(job.pdFiles),
+            dataset.pd_aTMat(:,:,k) = MPM_get_coreg_matrix(spm_vol(fullfile(job.pdFiles{k})),spm_vol(job.pdFiles{1}));
+        end    
+        if ~isempty(job.mtFiles)
+            dataset.mt_aTMat = zeros(4,4, length(job.mtFiles));
+            fprintf('\nCoregistering MTw files... \n');
+            for k=1:length(job.mtFiles),
+                dataset.mt_aTMat(:,:,k) = MPM_get_coreg_matrix(spm_vol(fullfile(job.mtFiles{k})),spm_vol(job.pdFiles{1}));
+            end
+        end
+    end
+
+    
+    
+    
     
     % if saving ESTATICS model, prepare the .mat with the metadata
     % 
@@ -176,10 +227,16 @@ function [] = mpmESTATICS(job)
                 dataset.mask=ones([dataset.sdim(1) dataset.sdim(2) zEnd-zStart+1]);
                 if zStart==1, fprintf('no correct dimension in mask file - working on all voxels\n'); end
             else
-                if zStart==1, fprintf('correct dimension in mask file\n'); end
-                slices=zStart:zEnd; %1:sdim(3);
-                %[mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
-                [mask(:,:,:),~] = loadImageSPM(fullfile(dataset.maskFile) ,'slices',slices);
+                if zStart==1, 
+                    fprintf('correct dimension in mask file\n'); 
+                end
+                slices=zStart:zEnd; 
+                %[mask(:,:,:),~] = loadImageSPM(fullfile(dataset.maskFile) ,'slices',slices);
+                if isfield(dataset,'mask_aTMat'),
+                    mask(:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(dataset.maskFile)),spm_vol(job.pdFiles{1}),'slices',slices,'affineTransMatrix',dataset.mask_aTMat);
+                else
+                    mask(:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(dataset.maskFile)),spm_vol(job.pdFiles{1}),'slices',slices);
+                end
                 mask = round(mask(:));
                 mask = reshape (mask, [dataset.sdim(1) dataset.sdim(2) zEnd-zStart+1]);
                 dataset.mask=mask;

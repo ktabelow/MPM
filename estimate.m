@@ -50,7 +50,7 @@
 %
 % =========================================================================
 
-function [res] = estimate(i, tolerance, maski,sdim, t1Files,mtFiles,pdFiles,TE, TEScale, DataScale)
+function [res] = estimate(i, tolerance, maski,sdim, t1Files,mtFiles,pdFiles,TE, TEScale, DataScale, dataset)
 
 if ~isempty(mtFiles)
     nv = 4;
@@ -62,21 +62,46 @@ if sum(maski(:))>0,
 slices = i;
 m = [sdim(1), sdim(2), numel(slices)];
 
-T1 = zeros([length(t1Files),m]);
-for k=1:length(t1Files),
-    [T1(k,:,:,:),omega] = loadImageSPM(fullfile(t1Files{k}),'slices',slices);
-end
+if isfield(dataset,'t1_aTMat'),
+    T1 = zeros([length(t1Files),m]);
+    for k=1:length(t1Files),
+        %[T1(k,:,:,:),omega] = loadImageSPM(fullfile(t1Files{k}),'slices',slices);
+        T1(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(t1Files{k})),spm_vol(pdFiles{1}),'slices',slices,'affineTransMatrix',dataset.t1_aTMat(:,:,k));
+    end
  
-if ~isempty(mtFiles)
-MT = zeros([length(mtFiles),m]);
-for k=1:length(mtFiles),
-    [MT(k,:,:,:),omega] = loadImageSPM(fullfile(mtFiles{k}),'slices',slices);
-end
-end
+    if ~isempty(mtFiles)
+        MT = zeros([length(mtFiles),m]);
+        for k=1:length(mtFiles),
+            %[MT(k,:,:,:),omega] = loadImageSPM(fullfile(mtFiles{k}),'slices',slices);
+            MT(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(mtFiles{k})),spm_vol(pdFiles{1}),'slices',slices,'affineTransMatrix',dataset.mt_aTMat(:,:,k));
+        end
+    end
 
-PD = zeros([length(pdFiles),m]);
-for k=1:length(pdFiles),
-    [PD(k,:,:,:),omega] = loadImageSPM(fullfile(pdFiles{k}),'slices',slices);
+    PD = zeros([length(pdFiles),m]);
+    for k=1:length(pdFiles),
+        %[PD(k,:,:,:),omega] = loadImageSPM(fullfile(pdFiles{k}),'slices',slices);
+        PD(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(pdFiles{k})),spm_vol(pdFiles{1}),'slices',slices,'affineTransMatrix',dataset.pd_aTMat(:,:,k));
+    end
+else
+    T1 = zeros([length(t1Files),m]);
+    for k=1:length(t1Files),
+        %[T1(k,:,:,:),omega] = loadImageSPM(fullfile(t1Files{k}),'slices',slices);
+        T1(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(t1Files{k})),spm_vol(pdFiles{1}),'slices',slices);
+    end
+ 
+    if ~isempty(mtFiles)
+        MT = zeros([length(mtFiles),m]);
+        for k=1:length(mtFiles),
+            %[MT(k,:,:,:),omega] = loadImageSPM(fullfile(mtFiles{k}),'slices',slices);
+            MT(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(mtFiles{k})),spm_vol(pdFiles{1}),'slices',slices);
+        end
+    end
+
+    PD = zeros([length(pdFiles),m]);
+    for k=1:length(pdFiles),
+        %[PD(k,:,:,:),omega] = loadImageSPM(fullfile(pdFiles{k}),'slices',slices);
+        PD(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(pdFiles{k})),spm_vol(pdFiles{1}),'slices',slices);
+    end
 end
 
 TE = TE./TEScale; 
@@ -128,7 +153,7 @@ end
         
         res.para=para;
         res.dD=dD;
-        res.omega=omega;
+        %res.omega=omega;
     else 
         data = [T1t./DataScale; PDt./DataScale];
 
@@ -160,7 +185,7 @@ end
         res.sig2 = kron(sig2,ones(1,nv*nv));
         res.para=para;
         res.dD=dD;
-        res.omega=omega;
+        %res.omega=omega;
     end
 else
    

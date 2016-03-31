@@ -132,7 +132,7 @@ for k=1:(zEnd-zStart+1) %1:sdim(3)
     
     i= zStart+k-1;
     maski = dataset.mask(:,:,k);
-  res=estimate(i,tolerance,maski,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
+  res=estimate(i,tolerance,maski,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale,dataset);
 %  res=estimate(i,sdim,t1Files,mtFiles,pdFiles,TE,TEScale,DataScale);
   coeff(:,k)=res.coeff;  
   invCov{k}=res.invCov;

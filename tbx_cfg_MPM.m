@@ -166,15 +166,41 @@ function MPM = tbx_cfg_MPM
 % --------------------------------------------------------------------
 % spm_file b1File
 % ---------------------------------------------------------------------
-    b1File         = cfg_files;
-    b1File.tag     = 'b1File';
-    b1File.name    = 'B1 correction file';
-    b1File.help    = {'Select the correction field file if available' ...
-                      'This volume has to come with the same spatial dimension as the MPM data. If no volume is selected, no correction is performed.'};
-    b1File.filter  = 'image';
-    b1File.ufilter = '.*';
-    b1File.num     = [0 1];
-    b1File.val     = {[]};
+%     b1File         = cfg_files;
+%     b1File.tag     = 'b1File';
+%     b1File.name    = 'B1 correction file';
+%     b1File.help    = {'Select the correction field file if available' ...
+%                       'This volume has to come with the same spatial dimension as the MPM data. If no volume is selected, no correction is performed.'};
+%     b1File.filter  = 'image';
+%     b1File.ufilter = '.*';
+%     b1File.num     = [0 1];
+%     b1File.val     = {[]};
+    
+% --------------------------------------------------------------------
+% spm_file b1File
+% ---------------------------------------------------------------------
+    b1FileA         = cfg_files;
+    b1FileA.tag     = 'b1FileA';
+    b1FileA.name    = 'B1 correction file - Amplitude Image';
+    b1FileA.help    = {'Select the amplitude image file.' ...
+                      'If no volume is selected, no correction is performed.'};
+    b1FileA.filter  = 'image';
+    b1FileA.ufilter = '.*';
+    b1FileA.num     = [0 1];
+    b1FileA.val     = {[]};
+    
+% --------------------------------------------------------------------
+% spm_file b1File
+% ---------------------------------------------------------------------
+    b1FileP         = cfg_files;
+    b1FileP.tag     = 'b1FileP';
+    b1FileP.name    = 'B1 correction file - Phase Image';
+    b1FileP.help    = {'Select the phasen image file.' ...
+                      'If no volume is selected, no correction is performed.'};
+    b1FileP.filter  = 'image';
+    b1FileP.ufilter = '.*';
+    b1FileP.num     = [0 1];
+    b1FileP.val     = {[]};
     
 % ---------------------------------------------------------------------
 % save ESTATICS modell - if it is on, the ESTATICS model parameter and
@@ -192,6 +218,21 @@ function MPM = tbx_cfg_MPM
                        'Yes'};
     saveESTA.values  = {0 1};
     saveESTA.val     = {0};
+    
+% ---------------------------------------------------------------------
+% coregister images - if it is on, all the calculation are done on the
+% coregistered images; if off, the matrix returned from spm_get_space is
+% used
+% ---------------------------------------------------------------------
+    coregIM         = cfg_menu;
+    coregIM.tag     = 'coregIM';
+    coregIM.name    = 'Coregister the images?';
+    coregIM.help    = {'This option enables to perform the coregistration of the images. Use it if your images have not been coregistered, but consider the additional time required.' ...
+                      ' '};
+    coregIM.labels  = {'No'
+                       'Yes'};
+    coregIM.values  = {0 1};
+    coregIM.val     = {0};
 
 % ---------------------------------------------------------------------
 % t1TR 
@@ -326,8 +367,8 @@ function MPM = tbx_cfg_MPM
      MT_branch         = cfg_exbranch;
      MT_branch.tag     = 'MT_branch';
      MT_branch.name    = 'Model with T1w, PDw and MTw volumes';
-     MT_branch.val     = {t1Files mtFiles pdFiles maskFile tr2 height kstar lambda ...
-                          tol b1File saveESTA odir t1TR mtTR pdTR ...
+     MT_branch.val     = {t1Files mtFiles pdFiles maskFile tr2 coregIM height kstar lambda ...
+                          tol b1FileA b1FileP saveESTA odir t1TR mtTR pdTR ...
                           t1TE mtTE pdTE t1FA mtFA pdFA};
      MT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset with T1w, PDw and MTw volumes.'};
      MT_branch.prog    = @spm_local_mpm;
@@ -338,8 +379,8 @@ function MPM = tbx_cfg_MPM
      withoutMT_branch         = cfg_exbranch;
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without MTw volumes';
-     withoutMT_branch.val     = {t1Files pdFiles maskFile height kstar lambda ...
-                                tol b1File saveESTA odir t1TR pdTR ... 
+     withoutMT_branch.val     = {t1Files pdFiles maskFile coregIM height kstar lambda ...
+                                tol b1FileA b1FileP saveESTA odir t1TR pdTR ... 
                                 t1TE pdTE t1FA pdFA}; 
      withoutMT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset without MTw volumes.'};
      withoutMT_branch.prog    = @spm_local_mpm_noMT;
@@ -350,7 +391,7 @@ function MPM = tbx_cfg_MPM
      ESTAmodel_branch         = cfg_exbranch;
      ESTAmodel_branch.tag     = 'ESTAmodel_branch';
      ESTAmodel_branch.name    = 'Use an existing ESTATICS model';
-     ESTAmodel_branch.val     = {ESTAmodel height kstar lambda b1File tr2 odir};
+     ESTAmodel_branch.val     = {ESTAmodel height kstar lambda b1FileA b1FileP tr2 odir};
      ESTAmodel_branch.help    = {'This branch implements the smoothing and final calculation of the quantitative maps R1, R2*, PD (and MT) given an existing ESTATICS model.'};
      ESTAmodel_branch.prog    = @spm_local_mpm_givenESTATICS;
      

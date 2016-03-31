@@ -18,7 +18,8 @@
 %  height          - height of the region of interest 
 %  kstar           - number of steps for the smoothing algorithm (if 0 no smoothing)          
 %  lambda          - adaptation bandwidth
-%  b1File          - correction field
+%  b1FileA         - amplitude image (correction field)
+%  b1FileB         - phase image (correction field)
 %  odir            - output directory
 %
 %  The ESTAmodel must contain:
@@ -119,7 +120,28 @@ function [] = mpm_givenESTATICS(job)
     % prepares the data        
     %    dataset = createDataSet(job.sdim,job.t1Files,job.pdFiles,job.mtFiles,char(job.maskFile),job.t1TR,job.pdTR,job.mtTR,job.t1TE,job.pdTE,job.mtTE,job.t1FA,job.pdFA, job.mtFA);
         
+    % if amplitude and phase image are both present, 
+    % produces the b1 correction field with the same dimensionality of the data 
     
+    if ((length(job.b1FileA)==1 && strcmp(job.b1FileA{1},'')) || isempty(job.b1FileA{1})) || ...
+            ((length(job.b1FileP)==1 && strcmp(job.b1FileP{1},'')) || isempty(job.b1FileP{1}))
+        job.b1File = [];
+    else
+        try
+            fprintf('\nProducing coregistered correction field... \n');
+            pdVol = spm_vol(modelMPM.pdFiles{1});
+        b1_aTMat = MPM_get_coreg_matrix(spm_vol(job.b1FileA{1}),pdVol);
+        b1Vol = MPM_read_coregistered_vol(spm_vol(job.b1FileP{1}),pdVol,'affinetransMatrix',b1_aTMat);
+         fprintf('\nSaving the coregistered correction field file... \n');
+        write_small_to_file_nii(job.odir{1},'b1File_registeredTo_', pdVol,b1Vol,1, sdim(3), sdim);
+        [~, nam, ~] = spm_fileparts(pdVol.fname);
+        job.b1File = {fullfile(job.odir{1},strcat('b1File_registeredTo_',nam,'.nii'))};
+        catch ME
+           fprintf(ME.message);
+            fprintf('\nSomething went wrong when registering and saving the correction field file. No correction field will be applied. \n');
+             job.b1File = [];
+        end
+    end
    
     
     spm_progress_bar('Init',sdim(3),'planes completed');
@@ -154,23 +176,14 @@ function [] = mpm_givenESTATICS(job)
             mask=meta.mask(:,:,slices);
             modelMPM.mask = mask;
             clear mask;
-%             [mask(:,:,:),~] = loadImageSPM(fullfile(meta.maskFile) ,'slices',slices);
-%             mask = round(mask(:));
-%             mask = reshape (mask, [sdim(1) sdim(2) zEnd-zStart+1]);
-%             modelMPM.mask=mask;
-%             clear mask;
             if isfield(modelMPM, 'modelCoeff'),
                 modelMPM= rmfield(modelMPM,'modelCoeff');
             end                  
             modelCoeff(1,:,:,:) = meta.modelCoeff(1,:,:,slices);
             modelCoeff(2,:,:,:) = meta.modelCoeff(2,:,:,slices);
             modelCoeff(3,:,:,:) = meta.modelCoeff(3,:,:,slices);
-%             [modelMPM.modelCoeff(1,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{1}) ,'slices',slices);
-%             [modelMPM.modelCoeff(2,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{2}) ,'slices',slices);
-%             [modelMPM.modelCoeff(3,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{3}) ,'slices',slices);
             if meta.nv==4,  
-                modelCoeff(4,:,:,:) = meta.modelCoeff(4,:,:,slices);
-%                 [modelMPM.modelCoeff(4,:,:,:),~]= loadImageSPM(fullfile(coeffFiles{4}) ,'slices',slices);            
+                modelCoeff(4,:,:,:) = meta.modelCoeff(4,:,:,slices);          
             end
             modelMPM.modelCoeff = modelCoeff;
             clear modelCoeff;
