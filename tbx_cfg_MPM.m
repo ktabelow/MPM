@@ -367,9 +367,9 @@ function MPM = tbx_cfg_MPM
      MT_branch         = cfg_exbranch;
      MT_branch.tag     = 'MT_branch';
      MT_branch.name    = 'Model with T1w, PDw and MTw volumes';
-     MT_branch.val     = {t1Files mtFiles pdFiles maskFile tr2 coregIM height kstar lambda ...
-                          tol b1FileA b1FileP saveESTA odir t1TR mtTR pdTR ...
-                          t1TE mtTE pdTE t1FA mtFA pdFA};
+     MT_branch.val     = {t1Files mtFiles pdFiles maskFile odir tr2 coregIM saveESTA  ...
+                          kstar lambda b1FileA b1FileP height tol  ...
+                          t1TR mtTR pdTR t1TE mtTE pdTE t1FA mtFA pdFA};
      MT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset with T1w, PDw and MTw volumes.'};
      MT_branch.prog    = @spm_local_mpm;
      
@@ -379,9 +379,9 @@ function MPM = tbx_cfg_MPM
      withoutMT_branch         = cfg_exbranch;
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without MTw volumes';
-     withoutMT_branch.val     = {t1Files pdFiles maskFile coregIM height kstar lambda ...
-                                tol b1FileA b1FileP saveESTA odir t1TR pdTR ... 
-                                t1TE pdTE t1FA pdFA}; 
+     withoutMT_branch.val     = {t1Files pdFiles maskFile odir coregIM saveESTA  ...
+                                kstar lambda b1FileA b1FileP height tol ... 
+                                t1TR pdTR t1TE pdTE t1FA pdFA}; 
      withoutMT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset without MTw volumes.'};
      withoutMT_branch.prog    = @spm_local_mpm_noMT;
 
@@ -391,7 +391,7 @@ function MPM = tbx_cfg_MPM
      ESTAmodel_branch         = cfg_exbranch;
      ESTAmodel_branch.tag     = 'ESTAmodel_branch';
      ESTAmodel_branch.name    = 'Use an existing ESTATICS model';
-     ESTAmodel_branch.val     = {ESTAmodel height kstar lambda b1FileA b1FileP tr2 odir};
+     ESTAmodel_branch.val     = {ESTAmodel odir kstar lambda b1FileA b1FileP tr2 height};
      ESTAmodel_branch.help    = {'This branch implements the smoothing and final calculation of the quantitative maps R1, R2*, PD (and MT) given an existing ESTATICS model.'};
      ESTAmodel_branch.prog    = @spm_local_mpm_givenESTATICS;
      
@@ -401,7 +401,7 @@ function MPM = tbx_cfg_MPM
      extractNII_branch         = cfg_exbranch;
      extractNII_branch.tag     = 'extractNII_branch';
      extractNII_branch.name    = 'Get image files from ESTATICS model';
-     extractNII_branch.val     = {ESTAmodel height odir};
+     extractNII_branch.val     = {ESTAmodel odir height};
      extractNII_branch.help    = {'This branch creates the NIfTI files of the estimated ESTATICS parameter ' ...
          'from an existing ESTATICS model. No smoothing is applied. No calculation of R1, R2*, PD (and MT) maps is performed.'};
      extractNII_branch.prog    = @spm_local_mpm_extractNII;
