@@ -167,6 +167,10 @@ delta = 1 - enum./denom;
 clear alphamt enum denom
 delta(imag(delta)>0)=nan; %
 delta = real(delta);
+
+% correction for MT saturation pulse. see Helms ISMRM 23 (2015) 3360
+delta = 100 .* delta .* (1 - 0.4) ./ (1 - 0.4 * b1Map) ./ b1Map.^2;
+
 else
     delta = [];
 end
