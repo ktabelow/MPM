@@ -127,14 +127,15 @@ end
 
 
         indicator = [ones(length(t1Files),1);2*ones(length(mtFiles),1); 3*ones(length(pdFiles),1)];
-        fctn = @(model) FLASHObjectiveFunction(model,data,TE,indicator);
+        
+        fctn = @(model,credit) FLASHObjectiveFunction(model,data,TE,indicator,credit);
     
         % m0big has to be changed if we want a voxel-dipendent starting point
         m0big = kron(ones(size(T1t,2),1),m0); 
         lower = zeros(size(m0big));
-        % mi1 = GaussNewton(fctn,m0big); % old gauss without constraints
-        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',tolerance,'tolG',tolerance,'tolU',tolerance,'lower',lower,'maxIter',10);
         
+        mi1 = ProjGaussNewton(fctn,m0big,'verbose',0,'tolJ',tolerance,'tolG',tolerance,'tolU',tolerance,'lower',lower,'maxIter',50);
+        mi1 = mi1(:);
 
         
 
@@ -142,7 +143,8 @@ end
 
         %% analyze result
 
-        [~,para,dD,~,Hstar] = fctn(mi1); % ~ is for H, Hstar contains only J'*J
+        
+        [~,para,dD,~,Hstar] = fctn(mi1,[]); % ~ is for H, Hstar contains only J'*J
         sig2 = para.Dcs/(size(TE,1)-numel(m0));
 
         res.invCov=Hstar;
@@ -159,21 +161,23 @@ end
 
 
         indicator = [ones(length(t1Files),1); 2*ones(length(pdFiles),1)];
-        fctn = @(model) FLASHObjectiveFunction_WithoutMT(model,data,TE,indicator);
+        % fctn = @(model) FLASHObjectiveFunction_WithoutMT(model,data,TE,indicator);
     
         % m0big has to be changed if we want a voxel-dipendent starting point
         m0big = kron(ones(size(T1t,2),1),m0); 
         lower = zeros(size(m0big));
-        % mi1 = GaussNewton(fctn,m0big);
-        mi1 = ProjGaussNewton(fctn,m0big,'tolJ',tolerance,'tolG',tolerance,'tolU',tolerance,'lower',lower,'maxIter',10);
+       
 
-        
+        fctn2 = @(model,credit) FLASHObjectiveFunction_WithoutMT(model,data,TE,indicator,credit);
+        mi1 = ProjGaussNewton(fctn2,m0big,'tolJ',tolerance,'tolG',tolerance,'tolU',tolerance,'lower',lower,'maxIter',50,'verbose',0);
+        mi1 = mi1(:);
 
         res.coeff=mi1;
 
         %% analyze result
 
-        [~,para,dD,~,Hstar] = fctn(mi1); % ~ is for H, Hstar contains only J'*J
+        
+        [~,para,dD,~,Hstar] = fctn2(mi1,[]);  % ~ is for H, Hstar contains only J'*J
         sig2 = para.Dcs/(size(TE,1)-numel(m0));
 
 
