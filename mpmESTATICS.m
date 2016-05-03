@@ -120,8 +120,9 @@ function [] = mpmESTATICS(job)
     % NB the files are not modified (not even the headers), but the saved
     % matrices are used later to read the datas
     if job.coregIM==1,
-        fprintf('\nCoregistering mask... \n');
-        dataset.mask_aTMat = MPM_get_coreg_matrix(spm_vol(fullfile(dataset.maskFile)),spm_vol(job.pdFiles{1}));
+        % not coregistering the mask. The user is responsible for creating a correct mask
+        % fprintf('\nCoregistering mask... \n'); 
+        % dataset.mask_aTMat = MPM_get_coreg_matrix(spm_vol(fullfile(dataset.maskFile)),spm_vol(job.pdFiles{1}));
         dataset.t1_aTMat = zeros(4,4, length(job.t1Files));
         dataset.pd_aTMat = zeros(4,4, length(job.pdFiles));
         fprintf('\nCoregistering T1w files... \n');
@@ -232,11 +233,12 @@ function [] = mpmESTATICS(job)
                 end
                 slices=zStart:zEnd; 
                 %[mask(:,:,:),~] = loadImageSPM(fullfile(dataset.maskFile) ,'slices',slices);
-                if isfield(dataset,'mask_aTMat'),
-                    mask(:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(dataset.maskFile)),spm_vol(job.pdFiles{1}),'slices',slices,'affineTransMatrix',dataset.mask_aTMat);
-                else
+                % if we decided to coregister the mask in line 125
+                %if isfield(dataset,'mask_aTMat'),
+                %    mask(:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(dataset.maskFile)),spm_vol(job.pdFiles{1}),'slices',slices,'affineTransMatrix',dataset.mask_aTMat);
+                %else
                     mask(:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(dataset.maskFile)),spm_vol(job.pdFiles{1}),'slices',slices);
-                end
+                %end
                 mask = round(mask(:));
                 mask = reshape (mask, [dataset.sdim(1) dataset.sdim(2) zEnd-zStart+1]);
                 dataset.mask=mask;
