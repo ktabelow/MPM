@@ -3,7 +3,7 @@
 % =========================================================================
 % 2015/10/15
 %
-% 
+% written by C. D'Alonzo
 %
 % [dataset] = createDataSet(sdim,t1Files,pdFiles,mtFiles,maskFile,t1TR,pdTR,mtTR,t1TE,pdTE,mtTE,t1FA,pdFA, mtFA);
 % 

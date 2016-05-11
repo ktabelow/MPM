@@ -1,5 +1,7 @@
 % get affine transformation matrix
-% 
+%
+% written by C. D'Alonzo
+%
 % Input:
 %   VF     - structure containing image volume information of moved image
 %   VG     - structure containing image volume information of reference image 

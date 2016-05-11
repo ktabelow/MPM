@@ -2,7 +2,10 @@
 %
 % =========================================================================
 % 2015/12/08
+% 
+% by C. D'Alonzo
 %
+% FORTRAN code written by J. Polzehl
 % 
 % function [] = mpmESTATICS(job)
 % 

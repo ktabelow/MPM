@@ -1,4 +1,5 @@
 % read the weights from a .nii image file
+% written by C. D'Alonzo
 % Input: 
 % imgFile - a nii file
 % wghts   - 1x3 vector containing the weights (unscaled)

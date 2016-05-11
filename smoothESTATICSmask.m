@@ -3,8 +3,7 @@
 % =========================================================================
 % 2015/10/6
 %
-% matlab Implementation written by C. D'Alonzo 
-% of the R function estimateESTATICS.r in package qMRI written by K. Tabelow
+% written by C. D'Alonzo 
 %
 % FORTRAN code written by J. Polzehl
 % 

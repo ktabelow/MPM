@@ -3,6 +3,8 @@
 % function [res] = getParameter(FilesCellArray, StringToLookFor)
 %
 % 2015/12/08
+%
+% written by C. D'Alonzo
 % 
 % search for the values of the parameter indicated in the StringToLookFor
 % in the description of the nii file given as single filename or cell array

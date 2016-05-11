@@ -4,7 +4,8 @@
 % =========================================================================
 % 2016/01/25
 %
-% 
+% written by C. D'Alonzo 
+%
 % function [] = mpm_extractNII(job)
 % 
 % produces the nii files of the parameters, iterating on each region containing "heigth"

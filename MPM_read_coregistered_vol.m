@@ -1,4 +1,6 @@
 % read coregistered image volume
+%
+% written by C. D'Alonzo
 % 
 % Input:
 %   VF     - structure containing image volume information of moved image
