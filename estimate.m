@@ -5,8 +5,7 @@
 % 
 % last modified 2016/03/17
 %
-% matlab Implementation written by C. D'Alonzo 
-% of the R function estimateESTATICS.r in package qMRI written by K. Tabelow
+% written by C. D'Alonzo 
 %
 % 
 % functions loadImageSPM, GaussNewton, FLASHObjectiveFunction, 

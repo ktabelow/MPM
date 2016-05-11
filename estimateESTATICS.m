@@ -3,8 +3,7 @@
 % =========================================================================
 % 2015/10/6
 %
-% matlab Implementation of the R function estimateESTATICS.r in package qMRI
-% written by K. Tabelow and J. Polzehl (?)
+% written by C. D'Alonzo 
 %
 % This implementation is based on the model of Lars Ruthotto to read the 
 % data files and estimate the paramaters level by level and not on each

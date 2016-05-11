@@ -3,8 +3,7 @@
 % =========================================================================
 % 2015/10/7
 %
-% matlab Implementation of the R function calculateQI.r in package qMRI
-% written by K. Tabelow and J. Polzehl (?)
+% written by C. D'Alonzo 
 %
 % 
 %
@@ -137,6 +136,17 @@ R1 = -log(E1)/t1TR;
 R1(imag(R1)>0)=nan; %
 R1 = real(R1);
 
+% RF spoiling correction Preibisch and Deichmann MRM 61 (2009) 125-135
+%
+% These coefficients depend on the sequence!! This is 800mu v3 protocol see
+% MTprot in VBQ
+P2_a = [57.427573706259864, -79.300742898810441,  39.218584751863879];
+P2_b = [-0.121114060111119,   0.121684347499374,   0.955987357483519];
+R1 = R1 ./ ((P2_a(1)*b1Map.^2 + P2_a(2)*b1Map + P2_a(3)) .* R1 + (P2_b(1)*b1Map.^2 + P2_b(2)*b1Map + P2_b(3)));
+E1 = exp(- R1 * t1TR);
+% END spoiling correction
+
+
 if verbose, fprintf('done\n'); end
 
 
@@ -181,7 +191,7 @@ if verbose, fprintf('done\n'); end
 %% prepare output
 qi.model = model;
 qi.b1Map = b1Map;
-qi.R1 = R1*1000;
+qi.R1 = R1 * 1000; % TR is in ms, so R1 is now in s^(-1)
 if model.nv==4
     qi.R2star = 1000*reshape(model.modelCoeff(4,:,:,:),[model.sdim(1) model.sdim(2) (model.zEnd-model.zStart+1)])/model.TEScale; 
 else
