@@ -195,7 +195,7 @@ function MPM = tbx_cfg_MPM
     b1FileP         = cfg_files;
     b1FileP.tag     = 'b1FileP';
     b1FileP.name    = 'B1 correction file - Phase Image';
-    b1FileP.help    = {'Select the phasen image file.' ...
+    b1FileP.help    = {'Select the phase image file.' ...
                       'If no volume is selected, no correction is performed.'};
     b1FileP.filter  = 'image';
     b1FileP.ufilter = '.*';

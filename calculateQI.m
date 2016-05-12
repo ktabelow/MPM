@@ -137,11 +137,10 @@ R1(imag(R1)>0)=nan; %
 R1 = real(R1);
 
 % RF spoiling correction Preibisch and Deichmann MRM 61 (2009) 125-135
-%
-% These coefficients depend on the sequence!! This is 800mu v3 protocol see
+% These coefficients depend on the sequence!! See getPolynomsP2_ab and
 % MTprot in VBQ
-P2_a = [57.427573706259864, -79.300742898810441,  39.218584751863879];
-P2_b = [-0.121114060111119,   0.121684347499374,   0.955987357483519];
+P2_a = model.P2_a;
+P2_b = model.P2_b;
 R1 = R1 ./ ((P2_a(1)*b1Map.^2 + P2_a(2)*b1Map + P2_a(3)) .* R1 + (P2_b(1)*b1Map.^2 + P2_b(2)*b1Map + P2_b(3)));
 E1 = exp(- R1 * t1TR);
 % END spoiling correction

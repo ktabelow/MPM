@@ -188,6 +188,8 @@ function [] = mpmESTATICS(job)
            meta.FA = dataset.FA;
            meta.nv = dataset.nv;
            meta.nFiles = dataset.nFiles; 
+           meta.P2_a = dataset.P2_a; 
+           meta.P2_b = dataset.P2_b; 
            meta.modelCoeff = zeros([dataset.nv dataset.sdim]);
            catch ME
             fprintf(ME.message);   
@@ -258,7 +260,7 @@ function [] = mpmESTATICS(job)
         if job.saveESTA==1,        
          try
            meta.TEScale = modelMPM.TEScale;
-           meta.DataScale = modelMPM.DataScale;
+           meta.DataScale = modelMPM.DataScale;           
           if zStart==1,
               meta.modelCoeff(1,:,:,1:zEnd) = modelMPM.modelCoeff(1,:,:,:);
               meta.modelCoeff(2,:,:,1:zEnd) = modelMPM.modelCoeff(2,:,:,:);

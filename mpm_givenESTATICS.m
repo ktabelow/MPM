@@ -69,6 +69,8 @@ function [] = mpm_givenESTATICS(job)
     modelMPM.FA = meta.FA;
     modelMPM.TE = meta.TE;
     modelMPM.TR = meta.TR;
+    modelMPM.P2_a = meta.P2_a;
+    modelMPM.P2_b = meta.P2_b;
     modelMPM.TEScale = meta.TEScale;
     modelMPM.DataScale = meta.DataScale;
     

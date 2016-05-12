@@ -171,7 +171,7 @@ function [dataset] = createDataSet(sdim,t1Files,pdFiles,mtFiles,maskFile,t1TR,pd
     end
   end
   
-  
+  [dataset.P2_a,dataset.P2_b] = getPolynomsP2_ab(pdTR(1),t1TR(1),pdFA(1),t1FA(1));
   
   if dataset.nv==4
       dataset.FA = [t1FA(:); mtFA(:); pdFA(:)];
