@@ -47,7 +47,7 @@ function MPM = tbx_cfg_MPM
     odir.tag     = 'odir';
     odir.name    = 'Output Directory';
     odir.help    = {'Select the directory where the output files should be written.'};
-    odir.filter = 'dir';
+    odir.filter  = 'dir';
     odir.ufilter = '.*';
     odir.num     = [1 1];
 % ---------------------------------------------------------------------
@@ -128,27 +128,6 @@ function MPM = tbx_cfg_MPM
     tol.num     = [1 1];
     tol.val     = {1e-5};
    
-% ---------------------------------------------------------------------
-% zStart especially for workstation
-% ---------------------------------------------------------------------
-%    zStart        = cfg_entry;
-%    zStart.tag     = 'zStart';
-%    zStart.name    = 'zStart';
-%    zStart.help    = {'Start level of the volume of interest '};
-%    zStart.strtype = 'e';
-%    zStart.num     = [1 1];
-%    zStart.val    = {201};
-    
-% ---------------------------------------------------------------------
-% zEnd especially for workstation
-% ---------------------------------------------------------------------
-%    zEnd        = cfg_entry;
-%    zEnd.tag     = 'zEnd';
-%    zEnd.name    = 'zEnd';
-%    zEnd.help    = {'End level of the volume of interest '};
-%    zEnd.strtype = 'e';
-%    zEnd.num     = [1 1];
-%    zEnd.val    = {225};
 
 % --------------------------------------------------------------------
 % spm_file maskFile
@@ -177,7 +156,7 @@ function MPM = tbx_cfg_MPM
 %     b1File.val     = {[]};
     
 % --------------------------------------------------------------------
-% spm_file b1File
+% spm_file b1FileA Amplitude Image
 % ---------------------------------------------------------------------
     b1FileA         = cfg_files;
     b1FileA.tag     = 'b1FileA';
@@ -190,7 +169,7 @@ function MPM = tbx_cfg_MPM
     b1FileA.val     = {[]};
     
 % --------------------------------------------------------------------
-% spm_file b1File
+% spm_file b1FileP Phase Image
 % ---------------------------------------------------------------------
     b1FileP         = cfg_files;
     b1FileP.tag     = 'b1FileP';
@@ -218,6 +197,23 @@ function MPM = tbx_cfg_MPM
                        'Yes'};
     saveESTA.values  = {0 1};
     saveESTA.val     = {0};
+    
+    
+% ---------------------------------------------------------------------
+% calculate and save the confidence intervall for PD and R1 (lower and upper bound with alpha 0.05) 
+% a .nii file for each boundary will be written
+% ---------------------------------------------------------------------
+    confInt          = cfg_menu;
+    confInt.tag     = 'confInt';
+    confInt.name    = 'Calculate and save the confidence intervall?';
+    confInt.help    = {'This option enables to calculate and save the boundary of the confidence intervall (95%) for PD and R1 obtained through the ESTATICS model. ' ...
+                        'If activated, four .nii files starting with R1_low_, R1_up_, PD_low_ PD_up_ will be saved and, in case the ESTATICS model is also saved (previous option), references to these files are saved into ESTATICS_model_filename.mat.' ...
+                        'Activating this option will slow down the computation and requires enough disk space to save the files.' ...
+                        ' '};
+    confInt.labels  = {'No'
+                       'Yes'};
+    confInt.values  = {0 1};
+    confInt.val     = {0};    
     
 % ---------------------------------------------------------------------
 % coregister images - if it is on, all the calculation are done on the
@@ -368,7 +364,7 @@ function MPM = tbx_cfg_MPM
      MT_branch.tag     = 'MT_branch';
      MT_branch.name    = 'Model with T1w, PDw and MTw volumes';
      MT_branch.val     = {t1Files mtFiles pdFiles maskFile odir tr2 coregIM saveESTA  ...
-                          kstar lambda b1FileA b1FileP height tol  ...
+                          confInt kstar lambda b1FileA b1FileP height tol  ...
                           t1TR mtTR pdTR t1TE mtTE pdTE t1FA mtFA pdFA};
      MT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset with T1w, PDw and MTw volumes.'};
      MT_branch.prog    = @spm_local_mpm;
@@ -380,7 +376,7 @@ function MPM = tbx_cfg_MPM
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without MTw volumes';
      withoutMT_branch.val     = {t1Files pdFiles maskFile odir coregIM saveESTA  ...
-                                kstar lambda b1FileA b1FileP height tol ... 
+                                confInt kstar lambda b1FileA b1FileP height tol ... 
                                 t1TR pdTR t1TE pdTE t1FA pdFA}; 
      withoutMT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset without MTw volumes.'};
      withoutMT_branch.prog    = @spm_local_mpm_noMT;

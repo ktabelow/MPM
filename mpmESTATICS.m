@@ -21,6 +21,10 @@
 %  sdim            - spatial dimensionality of the data 
 %                    (in default case [0 0 0] will be read from the file)
 %  saveESTA        - 1 to save a.mat file containing the ESTATICS model or 0 otherwise 
+%  coregIM         - 1 to coregister the image to the first T1w image, 0
+%                    otherwise
+%  confInt         - 1 to estimate the confidence intervals for R1 and PD,
+%                    0 otherwise
 %  tr2 
 %  height          - height of the region of interest 
 %  kstar           - number of steps for the smoothing algorithm (if 0 no smoothing)          
@@ -34,10 +38,16 @@
 %  t1FA mtFA pdFA
 %
 % no Output
+%
 % the 3 or 4 final variables R1, PD, R2star and in case of a model with MT also delta
 % are written each in a .nii file
 %                 
-%  
+% In case the users chose to save the ESTATICS model, a .mat file with
+% references and data regarding the model will be also saved.
+%
+% In case the user chose to estimate the confidence interval, also
+% 4 .nii files each containing upper and lower boundaries for R1 and PD are written
+% and a reference to them is saved in the ESTATICS model .mat file, if that option is active.
 %
 % =========================================================================
 
@@ -84,6 +94,14 @@ function [] = mpmESTATICS(job)
     PD = zeros(job.sdim);
     delta = zeros(job.sdim);
 
+    
+    if job.confInt==1,
+     R1_low = zeros(job.sdim);
+     R1_up  = zeros(job.sdim);
+     PD_low = zeros(job.sdim);
+     PD_up  = zeros(job.sdim);
+    end
+    
     % prepares variable to save the whole mask (it could be avoided) 
     totalmask = zeros(job.sdim);
     
@@ -109,10 +127,11 @@ function [] = mpmESTATICS(job)
             pdVol = spm_vol(job.pdFiles{1});
         b1_aTMat = MPM_get_coreg_matrix(spm_vol(job.b1FileA{1}),pdVol);
         b1Vol = MPM_read_coregistered_vol(spm_vol(job.b1FileP{1}),pdVol,'affinetransMatrix',b1_aTMat);
-        fprintf('\nSaving the coregistered correction field file... \n');
+        fprintf('\nSaving the coregistered correction field file... ');
         write_small_to_file_nii(job.odir{1},'b1File_registeredTo_', pdVol,b1Vol,1, job.sdim(3), job.sdim);
         [~, nam, ~] = spm_fileparts(pdVol.fname);
         job.b1File = {fullfile(job.odir{1},strcat('b1File_registeredTo_',nam,'.nii'))};
+        fprintf('Done. \n');
         catch ME
            fprintf(ME.message);
             fprintf('\nSomething went wrong when registering and saving the correction field file. No correction field will be applied. \n');
@@ -254,7 +273,15 @@ function [] = mpmESTATICS(job)
         
         %% estimate from all the data the 4or3 parameter 
         % function [model] = estimateESTATICS(dataset, varargin)
+        warning off backtrace
         modelMPM = estimateESTATICS(dataset,'verbose', false, 'tolerance', job.tol);
+        warning on backtrace
+        
+        
+        %% calculate the confidence interval
+        if job.confInt==1,
+            [R1_1,R1_2,PD_1,PD_2] = getConfidenceIntervall(modelMPM,'b1File',job.b1File);
+        end
         
         %% save the 4or3 parameters of the ESTATICS model and DataScale and TEScale in the .mat
         if job.saveESTA==1,        
@@ -308,6 +335,13 @@ function [] = mpmESTATICS(job)
             if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), delta(:,:,zStart:zEnd) = qiSnew.delta; end%
             totalmask(:,:,zStart:zEnd) = qiSnew.model.mask;
             
+            if job.confInt==1,
+                R1_low(:,:,zStart:zEnd) = R1_1;
+                R1_up(:,:,zStart:zEnd) = R1_2;
+                PD_low(:,:,zStart:zEnd) = PD_2;
+                PD_up(:,:,zStart:zEnd) = PD_1;
+            end
+            
             if job.saveESTA==1,        
                try
                meta.invCov(:,:,:,:,zStart:zEnd)=modelMPM.invCov;
@@ -325,6 +359,13 @@ function [] = mpmESTATICS(job)
             if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), delta(:,:,zStart+hdelta:zEnd) = qiSnew.delta(:,:, 1+hdelta: (zEnd-zStart+1) ); end %
             totalmask(:,:,zStart+hdelta:zEnd) = qiSnew.model.mask(:,:, 1+hdelta: (zEnd-zStart+1) );
             
+            if job.confInt==1,
+                R1_low(:,:,zStart+hdelta:zEnd) = R1_1(:,:, 1+hdelta: (zEnd-zStart+1) );
+                R1_up(:,:,zStart+hdelta:zEnd) = R1_2(:,:, 1+hdelta: (zEnd-zStart+1) );
+                PD_low(:,:,zStart+hdelta:zEnd) = PD_2(:,:, 1+hdelta: (zEnd-zStart+1) );
+                PD_up(:,:,zStart+hdelta:zEnd) = PD_1(:,:, 1+hdelta: (zEnd-zStart+1) );
+            end
+            
             if job.saveESTA==1,        
                try
                meta.invCov(:,:,:,:,zStart+hdelta:zEnd)=modelMPM.invCov(:,:,:,:,1+hdelta: (zEnd-zStart+1) );
@@ -338,7 +379,7 @@ function [] = mpmESTATICS(job)
         if zEnd==job.sdim(3),
                 break;
         end
-    
+    %fprintf('Done the level starting at %d \n',startLayerVoxel);
     end
     spm_progress_bar('Set',job.sdim(3));
     spm_progress_bar('Clear');
@@ -350,18 +391,42 @@ function [] = mpmESTATICS(job)
     PD(isnan(PD))=0;
     if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), delta(isnan(delta))=0; end
     
+    if job.confInt==1,
+        R1_low(isnan(R1_low))=0;
+        R1_up(isnan(R1_up))=0;
+        PD_low(isnan(PD_low))=0;
+        PD_up(isnan(PD_up))=0;
+    end
+    
     % set all values of the voxels outside the mask to 0
     R1(totalmask<1)=0;
     R2star(totalmask<1)=0;
     PD(totalmask<1)=0;
     if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), delta(totalmask<1)=0; end
    
+    if job.confInt==1,
+        R1_low(totalmask<1)=0;
+        R1_up(totalmask<1)=0;
+        PD_low(totalmask<1)=0;
+        PD_up(totalmask<1)=0;
+    end
+    
+    
     try
     % write 3 or 4 files for R1, PD, R2star and in case delta
     % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
     write_small_to_file_nii(job.odir{1},'R1_', spm_vol(job.t1Files{1}), R1, 1, job.sdim(3), job.sdim);
     write_small_to_file_nii(job.odir{1},'R2star_', spm_vol(job.t1Files{1}), R2star, 1, job.sdim(3), job.sdim);
     write_small_to_file_nii(job.odir{1},'PD_', spm_vol(job.pdFiles{1}), PD, 1, job.sdim(3), job.sdim);
+    
+    if job.confInt==1,
+        write_small_to_file_nii(job.odir{1},'R1_low_', spm_vol(job.t1Files{1}), R1_low, 1, job.sdim(3), job.sdim);
+        write_small_to_file_nii(job.odir{1},'R1_up_', spm_vol(job.t1Files{1}), R1_up, 1, job.sdim(3), job.sdim);
+        write_small_to_file_nii(job.odir{1},'PD_low_', spm_vol(job.t1Files{1}), PD_low, 1, job.sdim(3), job.sdim);
+        write_small_to_file_nii(job.odir{1},'PD_up_', spm_vol(job.t1Files{1}), PD_up, 1, job.sdim(3), job.sdim);
+        
+    end
+    
     if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')),  write_small_to_file_nii(job.odir{1},'delta_', spm_vol(job.mtFiles{1}), delta, 1, job.sdim(3),  job.sdim); end
     catch
         error('it was not possible to save the resulting .nii files. Check to have writing rights in the current directory')
@@ -371,6 +436,14 @@ function [] = mpmESTATICS(job)
                clear invCov;
                try
                meta.mask=totalmask;
+                
+                if job.confInt==1,
+                    meta.R1_low = {fullfile(job.odir{1},strcat('R1_low_',job.t1Files{1}))};
+                    meta.R1_up = {fullfile(job.odir{1},strcat('R1_up_',job.t1Files{1}))};
+                    meta.PD_low = {fullfile(job.odir{1},strcat('PD_low_',job.t1Files{1}))};
+                    meta.PD_up = {fullfile(job.odir{1},strcat('PD_up_',job.t1Files{1}))};
+                end
+               
                catch
                fprintf('There was a problem saving the ESTATICS model. Check to have enough free space and to be using at least version 7.3.');
                job.saveESTA = 0;      

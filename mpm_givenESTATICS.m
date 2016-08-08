@@ -41,10 +41,30 @@
 %  TE              - arrays containing the relaxation rate, flip angle and echo time  
 %  FA
 %
+%  and optionally:
+%
+%  R1_up           - a 1x1 cell array containing the name of the R1 upper
+%                    boundary nifti file
+%  R1_low          - a 1x1 cell array containing the name of the R1 lower
+%                    boundary nifti file
+%  PD_up           - a 1x1 cell array containing the name of the PD upper
+%                    boundary nifti file
+%  PD_low          - a 1x1 cell array containing the name of the PD lower
+%                    boundary nifti file
+%
+% In case these files are not in the model (only the presence of PD_up will
+% be actually checked), the user is prompt to calculate the confidence
+% interval or not.
+%
 % no Output
-% the 3 or 4 final variables R1, PD, R2star and in case of a model with MT also delta
-% are written each in a .nii file
-%                 
+%
+% the 3 or 4 final variables R1, PD, R2star and in case of a model with MT 
+% also delta are written each in a .nii file
+%
+% In case the confidence intervals have been estimated during the call, also
+% 4 .nii files each containing upper and lower boundaries for R1 and PD are written
+% and a reference to them is saved in the ESTATICS modell (original .mat
+% file)
 %  
 %
 % =========================================================================
@@ -81,6 +101,17 @@ function [] = mpm_givenESTATICS(job)
     sdim = meta.sdim;
     modelMPM.sdim = sdim; 
    
+    if sum(strcmp(who(meta), 'PD_up'))==0
+        str = { 'Confidence interval boundaries for PD and R1 have not been estimated.';...
+        'Would you like to estimate them now?'};
+        if spm_input(str,1,'bd','yes|no',[1,0],1)
+        job.confInt = 1;
+        else
+        job.confInt = 0;
+        end
+    else
+        job.confInt = 0;
+    end
  
     % calculates how big the overlapping has to be
     % to assure a good smoothing    
@@ -110,6 +141,13 @@ function [] = mpm_givenESTATICS(job)
     R2star = zeros(sdim);
     PD = zeros(sdim);
     delta = zeros(sdim);
+    
+     if job.confInt==1,
+     R1_low = zeros(sdim);
+     R1_up  = zeros(sdim);
+     PD_low = zeros(sdim);
+     PD_up  = zeros(sdim);
+    end
 
     % prepares variable to save the whole mask (it could be avoided) 
     totalmask = zeros(sdim);
@@ -127,8 +165,8 @@ function [] = mpm_givenESTATICS(job)
     % if amplitude and phase image are both present, 
     % produces the b1 correction field with the same dimensionality of the data 
     
-    if ((length(job.b1FileA)==1 && strcmp(job.b1FileA{1},'')) || isempty(job.b1FileA{1})) || ...
-            ((length(job.b1FileP)==1 && strcmp(job.b1FileP{1},'')) || isempty(job.b1FileP{1}))
+    if (isempty(job.b1FileA) || (length(job.b1FileA)==1 && strcmp(job.b1FileA{1},'')) ) || ...
+            (isempty(job.b1FileP) || (length(job.b1FileP)==1 && strcmp(job.b1FileP{1},'')) ),
         job.b1File = [];
     else
         try
@@ -136,10 +174,11 @@ function [] = mpm_givenESTATICS(job)
             pdVol = spm_vol(modelMPM.pdFiles{1});
         b1_aTMat = MPM_get_coreg_matrix(spm_vol(job.b1FileA{1}),pdVol);
         b1Vol = MPM_read_coregistered_vol(spm_vol(job.b1FileP{1}),pdVol,'affinetransMatrix',b1_aTMat);
-         fprintf('\nSaving the coregistered correction field file... \n');
+         fprintf('\nSaving the coregistered correction field file... ');
         write_small_to_file_nii(job.odir{1},'b1File_registeredTo_', pdVol,b1Vol,1, sdim(3), sdim);
         [~, nam, ~] = spm_fileparts(pdVol.fname);
         job.b1File = {fullfile(job.odir{1},strcat('b1File_registeredTo_',nam,'.nii'))};
+        fprintf('Done.\n');
         catch ME
            fprintf(ME.message);
             fprintf('\nSomething went wrong when registering and saving the correction field file. No correction field will be applied. \n');
@@ -201,7 +240,10 @@ function [] = mpm_givenESTATICS(job)
             
 %         end
         
-        
+         %% calculate the confidence interval
+        if job.confInt==1,
+            [R1_1,R1_2,PD_1,PD_2] = getConfidenceIntervall(modelMPM,'b1File',job.b1File);
+        end
         
         
         
@@ -224,12 +266,27 @@ function [] = mpm_givenESTATICS(job)
             PD(:,:,zStart:zEnd) = qiSnew.PD;
             if modelMPM.nv==4, delta(:,:,zStart:zEnd) = qiSnew.delta; end%
             totalmask(:,:,zStart:zEnd) = qiSnew.model.mask;
+            
+            if job.confInt==1,
+                R1_low(:,:,zStart:zEnd) = R1_1;
+                R1_up(:,:,zStart:zEnd) = R1_2;
+                PD_low(:,:,zStart:zEnd) = PD_2;
+                PD_up(:,:,zStart:zEnd) = PD_1;
+            end
+            
         else 
             R1(:,:,zStart+hdelta:zEnd) = qiSnew.R1(:,:, 1+hdelta: (zEnd-zStart+1) );
             R2star(:,:,zStart+hdelta:zEnd) = qiSnew.R2star(:,:, 1+hdelta: (zEnd-zStart+1) );
             PD(:,:,zStart+hdelta:zEnd) = qiSnew.PD(:,:, 1+hdelta: (zEnd-zStart+1) );
             if modelMPM.nv==4, delta(:,:,zStart+hdelta:zEnd) = qiSnew.delta(:,:, 1+hdelta: (zEnd-zStart+1) ); end %
             totalmask(:,:,zStart+hdelta:zEnd) = qiSnew.model.mask(:,:, 1+hdelta: (zEnd-zStart+1) );
+            
+            if job.confInt==1,
+                R1_low(:,:,zStart+hdelta:zEnd) = R1_1(:,:, 1+hdelta: (zEnd-zStart+1) );
+                R1_up(:,:,zStart+hdelta:zEnd) = R1_2(:,:, 1+hdelta: (zEnd-zStart+1) );
+                PD_low(:,:,zStart+hdelta:zEnd) = PD_2(:,:, 1+hdelta: (zEnd-zStart+1) );
+                PD_up(:,:,zStart+hdelta:zEnd) = PD_1(:,:, 1+hdelta: (zEnd-zStart+1) );
+            end
             
         end
         if zEnd==sdim(3),
@@ -247,12 +304,27 @@ function [] = mpm_givenESTATICS(job)
     PD(isnan(PD))=0;
     if modelMPM.nv==4, delta(isnan(delta))=0; end
     
+    if job.confInt==1,
+        R1_low(isnan(R1_low))=0;
+        R1_up(isnan(R1_up))=0;
+        PD_low(isnan(PD_low))=0;
+        PD_up(isnan(PD_up))=0;
+    end
+    
     % set all values of the voxels outside the mask to 0
     R1(totalmask<1)=0;
     R2star(totalmask<1)=0;
     PD(totalmask<1)=0;
     if modelMPM.nv==4, delta(totalmask<1)=0; end
    
+    if job.confInt==1,
+        R1_low(totalmask<1)=0;
+        R1_up(totalmask<1)=0;
+        PD_low(totalmask<1)=0;
+        PD_up(totalmask<1)=0;
+    end
+    
+    
     try
     % write 3 or 4 files for R1, PD, R2star and in case delta
     % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
@@ -260,9 +332,38 @@ function [] = mpm_givenESTATICS(job)
     write_small_to_file_nii(job.odir{1},'R2star_', Vt1, R2star, 1, sdim(3), sdim);
     write_small_to_file_nii(job.odir{1},'PD_', Vpd, PD, 1, sdim(3), sdim);
     if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'delta_', Vmt, delta, 1, sdim(3), sdim); end
+    
+    if job.confInt==1,
+        write_small_to_file_nii(job.odir{1},'R1_low_', Vt1, R1_low, 1, sdim(3), sdim);
+        write_small_to_file_nii(job.odir{1},'R1_up_', Vt1, R1_up, 1, sdim(3), sdim);
+        write_small_to_file_nii(job.odir{1},'PD_low_', Vt1, PD_low, 1, sdim(3), sdim);
+        write_small_to_file_nii(job.odir{1},'PD_up_', Vt1, PD_up, 1, sdim(3), sdim);
+        
+    end
+    
     catch
         error('it was not possible to save the resulting .nii files. Check to have writing rights in the current directory')
     end
+    
+    if job.confInt==1,   
+              
+               try
+               meta.Properties.Writable = true;
+               
+               [~, nam, ~] = spm_fileparts(Vt1.fname);
+               meta.R1_low = {fullfile(job.odir{1},strcat('R1_low_',nam,'.nii'))};
+               meta.R1_up = {fullfile(job.odir{1},strcat('R1_up_',nam,'.nii'))};
+               meta.PD_low = {fullfile(job.odir{1},strcat('PD_low_',nam,'.nii'))};
+               meta.PD_up = {fullfile(job.odir{1},strcat('PD_up_',nam,'.nii'))};
+                               
+               catch ME
+               fprintf(ME.message);    
+               fprintf('There was a problem saving the new informations regarding the saved .nii confidence intervall boundary in the existing ESTATICS model. Check to have enough free space and to be using at least version 7.3.\n');
+               
+               end        
+    end
+    
+    
     fprintf('Ending the MPM at %s \n',datestr(now));
 
 end
