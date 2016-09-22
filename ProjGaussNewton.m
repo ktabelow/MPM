@@ -1,4 +1,4 @@
-function [uc,his] = ProjGaussNewton(fctn,uc,varargin)
+function uc = ProjGaussNewton(fctn,uc,varargin)
 
 if nargin==0
     help(mfilename);
@@ -55,7 +55,6 @@ iter = 0; uOld = 0*uc; Jold = para.Dcs; u0 = uc; LSiter = 0;
 nvoxel    = para.nvoxel;
 STOP      = zeros(5,nvoxel);
 credit    = true(1,nvoxel);
-Active    = (uc<=lower)|(uc>=upper);
 normU     = @(u) sqrt(sum(u).^2);
 
 Dcs    = para.Dcs;
@@ -63,19 +62,29 @@ while 1
     Plots(iter,para);
     
     
-    % check stopping rules
+    % check stopping rules for all voxels of previous iteration and new
+    % credit set
     STOP(1,credit) = (iter>0) & (abs(Jold(credit)-para.Dcs)   <= tolJ*(1+abs(Jstop(credit))));
     STOP(2,:)      = (iter>0) & (normU(uc-uOld)               <= tolU*(1+normU(u0)));
     STOP(3,credit) = (normU(para.dDs)                         <= tolG*(1+abs(Jstop(credit))));
     STOP(4,credit) = (norm(para.dDs)                          <= 1e6*eps);
     STOP(5,:) = (iter >= maxIter);
+    creditNew  = ( ~STOP(1,:) | ~STOP(2,:) | ~STOP(3,:)) & ~STOP(4,:);
+    if isempty(creditNew)
+        break;
+    end
+    Dcs(credit) = para.Dcs;
     
-    credit = ( ~STOP(1,:) | ~STOP(2,:) | ~STOP(3,:)) & ~STOP(4,:);
+    % remove rows from gradient that are associated with voxels that have
+    % converged
+    creditDiff = creditNew(credit); % voxels in credit who have converged in last iteration
+    idCredit = reshape([creditDiff;creditDiff;creditDiff],[],1);
+    dJ = dJ(idCredit);
+    H  = H(idCredit,idCredit);
+    
     
     % update
-    Active =  (uc(:,credit)<=lower(:,credit)) | (uc(:,credit)>=upper(:,credit));
-    [Jc,para,dJ,H] = fctn(uc,credit); % evalute objective function
-    Dcs(credit) = para.Dcs;
+    Active =  (uc(:,creditNew)<=lower(:,creditNew)) | (uc(:,creditNew)>=upper(:,creditNew));
     
     % some output
     if verbose
@@ -94,26 +103,26 @@ while 1
     if max(abs(dur))>maxStep
         dur = maxStep*dur/max(abs(dur));
     end
-    du = 0*uc(:,credit);
+    du = 0*uc(:,creditNew);
     du(not(Active)) = dur;
         
     % take gradient step on inactive set
-    gl = max(0,-dJ(uc(:,credit)==lower(:,credit)));
+    gl = max(0,-dJ(uc(:,creditNew)==lower(:,creditNew)));
     if not(isempty(gl)),
         if max(abs(gl))>max(abs(dur)),
             gl = max(abs(dur))*gl./max(abs(gl));
         end
         gl = max(gl,0);
-        du(uc(:,credit)==lower(:,credit))=gl;    
+        du(uc(:,creditNew)==lower(:,creditNew))=gl;    
     end
     
-    gu = min(0,-dJ(uc(:,credit)==upper(:,credit)));
+    gu = min(0,-dJ(uc(:,creditNew)==upper(:,creditNew)));
     if not(isempty(gu)),
         if max(abs(gu))>max(abs(dur)),
             gu = max(abs(dur))*gu./max(abs(gu));
         end
         gu = min(gu,0);
-        du(uc(:,credit)==upper(:,credit)) = gu;
+        du(uc(:,creditNew)==upper(:,creditNew)) = gu;
     end
     
     if all(normU(du)<=1e-10),
@@ -125,7 +134,7 @@ while 1
     
     % perform Armijo linesearch
     t = 1;
-    LSiter = 1; creditLS = credit; idx = 1:nnz(creditLS);
+    LSiter = 1; creditLS = creditNew; idx = 1:nnz(creditLS); 
     while 1
         ut(:,creditLS) = uc(:,creditLS) + t*du(:,idx);
         ut(ut<lower) = lower(ut<lower);
@@ -140,9 +149,14 @@ while 1
         t = t/2;
         LSiter = LSiter+1;
     end  
-    if not(LS),  warning('Linesearch failed!'); break; end
-    
-    uOld = uc; Jold(credit) = para.Dcs; uc = ut;
+    if not(LS),  
+        ut(:,creditLS) = uc(:,creditLS);
+        warning('Linesearch failed in %1.2f%% of voxels!',100*numel(find(not(LS)))/numel(creditLS)); 
+    end
+    Jold(credit) = para.Dcs;
+    credit = creditNew;
+     uOld = uc;  uc = ut;
+    [Jc,para,dJ,H] = fctn(uc,credit); % evalute objective function
 end
 % report history
 if verbose
