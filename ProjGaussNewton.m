@@ -40,6 +40,8 @@ uc    = reshape(uc,[],nvoxel);
 lower = reshape(lower,[],nvoxel);
 upper = reshape(upper,[],nvoxel);
 
+nParamModel = size(uc,1); % @CdA extract the number of parameters (3 for model without MTw, 4 otherwise)
+
 if verbose
 fprintf('[ maxIter=%s / tolJ=%s / tolU=%s / tolG=%s / length(yc)=%d ]\n',...
   num2str(maxIter),num2str(tolJ),num2str(tolU),num2str(tolG),length(uc));
@@ -78,7 +80,11 @@ while 1
     % remove rows from gradient that are associated with voxels that have
     % converged
     creditDiff = creditNew(credit); % voxels in credit who have converged in last iteration
-    idCredit = reshape([creditDiff;creditDiff;creditDiff],[],1);
+    if nParamModel==3
+        idCredit = reshape([creditDiff;creditDiff;creditDiff],[],1);
+    else 
+        idCredit = reshape([creditDiff;creditDiff;creditDiff;;creditDiff],[],1);
+    end
     dJ = dJ(idCredit);
     H  = H(idCredit,idCredit);
     
