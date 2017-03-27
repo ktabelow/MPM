@@ -273,9 +273,9 @@ function [] = mpmESTATICS(job)
         
         %% estimate from all the data the 4or3 parameter 
         % function [model] = estimateESTATICS(dataset, varargin)
-        warning off backtrace
+        warning('off','all');
         modelMPM = estimateESTATICS(dataset,'verbose', false, 'tolerance', job.tol);
-        warning on backtrace
+        warning('on','all');
         
         
         %% calculate the confidence interval
