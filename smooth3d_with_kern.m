@@ -35,6 +35,8 @@ if length(h)~=d
     error('Incompatible length of bandwidth vector h.\nHas to be a scalar or a vector of length 3, but it was %d',length(h));
 end
 
+nanMask = isnan(y);
+y(nanMask) = 0;
 y = reshape(y,size(y,1),size(y,2)*size(y,3));
  
 z = extend_y(y,h(1));
@@ -44,7 +46,7 @@ dyy1 = size(yy,1);
 kern1 = max(0, 1-grid_for_smoothing(dyy1,h(1)).^2)/(h(1)*4/3);
 f1 = fft(yy);
 f2 = fft(kern1);
-invFourier = ifft(f1.*(f2'*ones(1,size(f1,2))));
+invFourier = real(ifft(f1.*(f2'*ones(1,size(f1,2)))));
 yhat = invFourier(z.ind,:)/sum(kern1);
 yhat = reshape(yhat,dy);
 
@@ -61,7 +63,7 @@ dyy2 = size(yy,1);
 kern2 = max(0, 1-grid_for_smoothing(dyy2,h(2)).^2)/(h(2)*4/3);
 f1 = fft(yy);
 f2 = fft(kern2);
-invFourier = ifft(f1.*(f2'*ones(1,size(f1,2))));
+invFourier = real(ifft(f1.*(f2'*ones(1,size(f1,2)))));
 yhat = invFourier(z.ind,:)/sum(kern2);
 
 yhat = reshape(yhat, dy(2),dy(1),dy(3));
@@ -76,12 +78,12 @@ dyy3 = size(yy,1);
 kern3 = max(0, 1-grid_for_smoothing(dyy3,h(3)).^2)/(h(3)*4/3);
 f1 = fft(yy);
 f2 = fft(kern3);
-invFourier = ifft(f1.*(f2'*ones(1,size(f1,2))));
+invFourier = real(ifft(f1.*(f2'*ones(1,size(f1,2)))));
 yhat = invFourier(z.ind,:)/sum(kern3);
 
 yhat = reshape(yhat, dy(3),dy(1),dy(2));
 yhat = permute(yhat,[2 3 1]);
-
+yhat(nanMask) = NaN;
 y_smoothed = yhat;
 
 
