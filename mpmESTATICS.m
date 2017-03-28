@@ -322,23 +322,25 @@ function [] = mpmESTATICS(job)
         if job.kstar~=0 && job.lambda~=0, 
             % smooth the inverse of covariance matrix (non adaptative)
             modelMPM.invCov(1,1,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(1,1,:,:,:),size(modelMPM.mask)),hdelta);
-            modelMPM.invCov(2,2,:,:,:) = modelMPM.invCov(1,1,:,:,:);
-            if modelMPM.nv == 4 
-                modelMPM.invCov(3,3,:,:,:) = modelMPM.invCov(1,1,:,:,:); 
+            modelMPM.invCov(2,2,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(2,2,:,:,:),size(modelMPM.mask)),hdelta);
+            modelMPM.invCov(1,2,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(1,2,:,:,:),size(modelMPM.mask)),hdelta);
+            modelMPM.invCov(2,1,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(2,1,:,:,:),size(modelMPM.mask)),hdelta);
+            modelMPM.invCov(1,3,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(1,3,:,:,:),size(modelMPM.mask)),hdelta);
+            modelMPM.invCov(3,1,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(3,1,:,:,:),size(modelMPM.mask)),hdelta);
+            modelMPM.invCov(2,3,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(2,3,:,:,:),size(modelMPM.mask)),hdelta);
+            modelMPM.invCov(3,2,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(3,2,:,:,:),size(modelMPM.mask)),hdelta);      
+            modelMPM.invCov(3,3,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(3,3,:,:,:),size(modelMPM.mask)),hdelta);
+                     
+            if modelMPM.nv == 4                
                 modelMPM.invCov(1,4,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(1,4,:,:,:),size(modelMPM.mask)),hdelta);
-                modelMPM.invCov(4,1,:,:,:) = modelMPM.invCov(1,4,:,:,:);
+                modelMPM.invCov(4,1,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(4,1,:,:,:),size(modelMPM.mask)),hdelta);
                 modelMPM.invCov(2,4,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(2,4,:,:,:),size(modelMPM.mask)),hdelta);
-                modelMPM.invCov(4,2,:,:,:) = modelMPM.invCov(2,4,:,:,:);
-                modelMPM.invCov(3,4,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(3,4,:,:,:),size(modelMPM.mask)),hdelta);;
-                modelMPM.invCov(4,3,:,:,:) = modelMPM.invCov(3,4,:,:,:);                
+                modelMPM.invCov(4,2,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(4,2,:,:,:),size(modelMPM.mask)),hdelta);
+                modelMPM.invCov(3,4,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(3,4,:,:,:),size(modelMPM.mask)),hdelta);
+                modelMPM.invCov(4,3,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(4,3,:,:,:),size(modelMPM.mask)),hdelta);              
                 modelMPM.invCov(4,4,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(4,4,:,:,:),size(modelMPM.mask)),hdelta);
             else
-                modelMPM.invCov(1,3,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(1,3,:,:,:),size(modelMPM.mask)),hdelta);
-                modelMPM.invCov(3,1,:,:,:) = modelMPM.invCov(1,3,:,:,:) ;
-                modelMPM.invCov(2,3,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(2,3,:,:,:),size(modelMPM.mask)),hdelta);;
-                modelMPM.invCov(3,2,:,:,:) = modelMPM.invCov(2,3,:,:,:) ;                
-                modelMPM.invCov(3,3,:,:,:) = smooth3d_with_kern(reshape(modelMPM.invCov(3,3,:,:,:),size(modelMPM.mask)),hdelta);
-                            
+                      
             end
             modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'lambda',job.lambda); 
             qiSnew = calculateQI(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
