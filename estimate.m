@@ -106,9 +106,11 @@ end
 TE = TE./TEScale; 
 %m0 = [1000/DataScale; 1000/DataScale;1000/DataScale; 0.05*TEScale];
 if ~isempty(mtFiles)
-    m0 = [1000; 1000;1000; 0.05*TEScale];
+    %m0 = [1000; 1000;1000; 0.05*TEScale];
+    m0 = [1000/DataScale; 1000/DataScale;1000/DataScale; 0.05*TEScale];
 else
-    m0 = [1000; 1000; 0.05*TEScale];
+    %m0 = [1000; 1000; 0.05*TEScale];
+    m0 = [1000/DataScale; 1000/DataScale; 0.05*TEScale];
 end
 
 %% perform optimization
