@@ -126,7 +126,7 @@ function [] = mpmESTATICS(job)
             fprintf('\nProducing coregistered correction field... \n');
             pdVol = spm_vol(job.pdFiles{1});
         b1_aTMat = MPM_get_coreg_matrix(spm_vol(job.b1FileA{1}),pdVol);
-        b1Vol = MPM_read_coregistered_vol(spm_vol(job.b1FileP{1}),pdVol,'affinetransMatrix',b1_aTMat);
+        b1Vol = MPM_read_coregistered_vol(spm_vol(job.b1FileP{1}),pdVol,'affineTransMatrix',b1_aTMat);
         fprintf('\nSaving the coregistered correction field file... ');
         write_small_to_file_nii(job.odir{1},'b1File_registeredTo_', pdVol,b1Vol,1, job.sdim(3), job.sdim);
         [~, nam, ~] = spm_fileparts(pdVol.fname);
