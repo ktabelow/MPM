@@ -27,6 +27,8 @@ if d~=3
     error('y has to be a 3D array, but it has size %d',d);
 end
 
+% TODO: Here we should actually use the weights of the data (additional
+% argument)
 if length(h)==1
     h = ones(1,d).*h;
 end
