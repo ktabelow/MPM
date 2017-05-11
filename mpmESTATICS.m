@@ -329,9 +329,10 @@ function [] = mpmESTATICS(job)
             for i=1:modelMPM.nv
                 for j=1:modelMPM.nv
                     COVmatPart = squeeze(modelMPM.invCov(i,j,:,:,:));
-                    thresh = 1000*median(median(median(COVmatPart, 'omitnan'), 'omitnan'), 'omitnan');
-                    COVmatPart(COVmatPart > thresh) = 0;
-                    modelMPM.invCov(i,j,:,:,:) = smooth3d_with_kern(COVmatPart, hdelta);
+%                    thresh = 1000*median(median(median(COVmatPart, 'omitnan'), 'omitnan'), 'omitnan');
+%                    COVmatPart(COVmatPart > thresh) = 0;
+%                    modelMPM.invCov(i,j,:,:,:) = smooth3d_with_kern(COVmatPart, hdelta);
+                    modelMPM.invCov(i,j,:,:,:) = convn(COVmatPart, ones(hdelta*2+1, hdelta*2+1, hdelta*2+1)/(hdelta*2+1)^3, 'same');
                 end
             end
 %             modelMPM.invCov(1,1,:,:,:) = smooth3d_with_kern(squeeze(modelMPM.invCov(1,1,:,:,:)), hdelta);
