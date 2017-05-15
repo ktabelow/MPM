@@ -14,7 +14,6 @@ tolJ         = 1e-5;            % for stopping, objective function
 tolU         = 1e-4;            %   - " -     , current value
 tolG         = 1e-4;            %   - " -     , norm of gradient
 LSMaxIter    = 15;              % maximum number of line search iterations
-LSreduction  = 0;               % minimal reduction in line search
 Plots        = @(task,para) [];
 verbose      = false;
 upper        = Inf*ones(numel(uc),1);

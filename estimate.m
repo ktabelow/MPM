@@ -124,20 +124,23 @@ end
     PDt = reshape(PD, size(PD,1),[]); 
     if ~isempty(mtFiles)
         MTt = reshape(MT, size(MT,1),[]); 
+        
         data = [T1t./DataScale; MTt./DataScale; PDt./DataScale];
 
-
+        dataMasked = data(:,maski==1);
         indicator = [ones(length(t1Files),1);2*ones(length(mtFiles),1); 3*ones(length(pdFiles),1)];
         
-        fctn = @(model,credit) FLASHObjectiveFunction(model,data,TE,indicator,credit);
+        fctn = @(model,credit) FLASHObjectiveFunction(model,dataMasked,TE,indicator,credit);
     
         % m0big has to be changed if we want a voxel-dipendent starting point
-        m0big = kron(ones(size(T1t,2),1),m0); 
+        m0big = kron(ones(numel(find(maski)),1),m0); 
         lower = zeros(size(m0big));
         
-        mi1 = ProjGaussNewton(fctn,m0big,'verbose',0,'tolJ',tolerance,'tolG',tolerance,'tolU',tolerance,'lower',lower,'maxIter',50);
+        mi1 = zeros(numel(m0),numel(maski));
+        mt = ProjGaussNewton(fctn,m0big,'verbose',0,'tolJ',tolerance,'tolG',tolerance,'tolU',tolerance,'lower',lower,'maxIter',50);
+        mi1(:,maski==1) = mt;
         mi1 = mi1(:);
-
+        
         
 
         res.coeff=mi1;
@@ -145,7 +148,7 @@ end
         %% analyze result
 
         
-        [~,para,dD,~,Hstar] = fctn(mi1,[]); % ~ is for H, Hstar contains only J'*J
+        [~,para,dD,~,Hstar] = FLASHObjectiveFunction(mi1,data,TE,indicator,[]);  % ~ is for H, Hstar contains only J'*J
         sig2 = para.Dcs/(size(TE,1)-numel(m0));
 
         res.invCov=Hstar;
