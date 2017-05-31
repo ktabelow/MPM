@@ -453,17 +453,23 @@ function [] = mpmESTATICS(job)
     % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
     write_small_to_file_nii(job.odir{1},'R1_', spm_vol(job.t1Files{1}), R1, 1, job.sdim(3), job.sdim);
     write_small_to_file_nii(job.odir{1},'R2star_', spm_vol(job.t1Files{1}), R2star, 1, job.sdim(3), job.sdim);
-    write_small_to_file_nii(job.odir{1},'PD_', spm_vol(job.pdFiles{1}), PD, 1, job.sdim(3), job.sdim);
+    write_small_to_file_nii(job.odir{1},'A_', spm_vol(job.t1Files{1}), PD, 1, job.sdim(3), job.sdim);
+    [pA, fA, eA] = spm_fileparts(job.t1Files{1});
     
     if job.confInt==1,
         write_small_to_file_nii(job.odir{1},'R1_low_', spm_vol(job.t1Files{1}), R1_low, 1, job.sdim(3), job.sdim);
         write_small_to_file_nii(job.odir{1},'R1_up_', spm_vol(job.t1Files{1}), R1_up, 1, job.sdim(3), job.sdim);
-        write_small_to_file_nii(job.odir{1},'PD_low_', spm_vol(job.t1Files{1}), PD_low, 1, job.sdim(3), job.sdim);
-        write_small_to_file_nii(job.odir{1},'PD_up_', spm_vol(job.t1Files{1}), PD_up, 1, job.sdim(3), job.sdim);
+        write_small_to_file_nii(job.odir{1},'A_low_', spm_vol(job.t1Files{1}), PD_low, 1, job.sdim(3), job.sdim);
+        write_small_to_file_nii(job.odir{1},'A_up_', spm_vol(job.t1Files{1}), PD_up, 1, job.sdim(3), job.sdim);
         
     end
     
-    if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')),  write_small_to_file_nii(job.odir{1},'delta_', spm_vol(job.mtFiles{1}), delta, 1, job.sdim(3),  job.sdim); end
+    if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')),  
+        write_small_to_file_nii(job.odir{1},'MT_', spm_vol(job.t1Files{1}), delta, 1, job.sdim(3),  job.sdim); 
+        PDcalculation(fullfile(job.odir{1}, ['MT_' fA eA]), fullfile(job.odir{1}, ['A_' fA eA]));
+    else
+        PDcalculation(fullfile(job.odir{1}, ['R1_' fA eA]), fullfile(job.odir{1}, ['A_' fA eA]));
+    end
     catch
         error('it was not possible to save the resulting .nii files. Check to have writing rights in the current directory')
     end
@@ -476,8 +482,8 @@ function [] = mpmESTATICS(job)
                 if job.confInt==1,
                     meta.R1_low = {fullfile(job.odir{1},strcat('R1_low_',job.t1Files{1}))};
                     meta.R1_up = {fullfile(job.odir{1},strcat('R1_up_',job.t1Files{1}))};
-                    meta.PD_low = {fullfile(job.odir{1},strcat('PD_low_',job.t1Files{1}))};
-                    meta.PD_up = {fullfile(job.odir{1},strcat('PD_up_',job.t1Files{1}))};
+                    meta.PD_low = {fullfile(job.odir{1},strcat('A_low_',job.t1Files{1}))};
+                    meta.PD_up = {fullfile(job.odir{1},strcat('A_up_',job.t1Files{1}))};
                 end
                
                catch
