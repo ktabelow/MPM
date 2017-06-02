@@ -115,6 +115,19 @@ function [] = mpmESTATICS(job)
     % prepares the data        
         dataset = createDataSet(job.sdim,job.t1Files,job.pdFiles,job.mtFiles,char(job.maskFile),job.t1TR,job.pdTR,job.mtTR,job.t1TE,job.pdTE,job.mtTE,job.t1FA,job.pdFA, job.mtFA);
     
+    % calculates the PD average to which all images are coregistered
+        pdVol = spm_vol(job.pdFiles{1});
+        Pdmean = zeros(job.sdim);
+        for i=1:length(job.pdFiles) 
+            [I,~,~,~] = loadImageSPM(fullfile(job.pdFiles{i}));
+            Pdmean = Pdmean + I;
+        end
+        Pdmean = Pdmean./length(job.pdFiles);
+        write_small_to_file_nii(job.odir{1},'PD_average_', pdVol, Pdmean,1, job.sdim(3), job.sdim);
+        [~, nam, ~] = spm_fileparts(pdVol.fname);
+        job.Pdmean = {fullfile(job.odir{1},strcat('PD_average_',nam,'.nii'))};
+        dataset.Pdmean = job.Pdmean;
+        
     % if amplitude and phase image are both present, 
     % produces the b1 correction field with the same dimensionality of the data 
     
@@ -124,9 +137,9 @@ function [] = mpmESTATICS(job)
     else
         try
             fprintf('\nProducing coregistered correction field... \n');
-            pdVol = spm_vol(job.pdFiles{1});
-        b1_aTMat = MPM_get_coreg_matrix(spm_vol(job.b1FileA{1}),pdVol);
-        b1Vol = MPM_read_coregistered_vol(spm_vol(job.b1FileP{1}),pdVol,'affineTransMatrix',b1_aTMat);
+            
+        b1_aTMat = MPM_get_coreg_matrix(spm_vol(job.b1FileA{1}),spm_vol(job.Pdmean{1}));
+        b1Vol = MPM_read_coregistered_vol(spm_vol(job.b1FileP{1}),spm_vol(job.Pdmean{1}),'affineTransMatrix',b1_aTMat);
         fprintf('\nSaving the coregistered correction field file... ');
         write_small_to_file_nii(job.odir{1},'b1File_registeredTo_', pdVol,b1Vol,1, job.sdim(3), job.sdim);
         [~, nam, ~] = spm_fileparts(pdVol.fname);
@@ -145,22 +158,64 @@ function [] = mpmESTATICS(job)
         % not coregistering the mask. The user is responsible for creating a correct mask
         % fprintf('\nCoregistering mask... \n'); 
         % dataset.mask_aTMat = MPM_get_coreg_matrix(spm_vol(fullfile(dataset.maskFile)),spm_vol(job.pdFiles{1}));
-        dataset.t1_aTMat = zeros(4,4, length(job.t1Files));
-        dataset.pd_aTMat = zeros(4,4, length(job.pdFiles));
-        fprintf('\nCoregistering T1w files... \n');
-        for k=1:length(job.t1Files),
-            dataset.t1_aTMat(:,:,k) = MPM_get_coreg_matrix(spm_vol(fullfile(job.t1Files{k})),spm_vol(job.pdFiles{1}));
+        
+        %dataset.t1_aTMat = zeros(4,4, length(job.t1Files)); % old
+        %registration system
+        %dataset.pd_aTMat = zeros(4,4, length(job.pdFiles));
+        
+        dataset.t1_aTMat = zeros(4,4);
+        dataset.pd_aTMat = zeros(4,4);
+        
+        % calculates the T1 average to calculate the transformation matrix        
+        t1mean = zeros(job.sdim);
+        for i=1:length(job.t1Files) 
+            [I,~,~,~] = loadImageSPM(fullfile(job.t1Files{i}));
+            t1mean = t1mean + I;
         end
+        t1mean = t1mean./length(job.t1Files);
+        write_small_to_file_nii(job.odir{1},'T1_average_', pdVol, t1mean,1, job.sdim(3), job.sdim);
+        [~, nam, ~] = spm_fileparts(pdVol.fname);
+        job.t1mean = {fullfile(job.odir{1},strcat('T1_average_',nam,'.nii'))};
+        dataset.t1mean = job.t1mean;
+        
+        fprintf('\nCoregistering T1w files... \n');
+%         for k=1:length(job.t1Files),
+%             dataset.t1_aTMat(:,:,k) = MPM_get_coreg_matrix(spm_vol(fullfile(job.t1Files{k})),spm_vol(job.Pdmean{1}));
+%         end
+        dataset.t1_aTMat(:,:) = MPM_get_coreg_matrix(spm_vol(fullfile(job.t1mean{1})),spm_vol(job.Pdmean{1}));
+         
+
         fprintf('\nCoregistering PDw files... \n');
-        for k=1:length(job.pdFiles),
-            dataset.pd_aTMat(:,:,k) = MPM_get_coreg_matrix(spm_vol(fullfile(job.pdFiles{k})),spm_vol(job.pdFiles{1}));
-        end    
+%         for k=1:length(job.pdFiles),
+%             dataset.pd_aTMat(:,:,k) = MPM_get_coreg_matrix(spm_vol(fullfile(job.pdFiles{k})),spm_vol(job.Pdmean{1}));
+%         end  
+        dataset.pd_aTMat(:,:) = MPM_get_coreg_matrix(spm_vol(fullfile(job.Pdmean{1})),spm_vol(job.Pdmean{1})); %identity?!?
+
+
         if ~isempty(job.mtFiles)
-            dataset.mt_aTMat = zeros(4,4, length(job.mtFiles));
+            %dataset.mt_aTMat = zeros(4,4, length(job.mtFiles));
+            dataset.mt_aTMat = zeros(4,4);
             fprintf('\nCoregistering MTw files... \n');
-            for k=1:length(job.mtFiles),
-                dataset.mt_aTMat(:,:,k) = MPM_get_coreg_matrix(spm_vol(fullfile(job.mtFiles{k})),spm_vol(job.pdFiles{1}));
+%             for k=1:length(job.mtFiles),
+%                 dataset.mt_aTMat(:,:,k) = MPM_get_coreg_matrix(spm_vol(fullfile(job.mtFiles{k})),spm_vol(job.Pdmean{1}));
+%             end
+            
+            % calculates the MT average to calculate the transformation matrix        
+            MTmean = zeros(job.sdim);
+            for i=1:length(job.mtFiles) 
+                [I,~,~,~] = loadImageSPM(fullfile(job.mtFiles{i}));
+                MTmean = MTmean + I;
             end
+            MTmean = MTmean./length(job.mtFiles);
+            write_small_to_file_nii(job.odir{1},'MT_average_', pdVol, MTmean,1, job.sdim(3), job.sdim);
+            [~, nam, ~] = spm_fileparts(pdVol.fname);
+            job.MTmean = {fullfile(job.odir{1},strcat('MT_average_',nam,'.nii'))};
+            dataset.MTmean = job.MTmean;
+            
+            % calculate transfo matrix
+            dataset.mt_aTMat(:,:) = MPM_get_coreg_matrix(spm_vol(fullfile(job.MTmean{1})),spm_vol(job.Pdmean{1}));
+           
+ 
         end
     end
 

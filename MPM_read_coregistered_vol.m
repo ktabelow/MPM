@@ -36,7 +36,7 @@ function Vol = MPM_read_coregistered_vol(VF,VG,varargin)
     
     for p=1:numel(slices),
         matrixP = VG.mat*spm_matrix([0 0 slices(p)]);
-        Vol(:,:,p) = spm_slice_vol(VF,affineTransMatrix\matrixP,dm(1:2),1);
+        Vol(:,:,p) = spm_slice_vol(VF,affineTransMatrix\matrixP,dm(1:2),-4);
     end
        
     

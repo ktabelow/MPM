@@ -65,41 +65,43 @@ if isfield(dataset,'t1_aTMat'),
     T1 = zeros([length(t1Files),m]);
     for k=1:length(t1Files),
         %[T1(k,:,:,:),omega] = loadImageSPM(fullfile(t1Files{k}),'slices',slices);
-        T1(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(t1Files{k})),spm_vol(pdFiles{1}),'slices',slices,'affineTransMatrix',dataset.t1_aTMat(:,:,k));
+        %T1(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(t1Files{k})),spm_vol(dataset.Pdmean{1}),'slices',slices,'affineTransMatrix',dataset.t1_aTMat(:,:,k));
+        T1(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(t1Files{k})),spm_vol(dataset.Pdmean{1}),'slices',slices,'affineTransMatrix',dataset.t1_aTMat);
+
     end
  
     if ~isempty(mtFiles)
         MT = zeros([length(mtFiles),m]);
         for k=1:length(mtFiles),
             %[MT(k,:,:,:),omega] = loadImageSPM(fullfile(mtFiles{k}),'slices',slices);
-            MT(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(mtFiles{k})),spm_vol(pdFiles{1}),'slices',slices,'affineTransMatrix',dataset.mt_aTMat(:,:,k));
+            MT(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(mtFiles{k})),spm_vol(dataset.Pdmean{1}),'slices',slices,'affineTransMatrix',dataset.mt_aTMat);
         end
     end
 
     PD = zeros([length(pdFiles),m]);
     for k=1:length(pdFiles),
         %[PD(k,:,:,:),omega] = loadImageSPM(fullfile(pdFiles{k}),'slices',slices);
-        PD(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(pdFiles{k})),spm_vol(pdFiles{1}),'slices',slices,'affineTransMatrix',dataset.pd_aTMat(:,:,k));
+        PD(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(pdFiles{k})),spm_vol(dataset.Pdmean{1}),'slices',slices,'affineTransMatrix',dataset.pd_aTMat);
     end
 else
     T1 = zeros([length(t1Files),m]);
     for k=1:length(t1Files),
         %[T1(k,:,:,:),omega] = loadImageSPM(fullfile(t1Files{k}),'slices',slices);
-        T1(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(t1Files{k})),spm_vol(pdFiles{1}),'slices',slices);
+        T1(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(t1Files{k})),spm_vol(dataset.Pdmean{1}),'slices',slices);
     end
  
     if ~isempty(mtFiles)
         MT = zeros([length(mtFiles),m]);
         for k=1:length(mtFiles),
             %[MT(k,:,:,:),omega] = loadImageSPM(fullfile(mtFiles{k}),'slices',slices);
-            MT(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(mtFiles{k})),spm_vol(pdFiles{1}),'slices',slices);
+            MT(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(mtFiles{k})),spm_vol(dataset.Pdmean{1}),'slices',slices);
         end
     end
 
     PD = zeros([length(pdFiles),m]);
     for k=1:length(pdFiles),
         %[PD(k,:,:,:),omega] = loadImageSPM(fullfile(pdFiles{k}),'slices',slices);
-        PD(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(pdFiles{k})),spm_vol(pdFiles{1}),'slices',slices);
+        PD(k,:,:,:) = MPM_read_coregistered_vol(spm_vol(fullfile(pdFiles{k})),spm_vol(dataset.Pdmean{1}),'slices',slices);
     end
 end
 
