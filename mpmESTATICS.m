@@ -127,6 +127,7 @@ function [] = mpmESTATICS(job)
         [~, nam, ~] = spm_fileparts(pdVol.fname);
         job.Pdmean = {fullfile(job.odir{1},strcat('PD_average_',nam,'.nii'))};
         dataset.Pdmean = job.Pdmean;
+        clear Pdmean;
         
     % if amplitude and phase image are both present, 
     % produces the b1 correction field with the same dimensionality of the data 
@@ -177,6 +178,7 @@ function [] = mpmESTATICS(job)
         [~, nam, ~] = spm_fileparts(pdVol.fname);
         job.t1mean = {fullfile(job.odir{1},strcat('T1_average_',nam,'.nii'))};
         dataset.t1mean = job.t1mean;
+        clear t1mean;
         
         fprintf('\nCoregistering T1w files... \n');
 %         for k=1:length(job.t1Files),
@@ -211,6 +213,7 @@ function [] = mpmESTATICS(job)
             [~, nam, ~] = spm_fileparts(pdVol.fname);
             job.MTmean = {fullfile(job.odir{1},strcat('MT_average_',nam,'.nii'))};
             dataset.MTmean = job.MTmean;
+            clear MTmean;
             
             % calculate transfo matrix
             dataset.mt_aTMat(:,:) = MPM_get_coreg_matrix(spm_vol(fullfile(job.MTmean{1})),spm_vol(job.Pdmean{1}));
