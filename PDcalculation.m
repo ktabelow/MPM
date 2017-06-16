@@ -81,7 +81,7 @@ function PDcalculation(PMT, PA)
     Amap = spm_read_vols(Vsave) .* WBmask;
     Amap(Amap == Inf) = 0;
     Amap(isnan(Amap)) = 0;
-    Amap(Amap == threshA) = 0; % really ==?
+    Amap(Amap >= threshA) = 0; 
     Vsave.fname = fullfile(spm_str_manip(Vsave.fname, 'h'), ['masked_' spm_str_manip(Vsave.fname, 't')]);
     spm_write_vol(Vsave, Amap);
     Pmask = spm_select('FPList', spm_fileparts(Vsave.fname), ['^' spm_str_manip(Vsave.fname, 't')]);
