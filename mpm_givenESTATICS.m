@@ -101,17 +101,20 @@ function [] = mpm_givenESTATICS(job)
     sdim = meta.sdim;
     modelMPM.sdim = sdim;
 
-    if sum(strcmp(who(meta), 'PD_up'))==0
-        str = { 'Confidence interval boundaries for PD and R1 have not been estimated.';...
-        'Would you like to estimate them now?'};
-        if spm_input(str,1,'bd','yes|no',[1,0],1)
-        job.confInt = 1;
-        else
-        job.confInt = 0;
-        end
-    else
-        job.confInt = 0;
-    end
+    % for the time being do never estimate confidence intervals in this
+    % branch
+    job.confInt = 0;
+%     if sum(strcmp(who(meta), 'PD_up'))==0
+%         str = { 'Confidence interval boundaries for PD and R1 have not been estimated.';...
+%         'Would you like to estimate them now?'};
+%         if spm_input(str,1,'bd','yes|no',[1,0],1)
+%         job.confInt = 1;
+%         else
+%         job.confInt = 0;
+%         end
+%     else
+%         job.confInt = 0;
+%     end
 
     % calculates how big the overlapping has to be
     % to assure a good smoothing
@@ -252,6 +255,15 @@ function [] = mpm_givenESTATICS(job)
         % function [qi] = calculateQI(model, varargin)
         % (if kstar is 0, the smoothing step isn't done)
         if job.kstar~=0,
+            for i=1:modelMPM.nv
+                for j=1:modelMPM.nv
+                    COVmatPart = squeeze(modelMPM.invCov(i,j,:,:,:));
+%                    thresh = 1000*median(median(median(COVmatPart, 'omitnan'), 'omitnan'), 'omitnan');
+%                    COVmatPart(COVmatPart > thresh) = 0;
+%                    modelMPM.invCov(i,j,:,:,:) = smooth3d_with_kern(COVmatPart, hdelta);
+                    modelMPM.invCov(i,j,:,:,:) = convn(COVmatPart, ones(hdelta*2+1, hdelta*2+1, hdelta*2+1)/(hdelta*2+1)^3, 'same');
+                end
+            end
             modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'lambda',job.lambda);
             qiSnew = calculateQI(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
         else
