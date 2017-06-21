@@ -62,7 +62,7 @@ end
 
 %% sets the default parameters
 
-kstar = 16;
+kstar = [];
 alpha = 0.05;
 wghts = [];
 verbose = true;
@@ -75,9 +75,11 @@ for k=1:2:length(varargin),
 end;
 %% a little information
 
+fprintf('   kstar = %d \n', kstar );
+fprintf('   lambda = %d \n', lambda );
+
 if verbose,
     fprintf('   verbose = %d \n', verbose );
-    fprintf('   kstar = %d \n', kstar );
     fprintf('   alpha = %f \n', alpha );
     
 end

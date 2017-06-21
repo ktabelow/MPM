@@ -264,7 +264,7 @@ function [] = mpm_givenESTATICS(job)
                     modelMPM.invCov(i,j,:,:,:) = convn(COVmatPart, ones(hdelta*2+1, hdelta*2+1, hdelta*2+1)/(hdelta*2+1)^3, 'same');
                 end
             end
-            modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'lambda',job.lambda);
+            modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'kstar',job.kstar,'lambda',job.lambda); 
             qiSnew = calculateQI(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
         else
             qiSnew = calculateQI(modelMPM, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
