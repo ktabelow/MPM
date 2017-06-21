@@ -342,14 +342,14 @@ function [] = mpm_givenESTATICS(job)
     % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
     write_small_to_file_nii(job.odir{1},'R1_', Vpd, R1, 1, sdim(3), sdim);
     write_small_to_file_nii(job.odir{1},'R2star_', Vpd, R2star, 1, sdim(3), sdim);
-    write_small_to_file_nii(job.odir{1},'PD_', Vpd, PD, 1, sdim(3), sdim);
-    if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'delta_', Vpd, delta, 1, sdim(3), sdim); end
+    write_small_to_file_nii(job.odir{1},'A_', Vpd, PD, 1, sdim(3), sdim);
+    if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'MT_', Vpd, delta, 1, sdim(3), sdim); end
     
     if job.confInt==1,
         write_small_to_file_nii(job.odir{1},'R1_low_', Vpd, R1_low, 1, sdim(3), sdim);
         write_small_to_file_nii(job.odir{1},'R1_up_', Vpd, R1_up, 1, sdim(3), sdim);
-        write_small_to_file_nii(job.odir{1},'PD_low_', Vpd, PD_low, 1, sdim(3), sdim);
-        write_small_to_file_nii(job.odir{1},'PD_up_', Vpd, PD_up, 1, sdim(3), sdim);
+        write_small_to_file_nii(job.odir{1},'A_low_', Vpd, PD_low, 1, sdim(3), sdim);
+        write_small_to_file_nii(job.odir{1},'A_up_', Vpd, PD_up, 1, sdim(3), sdim);
 
     end
 
@@ -365,8 +365,8 @@ function [] = mpm_givenESTATICS(job)
                [~, nam, ~] = spm_fileparts(Vt1.fname);
                meta.R1_low = {fullfile(job.odir{1},strcat('R1_low_',nam,'.nii'))};
                meta.R1_up = {fullfile(job.odir{1},strcat('R1_up_',nam,'.nii'))};
-               meta.PD_low = {fullfile(job.odir{1},strcat('PD_low_',nam,'.nii'))};
-               meta.PD_up = {fullfile(job.odir{1},strcat('PD_up_',nam,'.nii'))};
+               meta.PD_low = {fullfile(job.odir{1},strcat('A_low_',nam,'.nii'))};
+               meta.PD_up = {fullfile(job.odir{1},strcat('A_up_',nam,'.nii'))};
 
                catch ME
                fprintf(ME.message);
