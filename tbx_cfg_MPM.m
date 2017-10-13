@@ -3,8 +3,8 @@ function MPM = tbx_cfg_MPM
 %_______________________________________________________________________
 % Copyright (C) 2015 WIAS Berlin
 
-% Author: Chiara D'Alonzo 
-% Maintainer: Karsten Tabelow 
+% Author: Chiara D'Alonzo
+% Maintainer: Karsten Tabelow
 % '
 % ---------------------------------------------------------------------
 % spm_file t1Files
@@ -28,7 +28,7 @@ function MPM = tbx_cfg_MPM
     mtFiles.ufilter = '.*';
     mtFiles.num     = [1 Inf];
 %    mtFiles.val     = {[]};
-    
+
 % --------------------------------------------------------------------
 % spm_file pdFiles
 % ---------------------------------------------------------------------
@@ -39,7 +39,7 @@ function MPM = tbx_cfg_MPM
     pdFiles.filter  = 'image';
     pdFiles.ufilter = '.*';
     pdFiles.num     = [1 Inf];
-    
+
 % ---------------------------------------------------------------------
 % odir Output Directory
 % ---------------------------------------------------------------------
@@ -61,7 +61,7 @@ function MPM = tbx_cfg_MPM
 %     sdim.strtype = 'e';
 %     sdim.num     = [1 3];
 %     sdim.val     = {[0 0 0]};
-    
+
 % ---------------------------------------------------------------------
 % tr2 for the mt aquisition
 % ---------------------------------------------------------------------
@@ -72,7 +72,7 @@ function MPM = tbx_cfg_MPM
     tr2.strtype = 'e';
     tr2.num     = [1 1];
     tr2.val     = {3.6};
-    
+
 % ---------------------------------------------------------------------
 % height of the interest level (especially for workstation)
 % ---------------------------------------------------------------------
@@ -85,8 +85,8 @@ function MPM = tbx_cfg_MPM
     height.strtype = 'e';
     height.num     = [1 1];
     height.val     = {30};
-    
-    
+
+
 % ---------------------------------------------------------------------
 % number of iteration of the smoothing algorithm
 % ---------------------------------------------------------------------
@@ -101,7 +101,7 @@ function MPM = tbx_cfg_MPM
     kstar.strtype = 'e';
     kstar.num     = [1 1];
     kstar.val     = {16};
-    
+
 % ---------------------------------------------------------------------
 % adaptation bandwidth of the smoothing algorithm
 % ---------------------------------------------------------------------
@@ -113,7 +113,7 @@ function MPM = tbx_cfg_MPM
     lambda.strtype = 'e';
     lambda.num     = [0 Inf];
     lambda.val     = {20};
-    
+
 % ---------------------------------------------------------------------
 % precision for the estatics algorithm
 % ---------------------------------------------------------------------
@@ -127,7 +127,7 @@ function MPM = tbx_cfg_MPM
     tol.strtype = 'e';
     tol.num     = [1 1];
     tol.val     = {1e-5};
-   
+
 
 % --------------------------------------------------------------------
 % spm_file maskFile
@@ -154,33 +154,33 @@ function MPM = tbx_cfg_MPM
 %     b1File.ufilter = '.*';
 %     b1File.num     = [0 1];
 %     b1File.val     = {[]};
-    
+
 % --------------------------------------------------------------------
 % spm_file b1FileA Amplitude Image
 % ---------------------------------------------------------------------
     b1FileA         = cfg_files;
     b1FileA.tag     = 'b1FileA';
-    b1FileA.name    = 'B1 correction file - Amplitude Image';
-    b1FileA.help    = {'Select the amplitude image file.' ...
+    b1FileA.name    = 'B1 anatomical reference';
+    b1FileA.help    = {'Select antomical reference file.' ...
                       'If no volume is selected, no correction is performed.'};
     b1FileA.filter  = 'image';
     b1FileA.ufilter = '.*';
     b1FileA.num     = [0 1];
     b1FileA.val     = {[]};
-    
+
 % --------------------------------------------------------------------
 % spm_file b1FileP Phase Image
 % ---------------------------------------------------------------------
     b1FileP         = cfg_files;
     b1FileP.tag     = 'b1FileP';
-    b1FileP.name    = 'B1 correction file - Phase Image';
-    b1FileP.help    = {'Select the phase image file.' ...
+    b1FileP.name    = 'B1 bias field';
+    b1FileP.help    = {'Select the B1 bias field file.' ...
                       'If no volume is selected, no correction is performed.'};
     b1FileP.filter  = 'image';
     b1FileP.ufilter = '.*';
     b1FileP.num     = [0 1];
     b1FileP.val     = {[]};
-    
+
 % ---------------------------------------------------------------------
 % save ESTATICS modell - if it is on, the ESTATICS model parameter and
 % relevant data are written
@@ -197,10 +197,10 @@ function MPM = tbx_cfg_MPM
                        'Yes'};
     saveESTA.values  = {0 1};
     saveESTA.val     = {0};
-    
-    
+
+
 % ---------------------------------------------------------------------
-% calculate and save the confidence intervall for PD and R1 (lower and upper bound with alpha 0.05) 
+% calculate and save the confidence intervall for PD and R1 (lower and upper bound with alpha 0.05)
 % a .nii file for each boundary will be written
 % ---------------------------------------------------------------------
     confInt          = cfg_menu;
@@ -213,8 +213,8 @@ function MPM = tbx_cfg_MPM
     confInt.labels  = {'No'
                        'Yes'};
     confInt.values  = {0 1};
-    confInt.val     = {0};    
-    
+    confInt.val     = {0};
+
 % ---------------------------------------------------------------------
 % coregister images - if it is on, all the calculation are done on the
 % coregistered images; if off, the matrix returned from spm_get_space is
@@ -231,7 +231,7 @@ function MPM = tbx_cfg_MPM
     coregIM.val     = {0};
 
 % ---------------------------------------------------------------------
-% t1TR 
+% t1TR
 % ---------------------------------------------------------------------
     t1TR         = cfg_entry;
     t1TR.tag     = 't1TR';
@@ -242,9 +242,9 @@ function MPM = tbx_cfg_MPM
     t1TR.strtype = 'e';
     t1TR.num     = [0 Inf];
     t1TR.val     = {[]};
-    
+
 % ---------------------------------------------------------------------
-% mtTR 
+% mtTR
 % ---------------------------------------------------------------------
     mtTR         = cfg_entry;
     mtTR.tag     = 'mtTR';
@@ -256,7 +256,7 @@ function MPM = tbx_cfg_MPM
     mtTR.num     = [0 Inf];
     mtTR.val     = {[]};
 % ---------------------------------------------------------------------
-% pdTR 
+% pdTR
 % ---------------------------------------------------------------------
     pdTR         = cfg_entry;
     pdTR.tag     = 'pdTR';
@@ -267,9 +267,9 @@ function MPM = tbx_cfg_MPM
     pdTR.strtype = 'e';
     pdTR.num     = [0 Inf];
     pdTR.val     = {[]};
-        
+
 % ---------------------------------------------------------------------
-% t1TE 
+% t1TE
 % ---------------------------------------------------------------------
     t1TE         = cfg_entry;
     t1TE.tag     = 't1TE';
@@ -280,9 +280,9 @@ function MPM = tbx_cfg_MPM
     t1TE.strtype = 'e';
     t1TE.num     = [0 Inf];
     t1TE.val     = {[]};
-    
+
 % ---------------------------------------------------------------------
-% mtTE 
+% mtTE
 % ---------------------------------------------------------------------
     mtTE         = cfg_entry;
     mtTE.tag     = 'mtTE';
@@ -295,7 +295,7 @@ function MPM = tbx_cfg_MPM
     mtTE.val     = {[]};
 
 % ---------------------------------------------------------------------
-% pdTE 
+% pdTE
 % ---------------------------------------------------------------------
     pdTE         = cfg_entry;
     pdTE.tag     = 'pdTE';
@@ -308,7 +308,7 @@ function MPM = tbx_cfg_MPM
     pdTE.val     = {[]};
 
 % ---------------------------------------------------------------------
-% t1FA 
+% t1FA
 % ---------------------------------------------------------------------
     t1FA         = cfg_entry;
     t1FA.tag     = 't1FA';
@@ -319,9 +319,9 @@ function MPM = tbx_cfg_MPM
     t1FA.strtype = 'e';
     t1FA.num     = [0 Inf];
     t1FA.val     = {[]};
-    
+
 % ---------------------------------------------------------------------
-% mtFA 
+% mtFA
 % ---------------------------------------------------------------------
     mtFA         = cfg_entry;
     mtFA.tag     = 'mtFA';
@@ -333,7 +333,7 @@ function MPM = tbx_cfg_MPM
     mtFA.num     = [0 Inf];
     mtFA.val     = {[]};
 % ---------------------------------------------------------------------
-% pdFA 
+% pdFA
 % ---------------------------------------------------------------------
     pdFA         = cfg_entry;
     pdFA.tag     = 'pdFA';
@@ -344,8 +344,8 @@ function MPM = tbx_cfg_MPM
     pdFA.strtype = 'e';
     pdFA.num     = [0 Inf];
     pdFA.val     = {[]};
-        
-    
+
+
 % --------------------------------------------------------------------
 % .mat file containing an ESTATIC model
 % ---------------------------------------------------------------------
@@ -356,8 +356,8 @@ function MPM = tbx_cfg_MPM
     ESTAmodel.filter  = '.mat';
     ESTAmodel.ufilter = '.*';
     ESTAmodel.num     = [1 1];
-    
-% ---------------------------------------------------------------------        
+
+% ---------------------------------------------------------------------
 % branch with MT files
 % ---------------------------------------------------------------------
      MT_branch         = cfg_exbranch;
@@ -368,20 +368,20 @@ function MPM = tbx_cfg_MPM
                           t1TR mtTR pdTR t1TE mtTE pdTE t1FA mtFA pdFA};
      MT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset with T1w, PDw and MTw volumes.'};
      MT_branch.prog    = @spm_local_mpm;
-     
-% ---------------------------------------------------------------------        
+
+% ---------------------------------------------------------------------
 % branch without MT files
 % ---------------------------------------------------------------------
      withoutMT_branch         = cfg_exbranch;
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without MTw volumes';
      withoutMT_branch.val     = {t1Files pdFiles maskFile odir coregIM saveESTA  ...
-                                confInt kstar lambda b1FileA b1FileP height tol ... 
-                                t1TR pdTR t1TE pdTE t1FA pdFA}; 
+                                confInt kstar lambda b1FileA b1FileP height tol ...
+                                t1TR pdTR t1TE pdTE t1FA pdFA};
      withoutMT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset without MTw volumes.'};
      withoutMT_branch.prog    = @spm_local_mpm_noMT;
 
-% ---------------------------------------------------------------------        
+% ---------------------------------------------------------------------
 % branch using an existing ESTATICS model
 % ---------------------------------------------------------------------
      ESTAmodel_branch         = cfg_exbranch;
@@ -390,8 +390,8 @@ function MPM = tbx_cfg_MPM
      ESTAmodel_branch.val     = {ESTAmodel odir kstar lambda b1FileA b1FileP tr2 height};
      ESTAmodel_branch.help    = {'This branch implements the smoothing and final calculation of the quantitative maps R1, R2*, PD (and MT) given an existing ESTATICS model.'};
      ESTAmodel_branch.prog    = @spm_local_mpm_givenESTATICS;
-     
-% ---------------------------------------------------------------------        
+
+% ---------------------------------------------------------------------
 % branch producing .nii file from an existing ESTATICS model
 % ---------------------------------------------------------------------
      extractNII_branch         = cfg_exbranch;
@@ -414,22 +414,22 @@ function MPM = tbx_cfg_MPM
 %======================================================================
 function [] = spm_local_mpm(job)
 
-    
+
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
     job.sdim = [0 0 0];
-    
+
     mpm_assert_output_directory(job.odir{1});
-    
+
     mpmESTATICS(job);
-    
+
 end
 
 function [] = spm_local_mpm_noMT(job)
 
-    
+
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
     mpm_assert_output_directory(job.odir{1});
-    
+
     job.mtFiles = [];
     job.mtTR = [];
     job.mtTE = [];
@@ -437,29 +437,29 @@ function [] = spm_local_mpm_noMT(job)
     job.tr2 = 1;
     job.sdim = [0 0 0];
     mpmESTATICS(job);
-    
+
 end
 
 function [] = spm_local_mpm_givenESTATICS(job)
 
-    
+
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
-    
+
     mpm_assert_output_directory(job.odir{1});
-    
+
     mpm_givenESTATICS(job);
-    
+
 end
 
 function [] = spm_local_mpm_extractNII(job)
 
-    
+
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
-    
+
     mpm_assert_output_directory(job.odir{1});
-    
+
     mpm_extractNII(job);
-    
+
 end
 
 function [] = mpm_assert_output_directory(odir)
@@ -477,7 +477,3 @@ function [] = mpm_assert_output_directory(odir)
 end
 
 end
-
-
-
-
