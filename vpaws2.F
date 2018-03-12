@@ -1,8 +1,8 @@
 #include <fintrf.h>
 
 C
-C Gateway function for cvaws2.F
-C calls other function in file cvaws2.F
+C Gateway function for pvaws2.F
+C calls other function in file cpvaws2.F
 C
         SUBROUTINE MEXFUNCTION(NLHS, PLHS, NRHS, PRHS)
 C-----------------------------------------------------------------------
@@ -19,7 +19,7 @@ C
 C-----------------------------------------------------------------------
 C
 C
-       MWPOINTER  MXGETPR
+       MWPOINTER MXGETPR
        MWPOINTER MXCREATEDOUBLEMATRIX
        MWPOINTER MXCREATENUMERICMATRIX
        MWPOINTER MXCREATENUMERICARRAY
@@ -43,20 +43,20 @@ C
        MWPOINTER Y_IN_PR, THETA_IN_PR
        MWPOINTER III_IN_PR, JJJ_IN_PR
 
-       MWPOINTER SI2_IN_PR, LWGHT_IN_PR
-       MWPOINTER WGHT_IN_PR, SWIJ_IN_PR
+       MWPOINTER INVCOV_IN_PR, LWGHT_IN_PR
+       MWPOINTER WGHT_IN_PR, SWJY_IN_PR
        MWPOINTER HAKT_IN_PR, HAKT_OUT_PR
        MWPOINTER BI_IN_PR, BI_OUT_PR
        MWPOINTER THNEW_IN_PR, THNEW_OUT_PR
+       MWPOINTER IHPATCH_IN_PR, INVCOVP_IN_PR, BIIPATCH_IN_PR
 
 C      POINTERS TO M (rows) AND N (columns) of INPUTS
 
        MWPOINTER M_N1, N_N1, M_N2, N_N2, M_N3, N_N3,
      +  M_NMASK, N_NMASK,
-     + M_HAKT, N_HAKT, M_NV, N_NV, M_NVD, N_NVD, M_NCORES, N_NCORES,
-     + M_LAMBDA, N_LAMBDA,
-     + M_WGHT, N_WGHT
-
+     + M_HAKT, N_HAKT, M_NV, N_NV, M_NCORES, N_NCORES,
+     + M_LAMBDA, N_LAMBDA, M_NVD, N_NVD, M_NP1, N_NP1, M_NP2, N_NP2,
+     + M_NP3, N_NP3, M_WGHT, N_WGHT
 
 C-----------------------------------------------------------------------
 C
@@ -64,21 +64,23 @@ C      LOCAL VARIABLES
 
 
 
-       INTEGER*4 N1_IN, N2_IN, N3_IN, NV_IN, NVD_IN, NCORES_IN, NMASK_IN
+       INTEGER*4 N1_IN, N2_IN, N3_IN, NV_IN, NCORES_IN, NMASK_IN,
+     + NVD_IN, NP1_IN. NP2_IN, NP3_IN
 
         INTEGER*4, DIMENSION(:), ALLOCATABLE   :: III_IN, JJJ_IN
 
         REAL*8, DIMENSION(:), ALLOCATABLE   :: BI_INOUT
 
-        REAL*8, DIMENSION(:,:), ALLOCATABLE   :: THNEW_INOUT, Y_IN, SI2_IN
+        REAL*8, DIMENSION(:,:), ALLOCATABLE   :: THNEW_INOUT, Y_IN,
+     +  INVCOV_IN
 
        REAL*8 LAMBDA_IN, HAKT_INOUT, HAKT_IN, WGHT_IN(2)
 
 C      SIZE OF THE INPUT ARGUMENTS (MXN)
 
-       MWSIZE DIM_N1, DIM_N2, DIM_N3, DIM_NV, DIM_NVD, DIM_NCORES,
-     + NVSIZE,NSIZE, ONE, DIM_LAMBDA, DIM_HAKT, DIM_WGHT,
-     + DIM_NMASK, NMASKSIZE
+       MWSIZE DIM_N1, DIM_N2, DIM_N3, DIM_NV, DIM_NCORES, NPSIZE,
+     + NVSIZE, NVDSIZE, NSIZE, ONE, DIM_LAMBDA, DIM_HAKT, DIM_WGHT,
+     + DIM_NMASK, NMASKSIZE. DIM_NVD, DIM_NP1, DIM_NP2, DIM_NP3
 
 
 
@@ -87,8 +89,8 @@ C       MWSIZE PRODN, NARRAY(3)
 C
 C CHECK FOR PROPER NUMBER OF ARGUMENTS
 C
-       IF (NRHS .NE. 19) THEN
-         CALL MEXERRMSGTXT('VAWS requires 19 input arguments')
+       IF (NRHS .NE. 25) THEN
+         CALL MEXERRMSGTXT('VPAWS requires 18 input arguments')
        ELSEIF (NLHS .GT. 3) THEN
          CALL MEXERRMSGTXT('VAWS requires 3 output argument')
        ENDIF
@@ -145,7 +147,7 @@ C       CALL MEXPRINTF(' BEFORE Checking numerics ')
         ENDIF
 
         IF(mxIsNumeric(prhs(13)) .eq. 0) then
-           CALL MEXERRMSGTXT('SI2 HAS TO BE A NUMERIC MATRIX')
+           CALL MEXERRMSGTXT('INVCOV HAS TO BE A NUMERIC MATRIX')
         ENDIF
 
         IF(mxIsNumeric(prhs(14)) .eq. 0) then
@@ -169,8 +171,34 @@ C       CALL MEXPRINTF(' BEFORE Checking numerics ')
         ENDIF
 
          IF(mxIsNumeric(prhs(19)) .eq. 0) then
-           CALL MEXERRMSGTXT('SWIJ HAS TO BE A NUMERIC MATRIX')
+           CALL MEXERRMSGTXT('SWJY HAS TO BE A NUMERIC MATRIX')
         ENDIF
+
+        IF(mxIsNumeric(prhs(20)) .eq. 0) then
+           CALL MEXERRMSGTXT('NP1 HAS TO BE A NUMBER')
+        ENDIF
+
+        IF(mxIsNumeric(prhs(21)) .eq. 0) then
+           CALL MEXERRMSGTXT('NP2 HAS TO BE A NUMBER')
+        ENDIF
+
+        IF(mxIsNumeric(prhs(22)) .eq. 0) then
+           CALL MEXERRMSGTXT('NP3 HAS TO BE A NUMBER')
+        ENDIF
+
+        IF(mxIsNumeric(prhs(23)) .eq. 0) then
+           CALL MEXERRMSGTXT('THPATCH HAS TO BE A NUMERIC ARRAY')
+        ENDIF
+
+        IF(mxIsNumeric(prhs(24)) .eq. 0) then
+           CALL MEXERRMSGTXT('INVCOVP HAS TO BE A NUMERIC ARRAY')
+        ENDIF
+
+        IF(mxIsNumeric(prhs(25)) .eq. 0) then
+           CALL MEXERRMSGTXT('BIIPATCH HAS TO BE A NUMERIC ARRAY')
+        ENDIF
+
+
 
 
 C        CALL MEXPRINTF(' after checking numerics \n')
@@ -196,14 +224,21 @@ C
 
        M_NV = MXGETM(PRHS(2))
        N_NV = MXGETN(PRHS(2))
-       M_NVD = MXGETM(PRHS(3))
-       N_NVD = MXGETN(PRHS(3))
-       M_HAKT = MXGETM(PRHS(10))
+       M_NDV = MXGETM(PRHS(3))
+       N_NDV = MXGETN(PRHS(3))
+       M_HAKT = MXGETN(PRHS(10))
        N_HAKT = MXGETN(PRHS(10))
        M_LAMBDA = MXGETM(PRHS(11))
        N_LAMBDA = MXGETN(PRHS(11))
        M_NCORES = MXGETM(PRHS(16))
        N_NCORES = MXGETN(PRHS(16))
+
+       M_NP1 = MXGETM(PRHS(20))
+       N_NP1 = MXGETN(PRHS(20))
+       M_NP2 = MXGETM(PRHS(21))
+       N_NP2 = MXGETN(PRHS(21))
+       M_NP3 = MXGETM(PRHS(22))
+       N_NP3 = MXGETN(PRHS(22))
 
 
 
@@ -220,7 +255,6 @@ C       PRODN = MXGETNUMBEROFELEMENTS(PRHS(3))
 
        DIM_WGHT = M_WGHT*N_WGHT
        DIM_NV = M_NV*N_NV
-       DIM_NVD = M_NVD*N_NVD
        DIM_HAKT = M_HAKT*N_HAKT
        DIM_LAMBDA = M_LAMBDA*N_LAMBDA
        DIM_NCORES = M_NCORES*N_NCORES
@@ -233,7 +267,7 @@ C
         CALL MEXERRMSGTXT('N1, N2, N3 have to be scalar')
       ENDIF
 
-      IF ((DIM_NV.NE.1).OR.(DIM_NVD.NE.1).OR.(DIM_NMASK .NE. 1)) THEN
+      IF ((DIM_NV .NE. 1).OR.(DIM_NMASK .NE. 1)) THEN
         CALL MEXERRMSGTXT('NV and NMASK  have to be a SCALAR')
       ENDIF
       IF (DIM_WGHT .NE. 2) THEN
@@ -258,20 +292,21 @@ C       need to cast since it returns a double
 C        CALL MEXPRINTF(' BEFORE getting SCALARS \n')
 
 
-        N1_IN = INT(MXGETSCALAR(PRHS(4)))
+       N1_IN = INT(MXGETSCALAR(PRHS(4)))
        N2_IN = INT(MXGETSCALAR(PRHS(5)))
        N3_IN = INT(MXGETSCALAR(PRHS(6)))
 
-       NMASK_IN = INT(MXGETSCALAR(PRHS(7)))
+       NMASK_IN = INT(MXGETSCALAR(PRHS(6)))
 
-        HAKT_IN = MXGETSCALAR(PRHS(10))
-        NV_IN = INT(MXGETSCALAR(PRHS(2)))
-         NVD_IN = INT(MXGETSCALAR(PRHS(3)))
+       HAKT_IN = MXGETSCALAR(PRHS(10))
+       NV_IN = INT(MXGETSCALAR(PRHS(2)))
+       NVD_IN = INT(MXGETSCALAR(PRHS(3)))
        NCORES_IN = INT(MXGETSCALAR(PRHS(16)))
        LAMBDA_IN = MXGETSCALAR(PRHS(11))
 
-
-
+       N1_IN = INT(MXGETSCALAR(PRHS(20)))
+       N2_IN = INT(MXGETSCALAR(PRHS(21)))
+       N3_IN = INT(MXGETSCALAR(PRHS(22)))
 
 C       CALL MEXPRINTF(' AFTER getting SCALARS \n')
 
@@ -283,8 +318,10 @@ C       ALLOCATE(Y_IN(NV_IN,NMASK_IN))
 
 
        ONE=1
-       NVSIZE= NV_IN
+       NVSIZE = NV_IN
+       NVDSIZE = NVD_IN
        NSIZE = N1_IN*N2_IN*N3_IN
+       NPSIZE = NP1_IN*NP2_IN*NP3_IN
        NMASKSIZE = NMASK_IN
 
 C       getting all the other INPUT pointers
@@ -296,7 +333,7 @@ C       getting all the other INPUT pointers
 
 
        THETA_IN_PR = MXGETPR(PRHS(12))
-       SI2_IN_PR = MXGETPR(PRHS(13))
+       INVCOV_IN_PR = MXGETPR(PRHS(13))
 
        BI_IN_PR = MXGETPR(PRHS(14))
        THNEW_IN_PR = MXGETPR(PRHS(15))
@@ -304,9 +341,11 @@ C       getting all the other INPUT pointers
 
        LWGHT_IN_PR = MXGETPR(PRHS(17))
        WGHT_IN_PR= MXGETPR(PRHS(18))
-       SWIJ_IN_PR= MXGETPR(PRHS(19))
+       SWJY_IN_PR= MXGETPR(PRHS(19))
 
-
+       THPATCH_IN_PR = MXGETPR(PRHS(23))
+       INVCOVP_IN_PR = MXGETPR(PRHS(24))
+       BIIPATCH_IN_PR = MXGETPR(PRHS(25))
 C       CALL MEXPRINTF(' AFTER getting OTHER input \n')
 
 C       CALL MEXPRINTF(' BEFORE CREATING OUTPUT ')
@@ -367,13 +406,15 @@ C
 
 
 
-        CALL CVAWS2(%val(Y_IN_PR),
-     + NV_IN,NVD_IN,N1_IN,N2_IN,N3_IN,NMASK_IN,
+        CALL PVAWS2(%val(Y_IN_PR),
+     + NV_IN, NVD_IN, N1_IN, N2_IN, N3_IN, NMASK_IN,
      + III_IN, JJJ_IN, HAKT_INOUT,
-     + LAMBDA_IN,%val(THETA_IN_PR),
-     + %val(SI2_IN_PR), BI_INOUT, THNEW_INOUT,
-     + NCORES_IN,%val(LWGHT_IN_PR),
-     + %val(WGHT_IN_PR),%val(SWIJ_IN_PR))
+     + LAMBDA_IN, %val(THETA_IN_PR),
+     + %val(INVCOV_IN_PR), BI_INOUT, THNEW_INOUT,
+     + NCORES_IN, %val(LWGHT_IN_PR),
+     + %val(WGHT_IN_PR), %val(SWJY_IN_PR),
+     + NP1_IN, NP2_IN, NP3_IN,
+     + %val(THPATCH_IN_PR), %val(INVCOVP_IN_PR), %val(BIIPATCH_IN_PR))
 
 C         CALL MEXPRINTF(' call END \n')
 

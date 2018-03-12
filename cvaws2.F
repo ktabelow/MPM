@@ -1,5 +1,5 @@
 C
-C    Copyright (C) 2015 Weierstrass-Institut fuer 
+C    Copyright (C) 2015 Weierstrass-Institut fuer
 C                       Angewandte Analysis und Stochastik (WIAS)
 C
 C    Author:  Joerg Polzehl
@@ -19,8 +19,8 @@ C  along with this program; if not, write to the Free Software
 C  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 C  USA.
 C
-C  The following routines are part of the MPM toolbox and contain  
-C  FORTRAN 77 code needed in functions smoothESTATICS 
+C  The following routines are part of the MPM toolbox and contain
+C  FORTRAN 77 code needed in functions smoothESTATICS
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -28,36 +28,36 @@ C
 C   Perform one iteration in local constant three-variate aws (gridded)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      subroutine cvaws2(y,nv,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
+      subroutine cvaws2(y,nv,nvd,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
      1                theta,si2,bi,thnew,ncores,lwght,wght,swjy)
 C
-C   y        observed values of regression function 
+C   y        observed values of regression function
 C   nv       number of vector components
 C   n1,n2,n3    design dimensions
 C   hakt     actual bandwidth
 C   lambda   kritical value
 C   theta    estimates from last step   (input)
-C   si2      inverse covariance matrices of vectors in y 
+C   si2      inverse covariance matrices of vectors in y
 C   bi       \sum  Wi   (output)
 C   thnew    \sum  Wi Y / bi     (output)
 C   ncores   number of cores
-C   
+C
 C   wght     scaling factor for second and third dimension (larger values shrink)
-C   
+C
       implicit logical (a-z)
 
-      integer nv,n1,n2,n3,ncores,nmask
+      integer nv,nvd,n1,n2,n3,ncores,nmask
       integer*4 iii(nmask),jjj(*)
       logical aws
       real*8 y(nv,nmask),theta(nv,nmask),bi(nmask),thnew(nv,nmask),
-     1  si2(nv,nv,nmask),lambda,wght(2),hakt,lwght(*),swjy(nv,ncores)
+     1  si2(nvd,nmask),lambda,wght(2),hakt,lwght(*),swjy(nv,ncores)
       integer ih1,ih2,ih3,i1,i2,i3,j1,j2,j3,jw1,jw2,jw3,jwind3,jwind2,
      1        iind,jind,jind3,jind2,clw1,clw2,clw3,dlw1,dlw2,dlw3,
      2        dlw12,n12,k,thrednr,imask,jmask
       real*8 bii,biinv,sij,swj,z,z1,z2,z3,wj,hakt2,hmax2,w1,w2,spmb,spf
       external lkern,KLdistsi
       real*8 lkern,KLdistsi
-!$      integer omp_get_thread_num 
+!$      integer omp_get_thread_num
 !$      external omp_get_thread_num
       thrednr = 1
 C just to prevent a compiler warning
@@ -115,7 +115,7 @@ C  first stochastic term
       END DO
 C      call rchkusr()
 C$OMP PARALLEL DEFAULT(NONE)
-C$OMP& SHARED(thnew,bi,nv,n1,n2,n3,hakt2,hmax2,theta,
+C$OMP& SHARED(thnew,bi,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,
 C$OMP& ih3,lwght,wght,y,swjy,nmask,iii,jjj,si2)
 C$OMP& FIRSTPRIVATE(ih1,ih2,lambda,aws,n12,
 C$OMP& model,spf,dlw1,clw1,dlw2,clw2,dlw3,clw3,dlw12,w1,w2)
@@ -131,8 +131,8 @@ C returns value in 0:(ncores-1)
          if(i1.eq.0) i1=n1
          i2=mod((iind-i1)/n1+1,n2)
          if(i2.eq.0) i2=n2
-         i3=(iind-i1-(i2-1)*n1)/n12+1         
-C    nothing to do, final estimate is already fixed by control 
+         i3=(iind-i1-(i2-1)*n1)/n12+1
+C    nothing to do, final estimate is already fixed by control
          bii=bi(imask)/lambda
          biinv=1.d0/bii
          spmb=0.25d0/bii
@@ -167,7 +167,7 @@ C  first stochastic term
                   wj=lwght(jw1+clw1+1+jwind2)
                   IF (aws) THEN
                      sij=KLdistsi(theta(1,imask),theta(1,jmask),
-     1                            si2(1,1,imask),nv)
+     1                            si2(1,imask),nv)
                      IF (sij.ge.biinv) CYCLE
                      IF (sij.gt.spmb) wj=wj*(1.d0-spf*(bii*sij-0.25d0))
                   END IF
@@ -182,7 +182,7 @@ C  first stochastic term
             thnew(k,imask)=swjy(k,thrednr)/swj
          END DO
          bi(imask)=swj
-      END DO 
+      END DO
 C$OMP END DO NOWAIT
 C$OMP END PARALLEL
 C$OMP FLUSH(thnew,bi)
@@ -226,27 +226,29 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C        use Epanechnikov
          lkern=1.d0-xsq
       ENDIF
-      RETURN 
-      END   
+      RETURN
+      END
 
       real*8 function KLdistsi(thi,thj,si2,nv)
       implicit logical (a-z)
       integer nv
-      real*8 thi(nv), thj(nv), si2(nv,nv)
-      integer k,l
+      real*8 thi(nv), thj(nv), si2(*)
+      integer k,l,m
       real*8 z,zd,thik,zdk
-      zd=thi(nv)-thj(nv)
-      z=zd*zd*si2(nv,nv)
-      DO k=1,nv-1
+      z=0.d0
+      m=1
+      DO k=1,nv
          thik=thi(k)
-         zdk=thik-thj(k)
-         z=z+zdk*zdk*si2(k,k)
-         DO l=k+1,nv
-            z=z+2.d0*(thi(l)-thj(l))*zdk*si2(k,l)
-         END DO
+         zdk=thi(k)-thj(k)
+         if(k.gt.1) THEN
+           DO l=1,k-1
+              z=z+2.d0*(thi(l)-thj(l))*zdk*si2(m)
+              m=m+1
+           END DO
+         ENDIF
+         z=z+zdk*zdk*si2(m)
+         m=m+1
       END DO
       KLdistsi=z
       RETURN
       END
-
-

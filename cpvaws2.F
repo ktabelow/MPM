@@ -8,7 +8,7 @@ C   -     thpatch  Hilfsfeld fuer theta in patch  dimension (nv,np1*np2*np3,ncor
 C   -     invcovp  Hilfsfeld fuer invcov in patch  dimension (nvd,np1*np2*np3,ncores)
 C   -     biipatch Hilfsfeld fuer bi in patch  dimension (np1*np2*np3,ncores)
 C
-      subroutine pvaws2r(y,nv,nvd,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
+      subroutine pvaws2(y,nv,nvd,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
      1                theta,invcov,bi,thnew,ncores,lwght,wght,
      2                swjy,np1,np2,np3,thpatch,invcovp,biipatch)
 C
@@ -137,7 +137,7 @@ C    nothing to do, final estimate is already fixed by control
                   END DO
                   DO k=1,nvd
                      invcovp(k,pc,thrednr)=invcov(k,ipmask)
-                  END DO  
+                  END DO
                   biipatch(pc,thrednr)=bi(ipmask)/lambda
                END DO
             END DO
@@ -194,20 +194,10 @@ C  first stochastic term
                               pcj=pcj+1
                               if(jjj(jpind).eq.0) CYCLE
                               jpmask=jjj(jpind)
-C   need both ipind and jpind in mask, pcj only depends on i 
-                              sijp=0.d0
-                              m=1
-                              DO k=1,nv
-                            z=thpatch(k,pcj,thrednr)-theta(k,jpmask)
-                            sijp=sijp+z*z*invcovp(m,pcj,thrednr)
-                                 m=m+1
-                                 if(k.eq.nv) CYCLE
-                                 DO l=k+1,nv
-                            z2=thpatch(l,pcj,thrednr)-theta(l,jpmask)
-                            sijp=sijp+2.d0*z*z2*invcovp(m,pcj,thrednr)
-                                   m=m+1
-                                 END DO
-                              END DO
+C   need both ipind and jpind in mask, pcj only depends on i
+                              sijp=KLdistsi(theta(1,jpmask),
+     1                                thpatch(1,pcj,thrednr),
+     1                                invcovp(1,pcj,thrednr),nv)
                               sij=max(sij,biipatch(pcj,thrednr)*sijp)
                            END DO
                         END DO
@@ -232,5 +222,26 @@ C$OMP END PARALLEL
 C$OMP FLUSH(thnew,bi)
       RETURN
       END
-
-
+      real*8 function KLdistsi(thi,thj,si2,nv)
+      implicit logical (a-z)
+      integer nv
+      real*8 thi(nv), thj(nv), si2(*)
+      integer k,l,m
+      real*8 z,zd,thik,zdk
+      z=0.d0
+      m=1
+      DO k=1,nv
+         thik=thi(k)
+         zdk=thi(k)-thj(k)
+         if(k.gt.1) THEN
+           DO l=1,k-1
+              z=z+2.d0*(thi(l)-thj(l))*zdk*si2(m)
+              m=m+1
+           END DO
+         ENDIF
+         z=z+zdk*zdk*si2(m)
+         m=m+1
+      END DO
+      KLdistsi=z
+      RETURN
+      END
