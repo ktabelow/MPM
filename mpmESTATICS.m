@@ -414,19 +414,24 @@ function [] = mpmESTATICS(job)
 %             else
 %                       
 %             end
-            modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'kstar',job.kstar,'lambda',job.lambda); 
+            modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'kstar',job.kstar, 'patchsize', job.patchsize,'lambda',job.lambda); 
             qiSnew = calculateQI(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
+            qiSnewLinear = calculateQIlinear(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
         else
             qiSnew = calculateQI(modelMPM, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);            
+            qiSnewLinear = calculateQIlinear(modelMPM, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);            
         end
 
         
         %% save in the result variables
         if zStart==1
             R1(:,:,zStart:zEnd) = qiSnew.R1;
+            R1linear(:,:,zStart:zEnd) = qiSnewLinear.R1;
             R2star(:,:,zStart:zEnd) = qiSnew.R2star;
             PD(:,:,zStart:zEnd) = qiSnew.PD;
+            PDlinear(:,:,zStart:zEnd) = qiSnewLinear.PD;
             if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), delta(:,:,zStart:zEnd) = qiSnew.delta; end%
+            if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), deltaLinear(:,:,zStart:zEnd) = qiSnewLinear.delta; end%
             totalmask(:,:,zStart:zEnd) = qiSnew.model.mask;
             
             if job.confInt==1,
@@ -448,9 +453,12 @@ function [] = mpmESTATICS(job)
             
         else 
             R1(:,:,zStart+hdelta:zEnd) = qiSnew.R1(:,:, 1+hdelta: (zEnd-zStart+1) );
+            R1linear(:,:,zStart+hdelta:zEnd) = qiSnewLinear.R1(:,:, 1+hdelta: (zEnd-zStart+1) );
             R2star(:,:,zStart+hdelta:zEnd) = qiSnew.R2star(:,:, 1+hdelta: (zEnd-zStart+1) );
             PD(:,:,zStart+hdelta:zEnd) = qiSnew.PD(:,:, 1+hdelta: (zEnd-zStart+1) );
+            PDlinear(:,:,zStart+hdelta:zEnd) = qiSnewLinear.PD(:,:, 1+hdelta: (zEnd-zStart+1) );
             if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), delta(:,:,zStart+hdelta:zEnd) = qiSnew.delta(:,:, 1+hdelta: (zEnd-zStart+1) ); end %
+            if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), deltaLinear(:,:,zStart+hdelta:zEnd) = qiSnewLinear.delta(:,:, 1+hdelta: (zEnd-zStart+1) ); end %
             totalmask(:,:,zStart+hdelta:zEnd) = qiSnew.model.mask(:,:, 1+hdelta: (zEnd-zStart+1) );
             
             if job.confInt==1,
@@ -481,9 +489,12 @@ function [] = mpmESTATICS(job)
     %% steps to save nii files
     % set all the NaN values to 0 (that makes easier to display correctly)
     R1(isnan(R1))=0;
+    R1linear(isnan(R1linear))=0;
     R2star(isnan(R2star))=0;
     PD(isnan(PD))=0;
+    PDlinear(isnan(PDlinear))=0;
     if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), delta(isnan(delta))=0; end
+    if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), deltaLinear(isnan(deltaLinear))=0; end
     
     if job.confInt==1,
         R1_low(isnan(R1_low))=0;
@@ -494,9 +505,12 @@ function [] = mpmESTATICS(job)
     
     % set all values of the voxels outside the mask to 0
     R1(totalmask<1)=0;
+    R1linear(totalmask<1)=0;
     R2star(totalmask<1)=0;
     PD(totalmask<1)=0;
+    PDlinear(totalmask<1)=0;
     if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), delta(totalmask<1)=0; end
+    if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')), deltaLinear(totalmask<1)=0; end
    
     if job.confInt==1,
         R1_low(totalmask<1)=0;
@@ -510,8 +524,10 @@ function [] = mpmESTATICS(job)
     % write 3 or 4 files for R1, PD, R2star and in case delta
     % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
     write_small_to_file_nii(job.odir{1},'R1_', spm_vol(job.t1Files{1}), R1, 1, job.sdim(3), job.sdim);
+    write_small_to_file_nii(job.odir{1},'R1linear_', spm_vol(job.t1Files{1}), R1linear, 1, job.sdim(3), job.sdim);
     write_small_to_file_nii(job.odir{1},'R2star_', spm_vol(job.t1Files{1}), R2star, 1, job.sdim(3), job.sdim);
     write_small_to_file_nii(job.odir{1},'A_', spm_vol(job.t1Files{1}), PD, 1, job.sdim(3), job.sdim);
+    write_small_to_file_nii(job.odir{1},'Alinear_', spm_vol(job.t1Files{1}), PDlinear, 1, job.sdim(3), job.sdim);
     [pA, fA, eA] = spm_fileparts(job.t1Files{1});
     
     if job.confInt==1,
@@ -521,12 +537,15 @@ function [] = mpmESTATICS(job)
         write_small_to_file_nii(job.odir{1},'A_up_', spm_vol(job.t1Files{1}), PD_up, 1, job.sdim(3), job.sdim);
         
     end
-    
+    eA = '.nii';
     if ~isempty(job.mtFiles) || (length(job.mtFiles)==1 &&~strcmp(job.mtFiles{1},'')),  
         write_small_to_file_nii(job.odir{1},'MT_', spm_vol(job.t1Files{1}), delta, 1, job.sdim(3),  job.sdim); 
+        write_small_to_file_nii(job.odir{1},'MTlinear_', spm_vol(job.t1Files{1}), deltaLinear, 1, job.sdim(3),  job.sdim); 
+        PDcalculation(fullfile(job.odir{1}, ['MTlinear_' fA eA]), fullfile(job.odir{1}, ['Alinear_' fA eA]));
         PDcalculation(fullfile(job.odir{1}, ['MT_' fA eA]), fullfile(job.odir{1}, ['A_' fA eA]));
     else
         PDcalculation(fullfile(job.odir{1}, ['R1_' fA eA]), fullfile(job.odir{1}, ['A_' fA eA]));
+        PDcalculation(fullfile(job.odir{1}, ['R1linear_' fA eA]), fullfile(job.odir{1}, ['Alinear_' fA eA]));
     end
     catch
         error('it was not possible to save the resulting .nii files. Check to have writing rights in the current directory')

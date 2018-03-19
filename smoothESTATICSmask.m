@@ -135,6 +135,7 @@ clear tmp
 tmp2 = reshape(model.invCov,[nv*nv n]);
 si2 = tmp2(triu(ones(nv,nv))>0 , model.mask>0);
 clear tmp2
+nvd = nv*(nv+1)/2;
 
 % indices of voxel in mask within full cube
 iind = 1:n;
@@ -185,10 +186,8 @@ while k<=kstar
         np2 = 2*patchsize+1;
         np3 = 2*patchsize+1;
         np = np1*np2*np3;
-        nvd = nv*(nv+1)/2;
-        si2 = reshape(si2,[nv*nv nmask]);
+        %si2 = reshape(si2,[nvd nmask]);
         if (nv==3)
-            si2d = si2d();
             [zobj.bi, zobj.theta, zobj.hakt] = pvaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores), np1, np2, np3, zeros(nv*np, mccores), zeros(nvd*np, mccores), zeros(np, mccores));
         end
         
