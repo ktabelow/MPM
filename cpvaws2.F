@@ -37,8 +37,8 @@ C
       double precision thpatch(nv,np1*np2*np3,*),
      1        invcovp(nvd,np1*np2*np3,*),biipatch(np1*np2*np3,*)
       integer ip1,ip2,ip3,nph1,nph2,nph3,pc,ipind,pcj,jp1,jp2,jp3,jpind
-      external lkern
-      double precision lkern
+      external lkern, KLdistsi
+      double precision lkern, KLdistsi
 !$      integer omp_get_thread_num
 !$      external omp_get_thread_num
       thrednr = 1
