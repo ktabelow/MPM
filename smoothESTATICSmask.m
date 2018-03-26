@@ -97,7 +97,7 @@ zEnd = model.zEnd;
 nv = model.nv;
 % determine a suitable adaptation bandwidth, if not specified
 if isempty(lambda)
-  lambda = nv*finv(1-alpha, nv, model.nFiles - nv);
+    lambda = nv*finv(1-alpha, nv, model.nFiles - nv);
 end
 
 if verbose
@@ -173,11 +173,11 @@ k = 1;
 while k<=kstar
     % determine the actual bandwidth for this step
     hakt = gethani (1, 1.25*hmax, 2, 1.25^k, wghts, 1e-4);
-    
+
     % we need the (approx.) size of the weighting scheme array
     tmp = 2*fix(hakt./[1 wghts])+1;
     dlw = tmp(1:3);
-    
+
     % perform the actual adaptive smoothing
     if (patchsize==0)
         [zobj.bi, zobj.theta, zobj.hakt] = vaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores) );
@@ -188,13 +188,13 @@ while k<=kstar
         np = np1*np2*np3;
         %si2 = reshape(si2,[nvd nmask]);
         if (nv==3)
-            [zobj.bi, zobj.theta, zobj.hakt] = pvaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores), np1, np2, np3, zeros(nv*np, mccores), zeros(nvd*np, mccores), zeros(np, mccores));
+            [zobj.bi, zobj.theta, zobj.hakt] = vpaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores), np1, np2, np3, zeros(nv*np, mccores), zeros(nvd*np, mccores), zeros(np, mccores));
         end
-        
+
         zobj.theta = reshape(zobj.theta, [nv nmask]);
         zobj.bi = max(bi,zobj.bi);
         %bi = zobj.bi;
-        
+
         % some verbose stuff
         if verbose
             diff=reshape(zobj.theta,1,[]) - reshape(y,1,[]);
@@ -206,45 +206,46 @@ while k<=kstar
             reverseStr = repmat(sprintf('\b'), 1, length(msg));
             msg = sprintf('Percent done: %3.1f', percentDone);
             fprintf([reverseStr, msg]);
-            
+
         end
-        
-        %go for the next iteration
-        k = k+1;
+
     end
-    
-    clear y si2
-    
-    %% some verbose stuff
-    
-    if verbose
-        fprintf('\n');
-        for i=1:numel(protocol)
-            fprintf(protocol{i});
-        end
+    %go for the next iteration
+    k = k+1;
+end
+
+clear y si2
+
+%% some verbose stuff
+
+if verbose
+    fprintf('\n');
+    for i=1:numel(protocol)
+        fprintf(protocol{i});
     end
-    
-    %% preparing the output
-    % create full arrays of zeros
-    theta = zeros(nv,n);
-    bi = zeros(1, n);
-    % fill in information and set correct dimension
-    theta(:,model.mask>0) = zobj.theta;
-    theta = reshape(theta, [nv n1 n2 n3]);
-    bi(model.mask>0) = zobj.bi;
-    bi = reshape(bi, [n1 n2 n3]);
-    
-    % set correct dimension
-    % zobj.theta = reshape(zobj.theta, [nv n1 n2 n3]);
-    % zobj.bi = reshape(zobj.bi, [n1 n2 n3]);
-    
-    % assign values
-    modelS = model;
-    modelS.modelCoeff = theta; % zobj.theta;
-    modelS.bi = bi; % zobj.bi;
-    modelS.smoothPar = [lambda, hakt, alpha];
-    
-    
-    
+end
+
+%% preparing the output
+% create full arrays of zeros
+theta = zeros(nv,n);
+bi = zeros(1, n);
+% fill in information and set correct dimension
+theta(:,model.mask>0) = zobj.theta;
+theta = reshape(theta, [nv n1 n2 n3]);
+bi(model.mask>0) = zobj.bi;
+bi = reshape(bi, [n1 n2 n3]);
+
+% set correct dimension
+% zobj.theta = reshape(zobj.theta, [nv n1 n2 n3]);
+% zobj.bi = reshape(zobj.bi, [n1 n2 n3]);
+
+% assign values
+modelS = model;
+modelS.modelCoeff = theta; % zobj.theta;
+modelS.bi = bi; % zobj.bi;
+modelS.smoothPar = [lambda, hakt, alpha];
+
+
+
 end
 % end function smoothESTATICSmask()

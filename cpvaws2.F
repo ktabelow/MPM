@@ -8,7 +8,7 @@ C   -     thpatch  Hilfsfeld fuer theta in patch  dimension (nv,np1*np2*np3,ncor
 C   -     invcovp  Hilfsfeld fuer invcov in patch  dimension (nvd,np1*np2*np3,ncores)
 C   -     biipatch Hilfsfeld fuer bi in patch  dimension (np1*np2*np3,ncores)
 C
-      subroutine pvaws2(y,nv,nvd,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
+      subroutine cpvaws2(y,nv,nvd,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
      1                theta,invcov,bi,thnew,ncores,lwght,wght,
      2                swjy,np1,np2,np3,thpatch,invcovp,biipatch)
 C

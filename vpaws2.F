@@ -40,23 +40,39 @@ C-----------------------------------------------------------------------
 C
 C
 
-       MWPOINTER Y_IN_PR, THETA_IN_PR
-       MWPOINTER III_IN_PR, JJJ_IN_PR
+       MWPOINTER Y_IN_PR
+       MWPOINTER THETA_IN_PR
+       MWPOINTER III_IN_PR
+       MWPOINTER JJJ_IN_PR
 
-       MWPOINTER INVCOV_IN_PR, LWGHT_IN_PR
-       MWPOINTER WGHT_IN_PR, SWJY_IN_PR
+       MWPOINTER INVCOV_IN_PR
+       MWPOINTER LWGHT_IN_PR
+       MWPOINTER WGHT_IN_PR
+       MWPOINTER SWJY_IN_PR
        MWPOINTER HAKT_IN_PR, HAKT_OUT_PR
        MWPOINTER BI_IN_PR, BI_OUT_PR
        MWPOINTER THNEW_IN_PR, THNEW_OUT_PR
-       MWPOINTER IHPATCH_IN_PR, INVCOVP_IN_PR, BIIPATCH_IN_PR
+       MWPOINTER IHPATCH_IN_PR
+       MWPOINTER INVCOVP_IN_PR
+       MWPOINTER BIIPATCH_IN_PR
+       MWPOINTER THPATCH_IN_PR
 
 C      POINTERS TO M (rows) AND N (columns) of INPUTS
 
-       MWPOINTER M_N1, N_N1, M_N2, N_N2, M_N3, N_N3,
-     +  M_NMASK, N_NMASK,
-     + M_HAKT, N_HAKT, M_NV, N_NV, M_NDV, N_NDV, M_NCORES, N_NCORES,
-     + M_LAMBDA, N_LAMBDA, M_NVD, N_NVD, M_NP1, N_NP1, M_NP2, N_NP2,
-     + M_NP3, N_NP3, M_WGHT, N_WGHT, THPATCH_IN_PR
+       MWPOINTER M_N1, N_N1, 
+     +           M_N2, N_N2, 
+     +           M_N3, N_N3,
+     +           M_NMASK, N_NMASK,
+     +           M_HAKT, N_HAKT, 
+     +           M_NV, N_NV, 
+     +           M_NDV, N_NDV, 
+     +           M_NCORES, N_NCORES,
+     +           M_LAMBDA, N_LAMBDA, 
+     +           M_NVD, N_NVD, 
+     +           M_NP1, N_NP1, 
+     +           M_NP2, N_NP2,
+     +           M_NP3, N_NP3, 
+     +           M_WGHT, N_WGHT 
 
 C-----------------------------------------------------------------------
 C
@@ -64,23 +80,41 @@ C      LOCAL VARIABLES
 
 
 
-       INTEGER*4 N1_IN, N2_IN, N3_IN, NV_IN, NCORES_IN, NMASK_IN,
-     + NVD_IN, NP1_IN, NP2_IN, NP3_IN
+       INTEGER*4 N1_IN, N2_IN, N3_IN, 
+     +           NV_IN, 
+     +           NVD_IN, 
+     +           NMASK_IN,
+     +           NCORES_IN, 
+     +           NP1_IN, NP2_IN, NP3_IN
 
-        INTEGER*4, DIMENSION(:), ALLOCATABLE   :: III_IN, JJJ_IN
+       INTEGER*4, DIMENSION(:), ALLOCATABLE   :: III_IN, JJJ_IN
 
-        REAL*8, DIMENSION(:), ALLOCATABLE   :: BI_INOUT
+       REAL*8, DIMENSION(:), ALLOCATABLE   :: BI_INOUT
 
-        REAL*8, DIMENSION(:,:), ALLOCATABLE   :: THNEW_INOUT, Y_IN,
-     +  INVCOV_IN
+       REAL*8, DIMENSION(:,:), ALLOCATABLE   :: THNEW_INOUT, Y_IN,
+     +         INVCOV_IN
 
-       REAL*8 LAMBDA_IN, HAKT_INOUT, HAKT_IN, WGHT_IN(2)
+       REAL*8 LAMBDA_IN, 
+     +        HAKT_INOUT, HAKT_IN, 
+     +        WGHT_IN(2)
 
 C      SIZE OF THE INPUT ARGUMENTS (MXN)
 
-       MWSIZE DIM_N1, DIM_N2, DIM_N3, DIM_NV, DIM_NCORES, NPSIZE,
-     + NVSIZE, NVDSIZE, NSIZE, ONE, DIM_LAMBDA, DIM_HAKT, DIM_WGHT,
-     + DIM_NMASK, NMASKSIZE, DIM_NVD, DIM_NP1, DIM_NP2, DIM_NP3
+       MWSIZE DIM_N1, DIM_N2, DIM_N3, 
+     +        DIM_NV, 
+     +        DIM_NCORES, 
+     +        NPSIZE,
+     +        NVSIZE, 
+     +        NVDSIZE, 
+     +        NSIZE, 
+     +        ONE, 
+     +        DIM_LAMBDA, 
+     +        DIM_HAKT, 
+     +        DIM_WGHT,
+     +        DIM_NMASK, 
+     +        NMASKSIZE, 
+     +        DIM_NVD, 
+     +        DIM_NP1, DIM_NP2, DIM_NP3
 
 
 
@@ -90,7 +124,7 @@ C
 C CHECK FOR PROPER NUMBER OF ARGUMENTS
 C
        IF (NRHS .NE. 25) THEN
-         CALL MEXERRMSGTXT('VPAWS requires 18 input arguments')
+         CALL MEXERRMSGTXT('VPAWS requires 25 input arguments')
        ELSEIF (NLHS .GT. 3) THEN
          CALL MEXERRMSGTXT('VAWS requires 3 output argument')
        ENDIF
@@ -201,7 +235,7 @@ C       CALL MEXPRINTF(' BEFORE Checking numerics ')
 
 
 
-C        CALL MEXPRINTF(' after checking numerics \n')
+        CALL MEXPRINTF(' after checking numerics \n')
 C
 C CHECK THE DIMENSIONS OF INPUT VALUES.
 C N1,N2,N3,NV,NMASK NCORES, LAMBDA, HAKT HAVE TO BE 1
@@ -260,7 +294,7 @@ C       PRODN = MXGETNUMBEROFELEMENTS(PRHS(3))
        DIM_NCORES = M_NCORES*N_NCORES
 
 
-C       CALL MEXPRINTF(' checking dimensions \n')
+       CALL MEXPRINTF(' checking dimensions \n')
 C
 
       IF ((DIM_N1 .NE. 1).OR.(DIM_N2 .NE. 1).OR.(DIM_N3 .NE. 1)) THEN
@@ -289,14 +323,14 @@ C       getting the values of n1, n2, n3, nV, NCORES, NMASK
 C       HAKT, lambda
 C       using get scalar
 C       need to cast since it returns a double
-C        CALL MEXPRINTF(' BEFORE getting SCALARS \n')
+        CALL MEXPRINTF(' BEFORE getting SCALARS \n')
 
 
        N1_IN = INT(MXGETSCALAR(PRHS(4)))
        N2_IN = INT(MXGETSCALAR(PRHS(5)))
        N3_IN = INT(MXGETSCALAR(PRHS(6)))
 
-       NMASK_IN = INT(MXGETSCALAR(PRHS(6)))
+       NMASK_IN = INT(MXGETSCALAR(PRHS(7)))
 
        HAKT_IN = MXGETSCALAR(PRHS(10))
        NV_IN = INT(MXGETSCALAR(PRHS(2)))
@@ -304,11 +338,11 @@ C        CALL MEXPRINTF(' BEFORE getting SCALARS \n')
        NCORES_IN = INT(MXGETSCALAR(PRHS(16)))
        LAMBDA_IN = MXGETSCALAR(PRHS(11))
 
-       N1_IN = INT(MXGETSCALAR(PRHS(20)))
-       N2_IN = INT(MXGETSCALAR(PRHS(21)))
-       N3_IN = INT(MXGETSCALAR(PRHS(22)))
+       NP1_IN = INT(MXGETSCALAR(PRHS(20)))
+       NP2_IN = INT(MXGETSCALAR(PRHS(21)))
+       NP3_IN = INT(MXGETSCALAR(PRHS(22)))
 
-C       CALL MEXPRINTF(' AFTER getting SCALARS \n')
+       CALL MEXPRINTF(' AFTER getting SCALARS \n')
 
        ALLOCATE(BI_INOUT(NMASK_IN))
        ALLOCATE(THNEW_INOUT(NV_IN,NMASK_IN))
@@ -346,29 +380,29 @@ C       getting all the other INPUT pointers
        THPATCH_IN_PR = MXGETPR(PRHS(23))
        INVCOVP_IN_PR = MXGETPR(PRHS(24))
        BIIPATCH_IN_PR = MXGETPR(PRHS(25))
-C       CALL MEXPRINTF(' AFTER getting OTHER input \n')
+       CALL MEXPRINTF(' AFTER getting OTHER input \n')
 
-C       CALL MEXPRINTF(' BEFORE CREATING OUTPUT ')
+       CALL MEXPRINTF(' BEFORE CREATING OUTPUT ')
 C CREATE MATRICES FOR RETURN ARGUMENT
 C
 C
 C     BI
       PLHS(1) = MXCREATEDOUBLEMATRIX(ONE,
      + MXGETNUMBEROFELEMENTS(PRHS(14)),0)
-C      CALL MEXPRINTF(' BI done \n')
+      CALL MEXPRINTF(' BI done \n')
 
 C     THNEW
       PLHS(2) = MXCREATEDOUBLEMATRIX(NVSIZE,
      + NMASKSIZE,0)
-C      CALL MEXPRINTF(' THNEW done \n')
+      CALL MEXPRINTF(' THNEW done \n')
 
 C    HAKT
       PLHS(3) = MXCREATEDOUBLEMATRIX(ONE,
      + ONE,0)
-C        CALL MEXPRINTF(' HAKT done \n')
+        CALL MEXPRINTF(' HAKT done \n')
 
 
-C      CALL MEXPRINTF(' AFTER PLACE OUTPUT ')
+      CALL MEXPRINTF(' AFTER PLACE OUTPUT ')
 C
 C ASSIGN POINTERS TO THE OUTPUT PARAMETERS
 C
@@ -399,14 +433,14 @@ C     + MXGETNUMBEROFELEMENTS(PRHS(1)))
      + MXGETNUMBEROFELEMENTS(PRHS(9)))
 
 
-C      CALL MEXPRINTF('BEFORE CALL \n')
+      CALL MEXPRINTF('BEFORE CALL \n')
 C
 C DO THE ACTUAL COMPUTATIONS ALSO USING VAL
 C
 
 
 
-        CALL PVAWS2(%val(Y_IN_PR),
+        CALL CPVAWS2(%val(Y_IN_PR),
      + NV_IN, NVD_IN, N1_IN, N2_IN, N3_IN, NMASK_IN,
      + III_IN, JJJ_IN, HAKT_INOUT,
      + LAMBDA_IN, %val(THETA_IN_PR),
@@ -416,7 +450,7 @@ C
      + NP1_IN, NP2_IN, NP3_IN,
      + %val(THPATCH_IN_PR), %val(INVCOVP_IN_PR), %val(BIIPATCH_IN_PR))
 
-C         CALL MEXPRINTF(' call END \n')
+         CALL MEXPRINTF(' call END \n')
 
        CALL MXCOPYREAL8TOPTR(BI_INOUT, BI_OUT_PR,
      + MXGETNUMBEROFELEMENTS(PRHS(14)))
@@ -429,7 +463,7 @@ C         CALL MEXPRINTF(' call END \n')
 C      DEALLOCATE(Y_IN)
       DEALLOCATE(III_IN)
       DEALLOCATE(JJJ_IN)
-C        CALL MEXPRINTF(' time to return ')
+        CALL MEXPRINTF(' time to return ')
 
       RETURN
       END
