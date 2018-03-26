@@ -47,7 +47,7 @@ function [modelS] = smoothESTATICSmask(model,varargin)
 % it is important to pass the correct struct to this function
 
 
-if nargin==0,
+if nargin==0
     error('There has to be at least one input, the mpmESTATICSmodel');
 end
 
@@ -57,7 +57,7 @@ if ~isstruct(model)
     error('Wrong input data type, struct expected');
 end
 % to check if the model struct has at least the requested fields
-if ~isfield(model,{'modelCoeff','invCov','sdim','nFiles','mask','nv'}),
+if ~isfield(model,{'modelCoeff','invCov','sdim','nFiles','mask','nv'})
     error('Wrong input data type, struct with fields modelCoeff, invCov, sdim, nFiles, mask, nv expected');
 end
 
@@ -72,16 +72,16 @@ lambda = [];
 
 %% overwrites default parameters, if present
 
-for k=1:2:length(varargin),
+for k=1:2:length(varargin)
     eval([varargin{k},'=varargin{',int2str(k+1),'};']);
-end;
+end
 %% a little information
 
 fprintf('   kstar = %d \n', kstar );
 fprintf('   lambda = %d \n', lambda );
 fprintf('   patchsize = %d \n', patchsize );
 
-if verbose,
+if verbose
     fprintf('   verbose = %d \n', verbose );
     fprintf('   alpha = %f \n', alpha );
 
@@ -100,7 +100,7 @@ if isempty(lambda)
   lambda = nv*finv(1-alpha, nv, model.nFiles - nv);
 end
 
-if verbose,
+if verbose
     fprintf('   lambda = %f \n', lambda );
 end
 
@@ -160,7 +160,7 @@ mccores= cast(str2double(getenv('OMP_NUM_THREADS')),'int32');
 % define the maximum bandwidth  from the number of iteration
 hmax = 1.25^(kstar/3);
 
-if verbose,
+if verbose
     fprintf('Starting the smoothing process ...\n');
     msg = sprintf('Percent done: 0.0');
     fprintf(msg);
