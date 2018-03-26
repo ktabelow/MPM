@@ -187,9 +187,7 @@ while k<=kstar
         np3 = 2*patchsize+1;
         np = np1*np2*np3;
         %si2 = reshape(si2,[nvd nmask]);
-        if (nv==3)
-            [zobj.bi, zobj.theta, zobj.hakt] = vpaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores), np1, np2, np3, zeros(nv*np, mccores), zeros(nvd*np, mccores), zeros(np, mccores));
-        end
+        [zobj.bi, zobj.theta, zobj.hakt] = vpaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores), np1, np2, np3, zeros(nv*np, mccores), zeros(nvd*np, mccores), zeros(np, mccores));
 
         zobj.theta = reshape(zobj.theta, [nv nmask]);
         zobj.bi = max(bi,zobj.bi);

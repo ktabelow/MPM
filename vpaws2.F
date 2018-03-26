@@ -133,104 +133,104 @@ C      CHECK IF THE IMPUTS ARE NUMERIC
 
 C       CALL MEXPRINTF(' BEFORE Checking numerics ')
        IF(mxIsNumeric(prhs(1)) .eq. 0) then
-           CALL MEXERRMSGTXT('S HAS TO BE A NUMERIC MATRIX')
-        ENDIF
+         CALL MEXERRMSGTXT('S HAS TO BE A NUMERIC MATRIX')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(2)) .eq. 0) then
-           CALL MEXERRMSGTXT('NV HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(2)) .eq. 0) then
+         CALL MEXERRMSGTXT('NV HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(3)) .eq. 0) then
-           CALL MEXERRMSGTXT('NVD HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(3)) .eq. 0) then
+         CALL MEXERRMSGTXT('NVD HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(4)) .eq. 0) then
-           CALL MEXERRMSGTXT('N1 HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(4)) .eq. 0) then
+         CALL MEXERRMSGTXT('N1 HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(5)) .eq. 0) then
-           CALL MEXERRMSGTXT('N2 HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(5)) .eq. 0) then
+         CALL MEXERRMSGTXT('N2 HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(6)) .eq. 0) then
-           CALL MEXERRMSGTXT('N3 HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(6)) .eq. 0) then
+         CALL MEXERRMSGTXT('N3 HAS TO BE A NUMBER')
+       ENDIF
 
-         IF(mxIsNumeric(prhs(7)) .eq. 0) then
-           CALL MEXERRMSGTXT('NMASK HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(7)) .eq. 0) then
+         CALL MEXERRMSGTXT('NMASK HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(8)) .eq. 0) then
-           CALL MEXERRMSGTXT('III HAS TO BE A NUMERIC ARRAY')
-        ENDIF
+       IF(mxIsNumeric(prhs(8)) .eq. 0) then
+         CALL MEXERRMSGTXT('III HAS TO BE A NUMERIC ARRAY')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(9)) .eq. 0) then
-           CALL MEXERRMSGTXT('JJJ HAS TO BE A NUMERIC ARRAY')
-        ENDIF
+       IF(mxIsNumeric(prhs(9)) .eq. 0) then
+         CALL MEXERRMSGTXT('JJJ HAS TO BE A NUMERIC ARRAY')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(10)) .eq. 0) then
-           CALL MEXERRMSGTXT('HAKT HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(10)) .eq. 0) then
+         CALL MEXERRMSGTXT('HAKT HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(11)) .eq. 0) then
-           CALL MEXERRMSGTXT('LAMBDA HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(11)) .eq. 0) then
+         CALL MEXERRMSGTXT('LAMBDA HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(12)) .eq. 0) then
-           CALL MEXERRMSGTXT('THETA HAS TO BE A NUMERIC MATRIX')
-        ENDIF
+       IF(mxIsNumeric(prhs(12)) .eq. 0) then
+         CALL MEXERRMSGTXT('THETA HAS TO BE A NUMERIC MATRIX')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(13)) .eq. 0) then
-           CALL MEXERRMSGTXT('INVCOV HAS TO BE A NUMERIC MATRIX')
-        ENDIF
+       IF(mxIsNumeric(prhs(13)) .eq. 0) then
+         CALL MEXERRMSGTXT('INVCOV HAS TO BE A NUMERIC MATRIX')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(14)) .eq. 0) then
-           CALL MEXERRMSGTXT('BI HAS TO BE A NUMERIC ARRAY')
-        ENDIF
+       IF(mxIsNumeric(prhs(14)) .eq. 0) then
+         CALL MEXERRMSGTXT('BI HAS TO BE A NUMERIC ARRAY')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(15)) .eq. 0) then
-           CALL MEXERRMSGTXT('THNEW HAS TO BE A NUMERIC MATRIX')
-        ENDIF
+       IF(mxIsNumeric(prhs(15)) .eq. 0) then
+         CALL MEXERRMSGTXT('THNEW HAS TO BE A NUMERIC MATRIX')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(16)) .eq. 0) then
-           CALL MEXERRMSGTXT('NCORES HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(16)) .eq. 0) then
+         CALL MEXERRMSGTXT('NCORES HAS TO BE A NUMBER')
+       ENDIF
 
-         IF(mxIsNumeric(prhs(17)) .eq. 0) then
-           CALL MEXERRMSGTXT('LWGHT HAS TO BE A NUMERIC ARRAY')
-        ENDIF
+       IF(mxIsNumeric(prhs(17)) .eq. 0) then
+         CALL MEXERRMSGTXT('LWGHT HAS TO BE A NUMERIC ARRAY')
+       ENDIF
 
-         IF(mxIsNumeric(prhs(18)) .eq. 0) then
-           CALL MEXERRMSGTXT('WGHT HAS TO BE A NUMERIC ARRAY')
-        ENDIF
+       IF(mxIsNumeric(prhs(18)) .eq. 0) then
+         CALL MEXERRMSGTXT('WGHT HAS TO BE A NUMERIC ARRAY')
+       ENDIF
 
-         IF(mxIsNumeric(prhs(19)) .eq. 0) then
-           CALL MEXERRMSGTXT('SWJY HAS TO BE A NUMERIC MATRIX')
-        ENDIF
+       IF(mxIsNumeric(prhs(19)) .eq. 0) then
+         CALL MEXERRMSGTXT('SWJY HAS TO BE A NUMERIC MATRIX')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(20)) .eq. 0) then
-           CALL MEXERRMSGTXT('NP1 HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(20)) .eq. 0) then
+         CALL MEXERRMSGTXT('NP1 HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(21)) .eq. 0) then
-           CALL MEXERRMSGTXT('NP2 HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(21)) .eq. 0) then
+         CALL MEXERRMSGTXT('NP2 HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(22)) .eq. 0) then
-           CALL MEXERRMSGTXT('NP3 HAS TO BE A NUMBER')
-        ENDIF
+       IF(mxIsNumeric(prhs(22)) .eq. 0) then
+         CALL MEXERRMSGTXT('NP3 HAS TO BE A NUMBER')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(23)) .eq. 0) then
-           CALL MEXERRMSGTXT('THPATCH HAS TO BE A NUMERIC ARRAY')
-        ENDIF
+       IF(mxIsNumeric(prhs(23)) .eq. 0) then
+         CALL MEXERRMSGTXT('THPATCH HAS TO BE A NUMERIC ARRAY')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(24)) .eq. 0) then
-           CALL MEXERRMSGTXT('INVCOVP HAS TO BE A NUMERIC ARRAY')
-        ENDIF
+       IF(mxIsNumeric(prhs(24)) .eq. 0) then
+         CALL MEXERRMSGTXT('INVCOVP HAS TO BE A NUMERIC ARRAY')
+       ENDIF
 
-        IF(mxIsNumeric(prhs(25)) .eq. 0) then
-           CALL MEXERRMSGTXT('BIIPATCH HAS TO BE A NUMERIC ARRAY')
-        ENDIF
+       IF(mxIsNumeric(prhs(25)) .eq. 0) then
+         CALL MEXERRMSGTXT('BIIPATCH HAS TO BE A NUMERIC ARRAY')
+       ENDIF
 
 
 
@@ -242,31 +242,26 @@ C N1,N2,N3,NV,NMASK NCORES, LAMBDA, HAKT HAVE TO BE 1
 C WGHT HAS TO BE 2
 C
 C
+       M_NV = MXGETM(PRHS(2))
+       N_NV = MXGETN(PRHS(2))
+       M_NDV = MXGETM(PRHS(3))
+       N_NDV = MXGETN(PRHS(3))
        M_N1 = MXGETM(PRHS(4))
        N_N1 = MXGETN(PRHS(4))
        M_N2 = MXGETM(PRHS(5))
        N_N2 = MXGETN(PRHS(5))
        M_N3 = MXGETM(PRHS(6))
        N_N3 = MXGETN(PRHS(6))
-
        M_NMASK = MXGETM(PRHS(7))
        N_NMASK = MXGETN(PRHS(7))
-
-
-       M_WGHT = MXGETM(PRHS(18))
-       N_WGHT = MXGETN(PRHS(18))
-
-       M_NV = MXGETM(PRHS(2))
-       N_NV = MXGETN(PRHS(2))
-       M_NDV = MXGETM(PRHS(3))
-       N_NDV = MXGETN(PRHS(3))
        M_HAKT = MXGETN(PRHS(10))
        N_HAKT = MXGETN(PRHS(10))
        M_LAMBDA = MXGETM(PRHS(11))
        N_LAMBDA = MXGETN(PRHS(11))
        M_NCORES = MXGETM(PRHS(16))
        N_NCORES = MXGETN(PRHS(16))
-
+       M_WGHT = MXGETM(PRHS(18))
+       N_WGHT = MXGETN(PRHS(18))
        M_NP1 = MXGETM(PRHS(20))
        N_NP1 = MXGETN(PRHS(20))
        M_NP2 = MXGETM(PRHS(21))
@@ -326,18 +321,15 @@ C       need to cast since it returns a double
         CALL MEXPRINTF(' BEFORE getting SCALARS \n')
 
 
+       NV_IN = INT(MXGETSCALAR(PRHS(2)))
+       NVD_IN = INT(MXGETSCALAR(PRHS(3)))
        N1_IN = INT(MXGETSCALAR(PRHS(4)))
        N2_IN = INT(MXGETSCALAR(PRHS(5)))
        N3_IN = INT(MXGETSCALAR(PRHS(6)))
-
        NMASK_IN = INT(MXGETSCALAR(PRHS(7)))
-
        HAKT_IN = MXGETSCALAR(PRHS(10))
-       NV_IN = INT(MXGETSCALAR(PRHS(2)))
-       NVD_IN = INT(MXGETSCALAR(PRHS(3)))
-       NCORES_IN = INT(MXGETSCALAR(PRHS(16)))
        LAMBDA_IN = MXGETSCALAR(PRHS(11))
-
+       NCORES_IN = INT(MXGETSCALAR(PRHS(16)))
        NP1_IN = INT(MXGETSCALAR(PRHS(20)))
        NP2_IN = INT(MXGETSCALAR(PRHS(21)))
        NP3_IN = INT(MXGETSCALAR(PRHS(22)))
@@ -346,12 +338,12 @@ C       need to cast since it returns a double
 
        ALLOCATE(BI_INOUT(NMASK_IN))
        ALLOCATE(THNEW_INOUT(NV_IN,NMASK_IN))
-C       ALLOCATE(Y_IN(NV_IN,NMASK_IN))
+       ALLOCATE(Y_IN(NV_IN,NMASK_IN))
        ALLOCATE(III_IN(NMASK_IN))
        ALLOCATE(JJJ_IN(N1_IN*N2_IN*N3_IN))
 
 
-       ONE=1
+       ONE = 1
        NVSIZE = NV_IN
        NVDSIZE = NVD_IN
        NSIZE = N1_IN*N2_IN*N3_IN
@@ -363,16 +355,14 @@ C       getting all the other INPUT pointers
 
        Y_IN_PR = MXGETPR(PRHS(1))
        III_IN_PR = MXGETPR(PRHS(8))
-        JJJ_IN_PR = MXGETPR(PRHS(9))
+       JJJ_IN_PR = MXGETPR(PRHS(9))
 
 
+       HAKT_IN_PR = MXGETPR(PRHS(10))
        THETA_IN_PR = MXGETPR(PRHS(12))
        INVCOV_IN_PR = MXGETPR(PRHS(13))
-
        BI_IN_PR = MXGETPR(PRHS(14))
        THNEW_IN_PR = MXGETPR(PRHS(15))
-       HAKT_IN_PR = MXGETPR(PRHS(10))
-
        LWGHT_IN_PR = MXGETPR(PRHS(17))
        WGHT_IN_PR= MXGETPR(PRHS(18))
        SWJY_IN_PR= MXGETPR(PRHS(19))
@@ -416,21 +406,21 @@ C COPY RIGHT HAND ARGUMENTS TO LOCAL ARRAYS OR VARIABLES
 
 
        CALL MXCOPYPTRTOREAL8(BI_IN_PR, BI_INOUT,
-     + MXGETNUMBEROFELEMENTS(PRHS(14)))
+     +                       MXGETNUMBEROFELEMENTS(PRHS(14)))
        CALL MXCOPYPTRTOREAL8(THNEW_IN_PR, THNEW_INOUT,
-     + MXGETNUMBEROFELEMENTS(PRHS(15)))
+     +                       MXGETNUMBEROFELEMENTS(PRHS(15)))
        CALL MXCOPYPTRTOREAL8(HAKT_IN_PR, HAKT_INOUT,
-     + MXGETNUMBEROFELEMENTS(PRHS(10)))
-C       CALL MXCOPYPTRTOREAL8(Y_IN_PR, Y_IN,
-C     + MXGETNUMBEROFELEMENTS(PRHS(1)))
+     +                       MXGETNUMBEROFELEMENTS(PRHS(10)))
+       CALL MXCOPYPTRTOREAL8(Y_IN_PR, Y_IN,
+     +                       MXGETNUMBEROFELEMENTS(PRHS(1)))
 
 
 
        CALL MXCOPYPTRTOINTEGER4(III_IN_PR, III_IN,
-     + MXGETNUMBEROFELEMENTS(PRHS(8)))
+     +                          MXGETNUMBEROFELEMENTS(PRHS(8)))
 
        CALL MXCOPYPTRTOINTEGER4(JJJ_IN_PR, JJJ_IN,
-     + MXGETNUMBEROFELEMENTS(PRHS(9)))
+     +                          MXGETNUMBEROFELEMENTS(PRHS(9)))
 
 
       CALL MEXPRINTF('BEFORE CALL \n')
@@ -441,29 +431,46 @@ C
 
 
         CALL CPVAWS2(%val(Y_IN_PR),
-     + NV_IN, NVD_IN, N1_IN, N2_IN, N3_IN, NMASK_IN,
-     + III_IN, JJJ_IN, HAKT_INOUT,
-     + LAMBDA_IN, %val(THETA_IN_PR),
-     + %val(INVCOV_IN_PR), BI_INOUT, THNEW_INOUT,
-     + NCORES_IN, %val(LWGHT_IN_PR),
-     + %val(WGHT_IN_PR), %val(SWJY_IN_PR),
-     + NP1_IN, NP2_IN, NP3_IN,
-     + %val(THPATCH_IN_PR), %val(INVCOVP_IN_PR), %val(BIIPATCH_IN_PR))
+     +               NV_IN, 
+     +               NVD_IN, 
+     +               N1_IN, 
+     +               N2_IN, 
+     +               N3_IN, 
+     +               NMASK_IN,
+     +               III_IN, 
+     +               JJJ_IN, 
+     +               HAKT_INOUT,
+     +               LAMBDA_IN, 
+     +               %val(THETA_IN_PR),
+     +               %val(INVCOV_IN_PR), 
+     +               BI_INOUT, 
+     +               THNEW_INOUT,
+     +               NCORES_IN, 
+     +               %val(LWGHT_IN_PR),
+     +               %val(WGHT_IN_PR), 
+     +               %val(SWJY_IN_PR),
+     +               NP1_IN, 
+     +               NP2_IN, 
+     +               NP3_IN,
+     +               %val(THPATCH_IN_PR), 
+     +               %val(INVCOVP_IN_PR), 
+     +               %val(BIIPATCH_IN_PR))
 
-         CALL MEXPRINTF(' call END \n')
+       CALL MEXPRINTF(' call END \n')
 
        CALL MXCOPYREAL8TOPTR(BI_INOUT, BI_OUT_PR,
-     + MXGETNUMBEROFELEMENTS(PRHS(14)))
+     +                       MXGETNUMBEROFELEMENTS(PRHS(14)))
        CALL MXCOPYREAL8TOPTR(THNEW_INOUT, THNEW_OUT_PR,
-     + MXGETNUMBEROFELEMENTS(PRHS(15)))
+     +                       MXGETNUMBEROFELEMENTS(PRHS(15)))
        CALL MXCOPYREAL8TOPTR(HAKT_INOUT, HAKT_OUT_PR, ONE)
 
       DEALLOCATE(BI_INOUT)
       DEALLOCATE(THNEW_INOUT)
-C      DEALLOCATE(Y_IN)
+      DEALLOCATE(Y_IN)
       DEALLOCATE(III_IN)
       DEALLOCATE(JJJ_IN)
-        CALL MEXPRINTF(' time to return ')
+        
+      CALL MEXPRINTF(' time to return ')
 
       RETURN
       END
