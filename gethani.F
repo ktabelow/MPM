@@ -39,7 +39,7 @@ C
 C-----------------------------------------------------------------------
 C     
 C
-       MWPOINTER  MXGETPR
+       MWPOINTER MXGETPR
        MWPOINTER MXCREATEDOUBLEMATRIX, mxCreateDoubleScalar
        MWPOINTER MXCREATENUMERICMATRIX
        MWPOINTER MXCREATENUMERICARRAY

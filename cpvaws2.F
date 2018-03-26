@@ -99,7 +99,6 @@ C  first stochastic term
             END DO
          END DO
       END DO
-      call rchkusr()
 C$OMP PARALLEL DEFAULT(NONE)
 C$OMP& SHARED(thnew,bi,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,invcov,
 C$OMP& ih3,lwght,wght,y,swjy,nmask,thpatch,biipatch,nph1,nph2,nph3,
@@ -222,6 +221,50 @@ C$OMP END PARALLEL
 C$OMP FLUSH(thnew,bi)
       RETURN
       END
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C          Compute Location Kernel (Compact support only, based on x^2
+C                                   ignores scaling)
+C
+C          Kern=1     Uniform
+C          Kern=2     Epanechnicov
+C          Kern=3     Biweight
+C          Kern=4     Triweight
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      real*8 function lkern(kern,xsq)
+      implicit logical (a-z)
+      integer kern
+      real*8 xsq,z
+      IF (xsq.ge.1) THEN
+         lkern=0.d0
+      ELSE IF (kern.eq.1) THEN
+         IF(xsq.le.0.5d0) THEN
+            lkern=1.d0
+         ELSE
+            lkern=2.d0*(1.d0-xsq)
+         END IF
+      ELSE IF (kern.eq.2) THEN
+         lkern=1.d0-xsq
+      ELSE IF (kern.eq.3) THEN
+         z=1.d0-xsq
+         lkern=z*z
+      ELSE IF (kern.eq.4) THEN
+         z=1.d0-xsq
+         lkern=z*z*z
+      ELSE IF (kern.eq.5) THEN
+         lkern=exp(-xsq*8.d0)
+      ELSE
+C        use Epanechnikov
+         lkern=1.d0-xsq
+      ENDIF
+      RETURN
+      END
+
+
+
       real*8 function KLdistsi(thi,thj,si2,nv)
       implicit logical (a-z)
       integer nv
