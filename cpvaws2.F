@@ -9,7 +9,7 @@ C   -     invcovp  Hilfsfeld fuer invcov in patch  dimension (nvd,np1*np2*np3,nc
 C   -     biipatch Hilfsfeld fuer bi in patch  dimension (np1*np2*np3,ncores)
 C
       subroutine cpvaws2(y,nv,nvd,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
-     1                theta,invcov,bi,thnew,ncores,lwght,wght,
+     1                theta,invcov,bi,bin,thnew,ncores,lwght,wght,
      2                swjy,np1,np2,np3,thpatch,invcovp,biipatch)
 C
 C   y        observed values of regression function
@@ -27,7 +27,8 @@ C
       logical aws
       integer*4 iii(nmask),jjj(*)
       double precision y(nv,*),theta(nv,*),bi(*),thnew(nv,*),lambda,
-     1  wght(2),hakt,lwght(*),spmin,spf,swjy(nv,ncores),invcov(nvd,*)
+     1  wght(2),hakt,lwght(*),spmin,spf,swjy(nv,ncores),invcov(nvd,*),
+     2  bin(*)
       integer ih1,ih2,ih3,i1,i2,i3,j1,j2,j3,jw1,jw2,jw3,jwind3,jwind2,
      1        iind,jind,jind3,jind2,clw1,clw2,clw3,dlw1,dlw2,dlw3,
      2        dlw12,n12,k,thrednr
@@ -100,7 +101,7 @@ C  first stochastic term
          END DO
       END DO
 C$OMP PARALLEL DEFAULT(NONE)
-C$OMP& SHARED(thnew,bi,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,invcov,
+C$OMP& SHARED(thnew,bi,bin,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,invcov,
 C$OMP& ih3,lwght,wght,y,swjy,nmask,thpatch,biipatch,nph1,nph2,nph3,
 C$OMP& iii,jjj,invcovp)
 C$OMP& FIRSTPRIVATE(ih1,ih2,lambda,aws,n12,
@@ -214,7 +215,7 @@ C   need both ipind and jpind in mask, pcj only depends on i
          DO k=1,nv
             thnew(k,imask)=swjy(k,thrednr)/swj
          END DO
-         bi(iind)=swj
+         bin(iind)=swj
       END DO
 C$OMP END DO NOWAIT
 C$OMP END PARALLEL
