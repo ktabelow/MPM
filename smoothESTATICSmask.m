@@ -180,14 +180,14 @@ while k<=kstar
 
     % perform the actual adaptive smoothing
     if (patchsize==0)
-        [zobj.bi, zobj.theta, zobj.hakt] = vaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores) );
+        [zobj.bi, zobj.theta] = vaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores) );
     else
         np1 = 2*patchsize+1;
         np2 = 2*patchsize+1;
         np3 = 2*patchsize+1;
         np = np1*np2*np3;
         %si2 = reshape(si2,[nvd nmask]);
-        [zobj.bi, zobj.theta, zobj.hakt] = vpaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores), np1, np2, np3, zeros(nv*np, mccores), zeros(nvd*np, mccores), zeros(np, mccores));
+        [zobj.bi, zobj.theta] = vpaws2(reshape(y,nv,[]), int32(iind), int32(jind), reshape(zobj.theta,nv,nmask), si2, zobj.bi, wghts, nv, nvd, n1, n2, n3, nmask, np1, np2, np3, hakt, lambda,  mccores);
 
         zobj.theta = reshape(zobj.theta, [nv nmask]);
         zobj.bi = max(bi,zobj.bi);
@@ -198,7 +198,7 @@ while k<=kstar
             diff=reshape(zobj.theta,1,[]) - reshape(y,1,[]);
             diff2=diff.^2;
             diffabs=abs(diff);
-            protocol{k} = sprintf('k= %2.d bandwith: %3.3f MSE %3.3d MAE %3.3d mean(bi) %3.3f \n',k,zobj.hakt, mean(diff2(:)),mean(diffabs(:)), mean(zobj.bi(:)) );
+            protocol{k} = sprintf('k= %2.d bandwith: %3.3f MSE %3.3d MAE %3.3d mean(bi) %3.3f \n',k,hakt, mean(diff2(:)),mean(diffabs(:)), mean(zobj.bi(:)) );
             % Display the progress
             percentDone = 100 * k / kstar;
             reverseStr = repmat(sprintf('\b'), 1, length(msg));
