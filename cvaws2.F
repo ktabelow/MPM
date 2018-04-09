@@ -54,7 +54,7 @@ C
       integer ih1,ih2,ih3,i1,i2,i3,j1,j2,j3,jw1,jw2,jw3,jwind3,jwind2,
      1        iind,jind,jind3,jind2,clw1,clw2,clw3,dlw1,dlw2,dlw3,
      2        dlw12,n12,k,thrednr,imask,jmask
-      real*8 bii,biinv,sij,swj,z,z1,z2,z3,wj,hakt2,hmax2,w1,w2,spmb,spf
+      real*8 bii,biinv,sij,swj,z1,z2,z3,wj,hakt2,hmax2,w1,w2,spmb,spf
       external lkern,KLdistsi
       real*8 lkern,KLdistsi
 !$      integer omp_get_thread_num
@@ -234,7 +234,7 @@ C        use Epanechnikov
       integer nv
       real*8 thi(nv), thj(nv), si2(*)
       integer k,l,m
-      real*8 z,zd,thik,zdk
+      real*8 z,thik,zdk
       z=0.d0
       m=1
       DO k=1,nv

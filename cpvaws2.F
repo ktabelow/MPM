@@ -27,21 +27,18 @@ C
       logical aws
       integer*4 iii(nmask),jjj(*)
       double precision y(nv,*),theta(nv,*),bi(*),thnew(nv,*),lambda,
-     1  wght(2),hakt,lwght(*),spmin,spf,swjy(nv,ncores),invcov(nvd,*),
+     1  wght(2),hakt,lwght(*),spmin,spf,swjy(nv,*),invcov(nvd,*),
      2  bin(*)
       integer ih1,ih2,ih3,i1,i2,i3,j1,j2,j3,jw1,jw2,jw3,jwind3,jwind2,
      1        iind,jind,jind3,jind2,clw1,clw2,clw3,dlw1,dlw2,dlw3,
      2        dlw12,n12,k,thrednr
-      double precision bii,biinv,sij,swj,z,z1,z2,z3,wj,hakt2,hmax2,
-     1        w1,w2,spmb,sijp
-      integer np1,np2,np3,l,m,imask,jmask,ipmask,jpmask
+      double precision sij,swj,z1,z2,z3,wj,hakt2,hmax2,w1,w2,sijp
+      integer np1,np2,np3,imask,jmask,ipmask,jpmask
       double precision thpatch(nv,np1*np2*np3,*),
      1        invcovp(nvd,np1*np2*np3,*),biipatch(np1*np2*np3,*)
       integer ip1,ip2,ip3,nph1,nph2,nph3,pc,ipind,pcj,jp1,jp2,jp3,jpind
       external lkern, KLdistsi
       double precision lkern, KLdistsi
-!$      integer omp_get_thread_num
-!$      external omp_get_thread_num
       thrednr = 1
 C just to prevent a compiler warning
       hakt2=hakt*hakt
@@ -100,20 +97,8 @@ C  first stochastic term
             END DO
          END DO
       END DO
-C$OMP PARALLEL DEFAULT(NONE)
-C$OMP& SHARED(thnew,bi,bin,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,invcov,
-C$OMP& ih3,lwght,wght,y,swjy,nmask,thpatch,biipatch,nph1,nph2,nph3,
-C$OMP& iii,jjj,invcovp)
-C$OMP& FIRSTPRIVATE(ih1,ih2,lambda,aws,n12,
-C$OMP& model,spmin,spf,dlw1,clw1,dlw2,clw2,dlw3,clw3,dlw12,w1,w2)
-C$OMP& PRIVATE(i1,i2,i3,iind,bii,biinv,swj,spmb,
-C$OMP& sij,wj,j3,jw3,jind3,z3,jwind3,j2,jw2,jind2,z2,jwind2,
-C$OMP& j1,jw1,jind,z1,z,thrednr,ip1,ip2,ip3,pc,ipind,pcj,
-C$OMP& jp1,jp2,jp3,jpind,sijp,l,m,imask,jmask,ipmask,jpmask)
-C$OMP DO SCHEDULE(GUIDED)
       DO imask=1,nmask
          iind = iii(imask)
-!$         thrednr = omp_get_thread_num()+1
 C returns value in 0:(ncores-1)
          i1=mod(iind,n1)
          if(i1.eq.0) i1=n1
@@ -215,11 +200,8 @@ C   need both ipind and jpind in mask, pcj only depends on i
          DO k=1,nv
             thnew(k,imask)=swjy(k,thrednr)/swj
          END DO
-         bin(iind)=swj
+         bin(imask)=swj
       END DO
-C$OMP END DO NOWAIT
-C$OMP END PARALLEL
-C$OMP FLUSH(thnew,bi)
       RETURN
       END
 
@@ -271,7 +253,7 @@ C        use Epanechnikov
       integer nv
       real*8 thi(nv), thj(nv), si2(*)
       integer k,l,m
-      real*8 z,zd,thik,zdk
+      real*8 z,thik,zdk
       z=0.d0
       m=1
       DO k=1,nv
