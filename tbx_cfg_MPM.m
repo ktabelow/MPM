@@ -103,6 +103,18 @@ function MPM = tbx_cfg_MPM
     kstar.val     = {16};
 
 % ---------------------------------------------------------------------
+% patch size for the smoothing algorithm
+% ---------------------------------------------------------------------
+    patchsize         = cfg_entry;
+    patchsize.tag     = 'patchsize';
+    patchsize.name    = 'Patch size (p)';
+    patchsize.help    = {'Cube of (2*p+1)^3 as patches for PAWS' ...
+                         'Recommended: 0/1 (higher values lead to high computational costs).'};
+    patchsize.strtype = 'e';
+    patchsize.num     = [1 1];
+    patchsize.val     = {0};
+
+% ---------------------------------------------------------------------
 % adaptation bandwidth of the smoothing algorithm
 % ---------------------------------------------------------------------
     lambda         = cfg_entry;
@@ -364,7 +376,7 @@ function MPM = tbx_cfg_MPM
      MT_branch.tag     = 'MT_branch';
      MT_branch.name    = 'Model with T1w, PDw and MTw volumes';
      MT_branch.val     = {t1Files mtFiles pdFiles maskFile odir tr2 coregIM saveESTA  ...
-                          confInt kstar lambda b1FileA b1FileP height tol  ...
+                          confInt patchsize kstar lambda b1FileA b1FileP height tol  ...
                           t1TR mtTR pdTR t1TE mtTE pdTE t1FA mtFA pdFA};
      MT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset with T1w, PDw and MTw volumes.'};
      MT_branch.prog    = @spm_local_mpm;
@@ -376,7 +388,7 @@ function MPM = tbx_cfg_MPM
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without MTw volumes';
      withoutMT_branch.val     = {t1Files pdFiles maskFile odir coregIM saveESTA  ...
-                                confInt kstar lambda b1FileA b1FileP height tol ...
+                                confInt patchsize kstar lambda b1FileA b1FileP height tol ...
                                 t1TR pdTR t1TE pdTE t1FA pdFA};
      withoutMT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset without MTw volumes.'};
      withoutMT_branch.prog    = @spm_local_mpm_noMT;
@@ -387,7 +399,7 @@ function MPM = tbx_cfg_MPM
      ESTAmodel_branch         = cfg_exbranch;
      ESTAmodel_branch.tag     = 'ESTAmodel_branch';
      ESTAmodel_branch.name    = 'Use an existing ESTATICS model';
-     ESTAmodel_branch.val     = {ESTAmodel odir kstar lambda b1FileA b1FileP tr2 height};
+     ESTAmodel_branch.val     = {ESTAmodel odir patchsize kstar lambda b1FileA b1FileP tr2 height};
      ESTAmodel_branch.help    = {'This branch implements the smoothing and final calculation of the quantitative maps R1, R2*, PD (and MT) given an existing ESTATICS model.'};
      ESTAmodel_branch.prog    = @spm_local_mpm_givenESTATICS;
 

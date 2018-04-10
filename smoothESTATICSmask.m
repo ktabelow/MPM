@@ -3,19 +3,19 @@
 % =========================================================================
 % 2015/10/6
 %
-% written by C. D'Alonzo 
+% written by C. D'Alonzo
 %
 % FORTRAN code written by J. Polzehl
-% 
+%
 %
 %
 % calls the Fortran subroutine vaws2.f to perform the smoothing algorithm;
-% vaws2.f works with OpenMP, in order not to have problems 
+% vaws2.f works with OpenMP, in order not to have problems
 % the environment variable OMP_NUM_THREADS has to be set
 % TO DO reimplementation of vaws2.F in C
 %
 % [modelS] = smoothESTATICSmask(model,varargin)
-% 
+%
 % performs adaptive smoothing on the 4 3D parameters of the ESTATICSmodel
 % only on the voxels in the mask
 %
@@ -28,6 +28,7 @@
 %  kstar   - numbers of iteration, default: 16
 %  alpha   - , default: 0.05
 %  wghts   - weights, default: []
+%  patchsize - , default: 0  (use grid of size (patchsize+1)^3 in comparisons )
 %  verbose - additional information, default: true
 %
 % Output:
@@ -35,7 +36,7 @@
 %  modelS  - a struct that contains:
 %
 %  modelCoeff       - smoothed 4 parameters
-%  bi               - 
+%  bi               -
 %  smoothPar        - vector containing lambda, hakt and alpha
 %
 % =========================================================================
@@ -44,44 +45,46 @@ function [modelS] = smoothESTATICSmask(model,varargin)
 
 %% checks if the model in input is present
 % it is important to pass the correct struct to this function
- 
 
-if nargin==0,
-    error('There has to be at least one input, the mpmESTATICSmodel');    
+
+if nargin==0
+    error('There has to be at least one input, the mpmESTATICSmodel');
 end
 
 %% checks if input model is a struct
 
-if ~isstruct(model) 
-    error('Wrong input data type, struct expected'); 
+if ~isstruct(model)
+    error('Wrong input data type, struct expected');
 end
-% to check if the model struct has at least the requested fields 
-if ~isfield(model,{'modelCoeff','invCov','sdim','nFiles','mask','nv'}),
-    error('Wrong input data type, struct with fields modelCoeff, invCov, sdim, nFiles, mask, nv expected');    
+% to check if the model struct has at least the requested fields
+if ~isfield(model,{'modelCoeff','invCov','sdim','nFiles','mask','nv'})
+    error('Wrong input data type, struct with fields modelCoeff, invCov, sdim, nFiles, mask, nv expected');
 end
 
 %% sets the default parameters
 
-kstar = [];
+kstar = 0;
 alpha = 0.05;
 wghts = [];
+patchsize = 0;
 verbose = true;
 lambda = [];
 
 %% overwrites default parameters, if present
 
-for k=1:2:length(varargin),     
+for k=1:2:length(varargin)
     eval([varargin{k},'=varargin{',int2str(k+1),'};']);
-end;
+end
 %% a little information
 
 fprintf('   kstar = %d \n', kstar );
 fprintf('   lambda = %d \n', lambda );
+fprintf('   patchsize = %d \n', patchsize );
 
-if verbose,
+if verbose
     fprintf('   verbose = %d \n', verbose );
     fprintf('   alpha = %f \n', alpha );
-    
+
 end
 %% setting parameters
 
@@ -91,19 +94,19 @@ zEnd = model.zEnd;
 
 % nv describes the model, with or without mt
 % length of the vector to smooth (# parameters of model)
-nv = model.nv; 
+nv = model.nv;
 % determine a suitable adaptation bandwidth, if not specified
 if isempty(lambda)
-  lambda = nv*finv(1-alpha, nv, model.nFiles - nv);
+    lambda = nv*finv(1-alpha, nv, model.nFiles - nv);
 end
 
-if verbose,
+if verbose
     fprintf('   lambda = %f \n', lambda );
 end
 
 % adjust for non-isotropic voxel if necessary
 if isempty(wghts)
-    wghts = [1 1 1];   
+    wghts = [1 1 1];
 end
 % make first spatial dimension unit, and use second and third for reference
 wghts = wghts(1)./wghts(2:3);
@@ -128,10 +131,11 @@ tmp= reshape(model.modelCoeff,[nv n]);
 y = tmp(:,model.mask>0);
 clear tmp
 % for the test function smooth, when zStart!= 1 or zEnd!=256
-% tmp2= reshape(model.invCov(:,:,:,:,zStart:zEnd),[nv nv n]); 
-tmp2= reshape(model.invCov,[nv nv n]);
-si2 = tmp2(:,:,model.mask>0);
+% tmp2= reshape(model.invCov(:,:,:,:,zStart:zEnd),[nv nv n]);
+tmp2 = reshape(model.invCov,[nv*nv n]);
+si2 = tmp2(triu(ones(nv,nv))>0 , model.mask>0);
 clear tmp2
+nvd = nv*(nv+1)/2;
 
 % indices of voxel in mask within full cube
 iind = 1:n;
@@ -156,7 +160,7 @@ mccores= cast(str2double(getenv('OMP_NUM_THREADS')),'int32');
 % define the maximum bandwidth  from the number of iteration
 hmax = 1.25^(kstar/3);
 
-if verbose,
+if verbose
     fprintf('Starting the smoothing process ...\n');
     msg = sprintf('Percent done: 0.0');
     fprintf(msg);
@@ -167,36 +171,44 @@ end
 k = 1;
 
 while k<=kstar
-   % determine the actual bandwidth for this step
-   hakt = gethani (1, 1.25*hmax, 2, 1.25^k, wghts, 1e-4);
-    
-   % we need the (approx.) size of the weighting scheme array
-   tmp = 2*fix(hakt./[1 wghts])+1;
-   dlw = tmp(1:3);
-   
-   % perform the actual adaptive smoothing
-   %[zobj.bi, zobj.theta, zobj.hakt] = vaws(reshape(model.modelCoeff,nv,[]), reshape(model.mask,1,n), nv, n1, n2, n3, hakt, lambda, reshape(zobj.theta,nv,[]), reshape(model.invCov,[nv nv n]), zobj.bi, zeros(nv,n), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores) );
-   [zobj.bi, zobj.theta, zobj.hakt] = vaws2(reshape(y,nv,[]), nv, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), reshape(si2,[nv nv nmask]), zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores) );
-   
-   zobj.theta = reshape(zobj.theta, [nv nmask]);
-   zobj.bi = max(bi,zobj.bi);
-   %bi = zobj.bi;
-   
-   % some verbose stuff
-   if verbose
-       diff=reshape(zobj.theta,1,[]) - reshape(y,1,[]);
-       diff2=diff.^2;
-       diffabs=abs(diff);
-       protocol{k} = sprintf('k= %2.d bandwith: %3.3f MSE %3.3d MAE %3.3d mean(bi) %3.3f \n',k,zobj.hakt, mean(diff2(:)),mean(diffabs(:)), mean(zobj.bi(:)) );
-       % Display the progress
-       percentDone = 100 * k / kstar;        
-       reverseStr = repmat(sprintf('\b'), 1, length(msg));
-       msg = sprintf('Percent done: %3.1f', percentDone);
-       fprintf([reverseStr, msg]);
-       
-   end
-   
-   %go for the next iteration
+    % determine the actual bandwidth for this step
+    hakt = gethani (1, 1.25*hmax, 2, 1.25^k, wghts, 1e-4);
+
+    % we need the (approx.) size of the weighting scheme array
+    tmp = 2*fix(hakt./[1 wghts])+1;
+    dlw = tmp(1:3);
+
+    % perform the actual adaptive smoothing
+    if (patchsize==0)
+        [zobj.bi, zobj.theta] = vaws2(y, int32(iind), int32(jind), zobj.theta, si2, zobj.bi, wghts, nv, nvd, n1, n2, n3, nmask, hakt, lambda,  mccores);
+    else
+        np1 = 2*patchsize+1;
+        np2 = 2*patchsize+1;
+        np3 = 2*patchsize+1;
+        np = np1*np2*np3;
+        %si2 = reshape(si2,[nvd nmask]);
+        [zobj.bi, zobj.theta] = vpaws2(y, int32(iind), int32(jind), zobj.theta, si2, zobj.bi, wghts, nv, nvd, n1, n2, n3, nmask, np1, np2, np3, hakt, lambda,  mccores);
+
+        zobj.theta = reshape(zobj.theta, [nv nmask]);
+        zobj.bi = max(bi,zobj.bi);
+        %bi = zobj.bi;
+
+        % some verbose stuff
+        if verbose
+            diff=reshape(zobj.theta,1,[]) - reshape(y,1,[]);
+            diff2=diff.^2;
+            diffabs=abs(diff);
+            protocol{k} = sprintf('k= %2.d bandwith: %3.3f MSE %3.3d MAE %3.3d mean(bi) %3.3f \n',k,hakt, mean(diff2(:)),mean(diffabs(:)), mean(zobj.bi(:)) );
+            % Display the progress
+            percentDone = 100 * k / kstar;
+            reverseStr = repmat(sprintf('\b'), 1, length(msg));
+            msg = sprintf('Percent done: %3.1f', percentDone);
+            fprintf([reverseStr, msg]);
+
+        end
+
+    end
+    %go for the next iteration
     k = k+1;
 end
 
@@ -205,10 +217,10 @@ clear y si2
 %% some verbose stuff
 
 if verbose
-fprintf('\n');
-for i=1:numel(protocol)
-    fprintf(protocol{i});
-end
+    fprintf('\n');
+    for i=1:numel(protocol)
+        fprintf(protocol{i});
+    end
 end
 
 %% preparing the output
@@ -226,11 +238,11 @@ bi = reshape(bi, [n1 n2 n3]);
 % zobj.bi = reshape(zobj.bi, [n1 n2 n3]);
 
 % assign values
- modelS = model;
- modelS.modelCoeff = theta; % zobj.theta;
- modelS.bi = bi; % zobj.bi;
- modelS.smoothPar = [lambda, hakt, alpha]; 
-  
+modelS = model;
+modelS.modelCoeff = theta; % zobj.theta;
+modelS.bi = bi; % zobj.bi;
+modelS.smoothPar = [lambda, hakt, alpha];
+
 
 
 end

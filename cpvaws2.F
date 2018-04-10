@@ -1,69 +1,54 @@
+C    differences to cvaws2.F
 C
-C    Copyright (C) 2015 Weierstrass-Institut fuer
-C                       Angewandte Analysis und Stochastik (WIAS)
+C   -     ndv is nv*(nv+1)/2
+C   -     invcov replaces si2 and has dimension (ndv,nmask) instead of (nv,nv,nmask)
+C              storage as  si_11, si_21, \dots, si_p1, si_22, \dots, si_2p, \dots si_pp
+C   -     np1, np2, np3   patchsizes in the 3 coordinate directions (ungerade, min 3)
+C   -     thpatch  Hilfsfeld fuer theta in patch  dimension (nv,np1*np2*np3,ncores)
+C   -     invcovp  Hilfsfeld fuer invcov in patch  dimension (nvd,np1*np2*np3,ncores)
+C   -     biipatch Hilfsfeld fuer bi in patch  dimension (np1*np2*np3,ncores)
 C
-C    Author:  Joerg Polzehl
-C
-C  This program is free software; you can redistribute it and/or modify
-C  it under the terms of the GNU General Public License as published by
-C  the Free Software Foundation; either version 2 of the License, or
-C  (at your option) any later version.
-C
-C  This program is distributed in the hope that it will be useful,
-C  but WITHOUT ANY WARRANTY; without even the implied warranty of
-C  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-C  GNU General Public License for more details.
-C
-C  You should have received a copy of the GNU General Public License
-C  along with this program; if not, write to the Free Software
-C  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
-C  USA.
-C
-C  The following routines are part of the MPM toolbox and contain
-C  FORTRAN 77 code needed in functions smoothESTATICS
-C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-C   Perform one iteration in local constant three-variate aws (gridded)
-C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      subroutine cvaws2(y,nv,nvd,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
-     1                theta,si2,bi,bin,thnew,ncores,lwght,wght,swjy)
+      subroutine cpvaws2(y,nv,nvd,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
+     1                theta,invcov,bi,bin,thnew,ncores,lwght,wght,
+     2                swjy,np1,np2,np3,thpatch,invcovp,biipatch)
 C
 C   y        observed values of regression function
-C   nv       number of vector components
 C   n1,n2,n3    design dimensions
 C   hakt     actual bandwidth
-C   lambda   kritical value
+C   lambda   lambda or lambda*sigma2 for Gaussian models
 C   theta    estimates from last step   (input)
-C   si2      inverse covariance matrices of vectors in y
 C   bi       \sum  Wi   (output)
 C   thnew    \sum  Wi Y / bi     (output)
-C   ncores   number of cores
-C
 C   wght     scaling factor for second and third dimension (larger values shrink)
 C
-      implicit logical (a-z)
+      implicit none
 
-      integer nv,nvd,n1,n2,n3,ncores,nmask
-      integer*4 iii(nmask),jjj(*)
+      integer*4 nv,n1,n2,n3,ncores,nvd,nmask
       logical aws
-      real*8 y(nv,nmask),theta(nv,nmask),bi(nmask),thnew(nv,nmask),
-     1  si2(nvd,nmask),lambda,wght(2),hakt,lwght(*),swjy(nv,ncores),
-     2  bin(nmask)
-      integer ih1,ih2,ih3,i1,i2,i3,j1,j2,j3,jw1,jw2,jw3,jwind3,jwind2,
+      integer*4 iii(nmask),jjj(*)
+      double precision y(nv,*),theta(nv,*),bi(*),thnew(nv,*),lambda,
+     1  wght(2),hakt,lwght(*),spmin,spf,swjy(nv,*),invcov(nvd,*),
+     2  bin(*)
+      integer*4 ih1,ih2,ih3,i1,i2,i3,j1,j2,j3,jw1,jw2,jw3,jwind3,jwind2,
      1        iind,jind,jind3,jind2,clw1,clw2,clw3,dlw1,dlw2,dlw3,
-     2        dlw12,n12,k,thrednr,imask,jmask
-      real*8 bii,biinv,sij,swj,z1,z2,z3,wj,hakt2,hmax2,w1,w2,spmb,spf
-      external lkern,KLdistsi
-      real*8 lkern,KLdistsi
+     2        dlw12,n12,k,thrednr
+      double precision sij,swj,z1,z2,z3,wj,hakt2,hmax2,w1,w2,sijp
+      integer*4 np1,np2,np3,imask,jmask,ipmask,jpmask
+      double precision thpatch(nv,np1*np2*np3,*),
+     1        invcovp(nvd,np1*np2*np3,*),biipatch(np1*np2*np3,*)
+      integer*4 ip1,ip2,ip3,nph1,nph2,nph3,pc,ipind,pcj,jp1,jp2,jp3,
+     1        jpind
+      integer*4 nall
+      external lkern, KLdistsi
+      double precision lkern, KLdistsi
 !$      integer omp_get_thread_num
 !$      external omp_get_thread_num
       thrednr = 1
+      nall = n1*n2*n3
 C just to prevent a compiler warning
       hakt2=hakt*hakt
-      spf=4.d0/3.d0
+      spmin=0.25d0
+      spf=1.d0/(1.d0-spmin)
       ih1=FLOOR(hakt)
       aws=lambda.lt.1d35
 C
@@ -83,6 +68,9 @@ C
       dlw2=ih2+clw2+1
       dlw3=ih3+clw3+1
       dlw12=dlw1*dlw2
+      nph1=(np1-1)/2
+      nph2=(np2-1)/2
+      nph3=(np3-1)/2
       n12=n1*n2
       z2=0.d0
       z3=0.d0
@@ -114,19 +102,20 @@ C  first stochastic term
             END DO
          END DO
       END DO
-C      call rchkusr()
 C$OMP PARALLEL DEFAULT(NONE)
-C$OMP& SHARED(thnew,bi,bin,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,
-C$OMP& ih3,lwght,wght,y,swjy,nmask,iii,jjj,si2)
+C$OMP& SHARED(thnew,bi,bin,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,invcov,
+C$OMP& ih3,lwght,wght,y,swjy,nmask,thpatch,biipatch,nph1,nph2,nph3,
+C$OMP& iii,jjj,invcovp)
 C$OMP& FIRSTPRIVATE(ih1,ih2,lambda,aws,n12,
-C$OMP& model,spf,dlw1,clw1,dlw2,clw2,dlw3,clw3,dlw12,w1,w2)
-C$OMP& PRIVATE(imask,jmask,i1,i2,i3,iind,bii,biinv,swj,spmb,
+C$OMP& model,spmin,spf,dlw1,clw1,dlw2,clw2,dlw3,clw3,dlw12,w1,w2)
+C$OMP& PRIVATE(i1,i2,i3,iind,bii,biinv,swj,spmb,
 C$OMP& sij,wj,j3,jw3,jind3,z3,jwind3,j2,jw2,jind2,z2,jwind2,
-C$OMP& j1,jw1,jind,z1,z,thrednr)
+C$OMP& j1,jw1,jind,z1,z,thrednr,ip1,ip2,ip3,pc,ipind,pcj,
+C$OMP& jp1,jp2,jp3,jpind,sijp,l,m,imask,jmask,ipmask,jpmask)
 C$OMP DO SCHEDULE(GUIDED)
       DO imask=1,nmask
-         iind = iii(imask)
 !$         thrednr = omp_get_thread_num()+1
+         iind = iii(imask)
 C returns value in 0:(ncores-1)
          i1=mod(iind,n1)
          if(i1.eq.0) i1=n1
@@ -134,9 +123,28 @@ C returns value in 0:(ncores-1)
          if(i2.eq.0) i2=n2
          i3=(iind-i1-(i2-1)*n1)/n12+1
 C    nothing to do, final estimate is already fixed by control
-         bii=bi(imask)/lambda
-         biinv=1.d0/bii
-         spmb=0.25d0/bii
+         pc=0
+         DO ip1=i1-nph1,i1+nph1
+            if(ip1.le.0.or.ip1.gt.n1) CYCLE
+            DO ip2=i2-nph2,i2+nph2
+               if(ip2.le.0.or.ip2.gt.n2) CYCLE
+               DO ip3=i3-nph3,i3+nph3
+                  if(ip3.le.0.or.ip3.gt.n3) CYCLE
+                  ipind=ip1+(ip2-1)*n1+(ip3-1)*n1*n2
+                  if(jjj(ipind).eq.0) CYCLE
+                  ipmask=jjj(ipind)
+                  pc=pc+1
+                  DO k=1,nv
+                     thpatch(k,pc,thrednr)=theta(k,ipmask)
+                  END DO
+                  DO k=1,nvd
+                     invcovp(k,pc,thrednr)=invcov(k,ipmask)
+                  END DO
+                  biipatch(pc,thrednr)=bi(ipmask)/lambda
+               END DO
+            END DO
+         END DO
+
 C   scaling of sij outside the loop
          swj=0.d0
          DO k=1,nv
@@ -163,14 +171,42 @@ C  first stochastic term
                   j1=jw1+i1
                   if(j1.lt.1.or.j1.gt.n1) CYCLE
                   jind=j1+jind2
-                  jmask = jjj(jind)
-                  if(jmask.eq.0) CYCLE
+                  if(jjj(jind).eq.0) CYCLE
+                  jmask=jjj(jind)
                   wj=lwght(jw1+clw1+1+jwind2)
                   IF (aws) THEN
-                     sij=KLdistsi(theta(1,imask),theta(1,jmask),
-     1                            si2(1,imask),nv)
-                     IF (sij.ge.biinv) CYCLE
-                     IF (sij.gt.spmb) wj=wj*(1.d0-spf*(bii*sij-0.25d0))
+                     pcj=0
+                     sij=0.d0
+                     DO ip1=i1-nph1,i1+nph1
+                        if(ip1.le.0.or.ip1.gt.n1) CYCLE
+                        jp1=ip1+jw1
+                        DO ip2=i2-nph2,i2+nph2
+                           if(ip2.le.0.or.ip2.gt.n2) CYCLE
+                           jp2=ip2+jw2
+                           DO ip3=i3-nph3,i3+nph3
+                              if(sij.gt.1.d0) CYCLE
+                              if(ip3.le.0.or.ip3.gt.n3) CYCLE
+                              ipind=ip1+(ip2-1)*n1+(ip3-1)*n1*n2
+                              if(jjj(ipind).eq.0) CYCLE
+                              jp3=ip3+jw3
+                              if(jp1.le.0.or.jp1.gt.n1) CYCLE
+                              if(jp2.le.0.or.jp2.gt.n2) CYCLE
+                              if(jp3.le.0.or.jp3.gt.n3) CYCLE
+                              jpind=jp1+(jp2-1)*n1+(jp3-1)*n12
+                              pcj=pcj+1
+                              if(jjj(jpind).eq.0) CYCLE
+                              jpmask=jjj(jpind)
+C   need both ipind and jpind in mask, pcj only depends on i
+
+                              sijp=KLdistsi(theta(1,jpmask),
+     1                                thpatch(1,pcj,thrednr),
+     1                                invcovp(1,pcj,thrednr),nv)
+                              sij=max(sij,biipatch(pcj,thrednr)*sijp)
+                           END DO
+                        END DO
+                     END DO
+                     IF (sij.ge.1.d0) CYCLE
+                     IF (sij.gt.spmin) wj=wj*(1.d0-spf*(sij-spmin))
                   END IF
                   swj=swj+wj
                   DO k=1,nv
@@ -189,6 +225,7 @@ C$OMP END PARALLEL
 C$OMP FLUSH(thnew,bin)
       RETURN
       END
+
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C
@@ -202,8 +239,8 @@ C          Kern=4     Triweight
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real*8 function lkern(kern,xsq)
-      implicit logical (a-z)
-      integer kern
+      implicit none
+      integer*4 kern
       real*8 xsq,z
       IF (xsq.ge.1) THEN
          lkern=0.d0
@@ -230,11 +267,13 @@ C        use Epanechnikov
       RETURN
       END
 
+
+
       real*8 function KLdistsi(thi,thj,si2,nv)
       implicit logical (a-z)
-      integer nv
+      integer*4 nv
       real*8 thi(nv), thj(nv), si2(*)
-      integer k,l,m
+      integer*4 k,l,m
       real*8 z,thik,zdk
       z=0.d0
       m=1

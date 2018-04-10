@@ -264,19 +264,24 @@ function [] = mpm_givenESTATICS(job)
                     modelMPM.invCov(i,j,:,:,:) = convn(COVmatPart, ones(hdelta*2+1, hdelta*2+1, hdelta*2+1)/(hdelta*2+1)^3, 'same');
                 end
             end
-            modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'kstar',job.kstar,'lambda',job.lambda); 
+            modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'kstar',job.kstar, 'patchsize', job.patchsize,'lambda',job.lambda); 
             qiSnew = calculateQI(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
+            qiSnewLinear = calculateQIlinear(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
         else
             qiSnew = calculateQI(modelMPM, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
+            qiSnewLinear = calculateQIlinear(modelMPM, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
         end
 
 
         %% save in the result variables
         if zStart==1
             R1(:,:,zStart:zEnd) = qiSnew.R1;
+            R1linear(:,:,zStart:zEnd) = qiSnewLinear.R1;
             R2star(:,:,zStart:zEnd) = qiSnew.R2star;
             PD(:,:,zStart:zEnd) = qiSnew.PD;
+            PDlinear(:,:,zStart:zEnd) = qiSnewLinear.PD;
             if modelMPM.nv==4, delta(:,:,zStart:zEnd) = qiSnew.delta; end%
+            if modelMPM.nv==4, deltaLinear(:,:,zStart:zEnd) = qiSnewLinear.delta; end%
             totalmask(:,:,zStart:zEnd) = qiSnew.model.mask;
 
             if job.confInt==1,
@@ -288,9 +293,12 @@ function [] = mpm_givenESTATICS(job)
 
         else
             R1(:,:,zStart+hdelta:zEnd) = qiSnew.R1(:,:, 1+hdelta: (zEnd-zStart+1) );
+            R1linear(:,:,zStart+hdelta:zEnd) = qiSnewLinear.R1(:,:, 1+hdelta: (zEnd-zStart+1) );
             R2star(:,:,zStart+hdelta:zEnd) = qiSnew.R2star(:,:, 1+hdelta: (zEnd-zStart+1) );
             PD(:,:,zStart+hdelta:zEnd) = qiSnew.PD(:,:, 1+hdelta: (zEnd-zStart+1) );
+            PDlinear(:,:,zStart+hdelta:zEnd) = qiSnewLinear.PD(:,:, 1+hdelta: (zEnd-zStart+1) );
             if modelMPM.nv==4, delta(:,:,zStart+hdelta:zEnd) = qiSnew.delta(:,:, 1+hdelta: (zEnd-zStart+1) ); end %
+            if modelMPM.nv==4, deltaLinear(:,:,zStart+hdelta:zEnd) = qiSnewLinear.delta(:,:, 1+hdelta: (zEnd-zStart+1) ); end %
             totalmask(:,:,zStart+hdelta:zEnd) = qiSnew.model.mask(:,:, 1+hdelta: (zEnd-zStart+1) );
 
             if job.confInt==1,
@@ -312,9 +320,12 @@ function [] = mpm_givenESTATICS(job)
     %% steps to save nii files
     % set all the NaN values to 0 (that makes easier to display correctly)
     R1(isnan(R1))=0;
+    R1linear(isnan(R1linear))=0;
     R2star(isnan(R2star))=0;
     PD(isnan(PD))=0;
+    PDlinear(isnan(PDlinear))=0;
     if modelMPM.nv==4, delta(isnan(delta))=0; end
+    if modelMPM.nv==4, deltaLinear(isnan(deltaLinear))=0; end
 
     if job.confInt==1,
         R1_low(isnan(R1_low))=0;
@@ -325,9 +336,12 @@ function [] = mpm_givenESTATICS(job)
 
     % set all values of the voxels outside the mask to 0
     R1(totalmask<1)=0;
+    R1linear(totalmask<1)=0;
     R2star(totalmask<1)=0;
     PD(totalmask<1)=0;
+    PDlinear(totalmask<1)=0;
     if modelMPM.nv==4, delta(totalmask<1)=0; end
+    if modelMPM.nv==4, deltaLinear(totalmask<1)=0; end
 
     if job.confInt==1,
         R1_low(totalmask<1)=0;
@@ -341,9 +355,12 @@ function [] = mpm_givenESTATICS(job)
     % write 3 or 4 files for R1, PD, R2star and in case delta
     % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
     write_small_to_file_nii(job.odir{1},'R1_', Vpd, R1, 1, sdim(3), sdim);
+    write_small_to_file_nii(job.odir{1},'R1linear_', Vpd, R1linear, 1, sdim(3), sdim);
     write_small_to_file_nii(job.odir{1},'R2star_', Vpd, R2star, 1, sdim(3), sdim);
     write_small_to_file_nii(job.odir{1},'A_', Vpd, PD, 1, sdim(3), sdim);
+    write_small_to_file_nii(job.odir{1},'Alinear_', Vpd, PDlinear, 1, sdim(3), sdim);
     if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'MT_', Vpd, delta, 1, sdim(3), sdim); end
+    if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'MTlinear_', Vpd, deltaLinear, 1, sdim(3), sdim); end
     
     if job.confInt==1,
         write_small_to_file_nii(job.odir{1},'R1_low_', Vpd, R1_low, 1, sdim(3), sdim);
