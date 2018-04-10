@@ -120,7 +120,13 @@ function PDcalculation(PMT, PA)
     % MFC: Estimating Error for data set to catch bias field issues:
     errorEstimate = std(A_WM(A_WM > 0))./mean(A_WM(A_WM > 0));
     Vsave = spm_vol(PA);
-    Vsave.fname = fullfile(pA, [regexprep(fA,'^A_','PD_') eA])
+    if (strfind(fA, 'A_'))
+        Vsave.fname = fullfile(pA, [regexprep(fA,'^A_','PD_') eA]);
+    elseif (strfind(fA, 'Alinear_'))
+        Vsave.fname = fullfile(pA, [regexprep(fA,'^Alinear_','PDlinear_') eA]);
+    else 
+        Vsave.fname = fullfile(pA, ['PD_' fA eA]);
+    end
     Vsave.descrip = ['PD Map.  Error Estimate: ', num2str(errorEstimate)];
     if errorEstimate > 0.06
         % MFC: Testing on 15 subjects showed 6% is a good cut-off:
