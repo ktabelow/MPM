@@ -180,14 +180,14 @@ while k<=kstar
 
     % perform the actual adaptive smoothing
     if (patchsize==0)
-        [zobj.bi, zobj.theta] = vaws2(reshape(y,nv,[]), nv, nvd, n1, n2, n3, nmask, int32(iind), int32(jind), hakt, lambda, reshape(zobj.theta,nv,nmask), si2, zobj.bi, zeros(nv,nmask), mccores, zeros(1,prod(dlw)), wghts, zeros(nv,mccores) );
+        [zobj.bi, zobj.theta] = vaws2(y, int32(iind), int32(jind), zobj.theta, si2, zobj.bi, wghts, nv, nvd, n1, n2, n3, nmask, hakt, lambda,  mccores);
     else
         np1 = 2*patchsize+1;
         np2 = 2*patchsize+1;
         np3 = 2*patchsize+1;
         np = np1*np2*np3;
         %si2 = reshape(si2,[nvd nmask]);
-        [zobj.bi, zobj.theta] = vpaws2(reshape(y,nv,[]), int32(iind), int32(jind), reshape(zobj.theta,nv,nmask), si2, zobj.bi, wghts, nv, nvd, n1, n2, n3, nmask, np1, np2, np3, hakt, lambda,  mccores);
+        [zobj.bi, zobj.theta] = vpaws2(y, int32(iind), int32(jind), zobj.theta, si2, zobj.bi, wghts, nv, nvd, n1, n2, n3, nmask, np1, np2, np3, hakt, lambda,  mccores);
 
         zobj.theta = reshape(zobj.theta, [nv nmask]);
         zobj.bi = max(bi,zobj.bi);

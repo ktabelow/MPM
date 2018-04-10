@@ -29,7 +29,7 @@ C   Perform one iteration in local constant three-variate aws (gridded)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       subroutine cvaws2(y,nv,nvd,n1,n2,n3,nmask,iii,jjj,hakt,lambda,
-     1                theta,si2,bi,thnew,ncores,lwght,wght,swjy)
+     1                theta,si2,bi,bin,thnew,ncores,lwght,wght,swjy)
 C
 C   y        observed values of regression function
 C   nv       number of vector components
@@ -50,7 +50,8 @@ C
       integer*4 iii(nmask),jjj(*)
       logical aws
       real*8 y(nv,nmask),theta(nv,nmask),bi(nmask),thnew(nv,nmask),
-     1  si2(nvd,nmask),lambda,wght(2),hakt,lwght(*),swjy(nv,ncores)
+     1  si2(nvd,nmask),lambda,wght(2),hakt,lwght(*),swjy(nv,ncores),
+     2  bin(nmask)
       integer ih1,ih2,ih3,i1,i2,i3,j1,j2,j3,jw1,jw2,jw3,jwind3,jwind2,
      1        iind,jind,jind3,jind2,clw1,clw2,clw3,dlw1,dlw2,dlw3,
      2        dlw12,n12,k,thrednr,imask,jmask
@@ -115,7 +116,7 @@ C  first stochastic term
       END DO
 C      call rchkusr()
 C$OMP PARALLEL DEFAULT(NONE)
-C$OMP& SHARED(thnew,bi,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,
+C$OMP& SHARED(thnew,bi,bin,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,
 C$OMP& ih3,lwght,wght,y,swjy,nmask,iii,jjj,si2)
 C$OMP& FIRSTPRIVATE(ih1,ih2,lambda,aws,n12,
 C$OMP& model,spf,dlw1,clw1,dlw2,clw2,dlw3,clw3,dlw12,w1,w2)
@@ -181,11 +182,11 @@ C  first stochastic term
          DO k=1,nv
             thnew(k,imask)=swjy(k,thrednr)/swj
          END DO
-         bi(imask)=swj
+         bin(imask)=swj
       END DO
 C$OMP END DO NOWAIT
 C$OMP END PARALLEL
-C$OMP FLUSH(thnew,bi)
+C$OMP FLUSH(thnew,bin)
       RETURN
       END
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC

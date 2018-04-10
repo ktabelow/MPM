@@ -27,8 +27,7 @@ C
        mwPointer mxGetNumberOfElements
        mwPointer mxGetDimensions
        real*8  mxGetScalar
-       integer*4 mxIsNumeric, mxClassIDFromClassName
-       character*8 double
+       integer mxIsNumeric, mxClassIDFromClassName
 
 C-----------------------------------------------------------------------
 C
@@ -58,25 +57,26 @@ C
        MWPOINTER BIIPATCH_LOCAL_PR
        MWPOINTER SWJY_LOCAL_PR
 
+       MWPOINTER LWGHT_LOCAL
+       MWPOINTER THPATCH_LOCAL
+       MWPOINTER INVCOVP_LOCAL
+       MWPOINTER BIIPATCH_LOCAL
+       MWPOINTER SWJY_LOCAL
+
 C-----------------------------------------------------------------------
 C
 C      LOCAL VARIABLES
 
-
-
-       INTEGER*4 N1_IN, N2_IN, N3_IN, NP1_IN, NP2_IN, NP3_IN,
+       integer*4 N1_IN, N2_IN, N3_IN, NP1_IN, NP2_IN, NP3_IN,
      +           NV_IN, NVD_IN, NMASK_IN, NCORES_IN
-
 
        REAL*8 LAMBDA_IN, HAKT_IN, WGHT_IN(2)
 
-
-       INTEGER*4 IH
+       integer*4 IH1,IH2,IH3,DWL1,DWL2,DWL3
 
        MWSIZE NMASK, NV, NVD, ONE, DWL, PSIZE, NCORES, PNCORES
 
-       real*8 x
-       integer*4 nx,i
+       real*8 w(2)
        mwsize numrel
 C
 C CHECK FOR PROPER NUMBER OF ARGUMENTS
@@ -87,12 +87,7 @@ C
          CALL MEXERRMSGTXT('VAWS requires 2 output argument')
        ENDIF
 
-
-C       getting the values of n1, n2, n3, nV, NCORES, NMASK
-C       HAKT, lambda
-C       using get scalar
-C       need to cast since it returns a double
-        CALL MEXPRINTF(' BEFORE getting SCALARS \n')
+       CALL MEXPRINTF(' Start Iteration of patchbased VAWS ... ')
 
        NV_IN = INT(MXGETSCALAR(PRHS(8)))
        NVD_IN = INT(MXGETSCALAR(PRHS(9)))
@@ -107,10 +102,7 @@ C       need to cast since it returns a double
        LAMBDA_IN = MXGETSCALAR(PRHS(18))
        NCORES_IN = INT(MXGETSCALAR(PRHS(19)))
 
-       CALL MEXPRINTF(' AFTER getting SCALARS \n')
-
 C       getting all the other INPUT pointers
-
 
        Y_IN_PR = MXGETPR(PRHS(1))
        III_IN_PR = MXGETPR(PRHS(2))
@@ -120,12 +112,16 @@ C       getting all the other INPUT pointers
        BI_IN_PR = MXGETPR(PRHS(6))
        WGHT_IN_PR = MXGETPR(PRHS(7))
 
-       IH = INT(HAKT_IN)
-       DWL = 2*IH+1
-       DWL = DWL*DWL*DWL
-       CALL MEXPRINTF(' AFTER getting OTHER input \n')
+       numrel=2
+       call MXCOPYPTRTOREAL8(WGHT_IN_PR,w,numrel)
+       ih3=FLOOR(HAKT_IN/w(2))
+       ih2=FLOOR(HAKT_IN/w(1))
+       ih1=FLOOR(HAKT_IN)
 
-       CALL MEXPRINTF(' BEFORE CREATING OUTPUT ')
+       DWL1 = 2*IH1+1
+       DWL2 = 2*IH2+1
+       DWL3 = 2*IH3+1
+       DWL = DWL1*DWL2*DWL3
 C CREATE MATRICES FOR RETURN ARGUMENT
        ONE=1
        NMASK=NMASK_IN
@@ -134,17 +130,12 @@ C CREATE MATRICES FOR RETURN ARGUMENT
        NCORES=NCORES_IN
        PSIZE=NP1_IN*NP2_IN*NP3_IN
        PNCORES=NCORES_IN*NP1_IN*NP2_IN*NP3_IN
-C
-C
+
 C     BI
       PLHS(1) = MXCREATEDOUBLEMATRIX(ONE, NMASK, 0)
-      CALL MEXPRINTF(' BI done \n')
 
 C     THNEW
       PLHS(2) = MXCREATEDOUBLEMATRIX(NV, NMASK, 0)
-      CALL MEXPRINTF(' THNEW done \n')
-
-      CALL MEXPRINTF(' AFTER PLACE OUTPUT ')
 C
 C ASSIGN POINTERS TO THE OUTPUT PARAMETERS
 C
@@ -152,37 +143,21 @@ C
       THNEW_OUT_PR = MXGETPR(PLHS(2))
 
 C
-      LWGHT_LOCAL_PR = mxcreatedoublematrix(ONE,DWL,0)
-      SWJY_LOCAL_PR = mxcreatedoublematrix(NV,NCORES,0)
-      THPATCH_LOCAL_PR = mxcreatedoublematrix(NV,PNCORES,0)
-      INVCOVP_LOCAL_PR = mxcreatedoublematrix(NVD,PNCORES,0)
-      BIIPATCH_LOCAL_PR = mxcreatedoublematrix(ONE,PNCORES,0)
+      LWGHT_LOCAL = mxcreatedoublematrix(ONE,DWL,0)
+      SWJY_LOCAL = mxcreatedoublematrix(NV,NCORES,0)
+      THPATCH_LOCAL = mxcreatedoublematrix(NV,PNCORES,0)
+      INVCOVP_LOCAL = mxcreatedoublematrix(NVD,PNCORES,0)
+      BIIPATCH_LOCAL = mxcreatedoublematrix(ONE,PNCORES,0)
 
-C      LWGHT_LOCAL_PR = mxgetpr(LWGHT_LOCAL)
-C      SWJY_LOCAL_PR = mxgetpr(SWJY_LOCAL)
-C      THPATCH_LOCAL_PR = mxgetpr(THPATCH_LOCAL)
-C      INVCOVP_LOCAL_PR = mxgetpr(INVCOVP_LOCAL)
-C      BIIPATCH_LOCAL_PR = mxgetpr(BIIPATCH_LOCAL)
+      LWGHT_LOCAL_PR = mxgetpr(LWGHT_LOCAL)
+      SWJY_LOCAL_PR = mxgetpr(SWJY_LOCAL)
+      THPATCH_LOCAL_PR = mxgetpr(THPATCH_LOCAL)
+      INVCOVP_LOCAL_PR = mxgetpr(INVCOVP_LOCAL)
+      BIIPATCH_LOCAL_PR = mxgetpr(BIIPATCH_LOCAL)
 
 C
 C DO THE ACTUAL COMPUTATIONS ALSO USING VAL
 C
-       numrel=1
-C       call MXCOPYPTRTOREAL8(Y_IN_PR,x,numrel)
-C       call MXCOPYPTRTOREAL8(THETA_IN_PR,x,numrel)
-C       call MXCOPYPTRTOREAL8(INVCOV_IN_PR,x,numrel)
-C       call MXCOPYPTRTOREAL8(BI_IN_PR,x,numrel)
-C       call MXCOPYPTRTOREAL8(WGHT_IN_PR,x,numrel)
-C       call MXCOPYPTRTOINTEGER4(III_IN_PR,nx,numrel)
-C       call MXCOPYPTRTOINTEGER4(JJJ_IN_PR,nx,numrel)
-
-C       call MXCOPYPTRTOREAL8(LWGHT_LOCAL_PR,x,numrel)
-C       call MXCOPYPTRTOREAL8(SWJY_LOCAL_PR,x,numrel)
-C       call MXCOPYPTRTOREAL8(THPATCH_LOCAL_PR,x,numrel)
-C       call MXCOPYPTRTOREAL8(INVCOVP_LOCAL_PR,x,numrel)
-C       call MXCOPYPTRTOREAL8(BIIPATCH_LOCAL_PR,x,numrel)
-
-       CALL MEXPRINTF('BEFORE CALL \n')
 
 
         CALL CPVAWS2(%val(Y_IN_PR),
@@ -212,43 +187,12 @@ C       call MXCOPYPTRTOREAL8(BIIPATCH_LOCAL_PR,x,numrel)
      +               %val(INVCOVP_LOCAL_PR),
      +               %val(BIIPATCH_LOCAL_PR))
 
-       CALL MEXPRINTF(' call END \n')
-       i=0
-       DO WHILE(i.lt.1e8)
-         i=i+1
-       END DO
-       call mxDestroyArray(SWJY_LOCAL_PR)
-       i=0
-       DO WHILE(i.lt.1e8)
-         i=i+1
-       END DO
-       CALL MEXPRINTF(' destroyed 4\n')
-       call mxDestroyArray(BIIPATCH_LOCAL_PR)
-       i=0
-       DO WHILE(i.lt.1e8)
-         i=i+1
-       END DO
-       CALL MEXPRINTF(' destroyed 1 \n')
-
-       call mxDestroyArray(INVCOVP_LOCAL_PR)
-       i=0
-       DO WHILE(i.lt.1e8)
-         i=i+1
-       END DO
-       CALL MEXPRINTF(' destroyed 2 \n')
-       call mxDestroyArray(THPATCH_LOCAL_PR)
-       i=0
-       DO WHILE(i.lt.1e8)
-         i=i+1
-       END DO
-       CALL MEXPRINTF(' destroyed 3 \n')
-       call mxDestroyArray(LWGHT_LOCAL_PR)
-       i=0
-       DO WHILE(i.lt.1e8)
-         i=i+1
-       END DO
-
-      CALL MEXPRINTF(' time to return ')
+       call mxDestroyArray(SWJY_LOCAL)
+       call mxDestroyArray(BIIPATCH_LOCAL)
+       call mxDestroyArray(INVCOVP_LOCAL)
+       call mxDestroyArray(THPATCH_LOCAL)
+       call mxDestroyArray(LWGHT_LOCAL)
+      CALL MEXPRINTF('iteration completed: time to return \n')
 
       RETURN
       END
