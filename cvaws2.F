@@ -235,11 +235,10 @@ C        use Epanechnikov
       integer nv
       real*8 thi(nv), thj(nv), si2(*)
       integer k,l,m
-      real*8 z,thik,zdk
+      real*8 z,zdk
       z=0.d0
       m=1
       DO k=1,nv
-         thik=thi(k)
          zdk=thi(k)-thj(k)
          if(k.gt.1) THEN
            DO l=1,k-1

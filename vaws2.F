@@ -21,19 +21,9 @@ C
 C
        MWPOINTER  MXGETPR
        MWPOINTER MXCREATEDOUBLEMATRIX
-       MWPOINTER MXCREATENUMERICMATRIX
-       MWPOINTER MXCREATENUMERICARRAY
 
-       mwPointer mxGetNumberOfElements
-       mwPointer mxGetDimensions
        real*8  mxGetScalar
-       integer mxIsNumeric, mxClassIDFromClassName
 
-C-----------------------------------------------------------------------
-C
-
-       MWSIZE MXGETM, MXGETN
-       mwSize mxGetNumberOfDimensions
 C
 C-----------------------------------------------------------------------
 C

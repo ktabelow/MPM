@@ -7,7 +7,6 @@ C
         SUBROUTINE MEXFUNCTION(NLHS, PLHS, NRHS, PRHS)
 C-----------------------------------------------------------------------
 C
-C
        IMPLICIT NONE
        MWPOINTER PLHS(*), PRHS(*)
 
@@ -18,25 +17,13 @@ C
 C
 C-----------------------------------------------------------------------
 C
-C
        MWPOINTER MXGETPR
        MWPOINTER MXCREATEDOUBLEMATRIX
-       MWPOINTER MXCREATENUMERICMATRIX
-       MWPOINTER MXCREATENUMERICARRAY
 
-       mwPointer mxGetNumberOfElements
-       mwPointer mxGetDimensions
        real*8  mxGetScalar
-       integer mxIsNumeric, mxClassIDFromClassName
 
-C-----------------------------------------------------------------------
-C
-
-       MWSIZE MXGETM, MXGETN
-       mwSize mxGetNumberOfDimensions
 C
 C-----------------------------------------------------------------------
-C
 C
 
        MWPOINTER Y_IN_PR
@@ -52,37 +39,31 @@ C
        MWPOINTER THNEW_OUT_PR
 
        MWPOINTER LWGHT_LOCAL_PR
-       MWPOINTER THPATCH_LOCAL_PR
-       MWPOINTER INVCOVP_LOCAL_PR
-       MWPOINTER BIIPATCH_LOCAL_PR
        MWPOINTER SWJY_LOCAL_PR
 
        MWPOINTER LWGHT_LOCAL
-       MWPOINTER THPATCH_LOCAL
-       MWPOINTER INVCOVP_LOCAL
-       MWPOINTER BIIPATCH_LOCAL
        MWPOINTER SWJY_LOCAL
 
 C-----------------------------------------------------------------------
 C
 C      LOCAL VARIABLES
 
-       integer*4 N1_IN, N2_IN, N3_IN, NP1_IN, NP2_IN, NP3_IN,
+       integer*4 N1_IN, N2_IN, N3_IN, PSIZE_IN,
      +           NV_IN, NVD_IN, NMASK_IN, NCORES_IN
 
        REAL*8 LAMBDA_IN, HAKT_IN, WGHT_IN(2)
 
        integer*4 IH1,IH2,IH3,DWL1,DWL2,DWL3
 
-       MWSIZE NMASK, NV, NVD, ONE, DWL, PSIZE, NCORES, PNCORES
+       MWSIZE NMASK, NV, NVD, ONE, DWL, NCORES
 
        real*8 w(2)
        mwsize numrel
 C
 C CHECK FOR PROPER NUMBER OF ARGUMENTS
 C
-       IF (NRHS .NE. 19) THEN
-         CALL MEXERRMSGTXT('VPAWS requires 19 input arguments')
+       IF (NRHS .NE. 17) THEN
+         CALL MEXERRMSGTXT('VPAWS requires 17 input arguments')
        ELSEIF (NLHS .GT. 2) THEN
          CALL MEXERRMSGTXT('VAWS requires 2 output argument')
        ENDIF
@@ -95,12 +76,10 @@ C
        N2_IN = INT(MXGETSCALAR(PRHS(11)))
        N3_IN = INT(MXGETSCALAR(PRHS(12)))
        NMASK_IN = INT(MXGETSCALAR(PRHS(13)))
-       NP1_IN = INT(MXGETSCALAR(PRHS(14)))
-       NP2_IN = INT(MXGETSCALAR(PRHS(15)))
-       NP3_IN = INT(MXGETSCALAR(PRHS(16)))
-       HAKT_IN = MXGETSCALAR(PRHS(17))
-       LAMBDA_IN = MXGETSCALAR(PRHS(18))
-       NCORES_IN = INT(MXGETSCALAR(PRHS(19)))
+       PSIZE_IN = INT(MXGETSCALAR(PRHS(14)))
+       HAKT_IN = MXGETSCALAR(PRHS(15))
+       LAMBDA_IN = MXGETSCALAR(PRHS(16))
+       NCORES_IN = INT(MXGETSCALAR(PRHS(17)))
 
 C       getting all the other INPUT pointers
 
@@ -128,8 +107,6 @@ C CREATE MATRICES FOR RETURN ARGUMENT
        NV=NV_IN
        NVD=NVD_IN
        NCORES=NCORES_IN
-       PSIZE=NP1_IN*NP2_IN*NP3_IN
-       PNCORES=NCORES_IN*NP1_IN*NP2_IN*NP3_IN
 
 C     BI
       PLHS(1) = MXCREATEDOUBLEMATRIX(ONE, NMASK, 0)
@@ -145,20 +122,12 @@ C
 C
       LWGHT_LOCAL = mxcreatedoublematrix(ONE,DWL,0)
       SWJY_LOCAL = mxcreatedoublematrix(NV,NCORES,0)
-      THPATCH_LOCAL = mxcreatedoublematrix(NV,PNCORES,0)
-      INVCOVP_LOCAL = mxcreatedoublematrix(NVD,PNCORES,0)
-      BIIPATCH_LOCAL = mxcreatedoublematrix(ONE,PNCORES,0)
 
       LWGHT_LOCAL_PR = mxgetpr(LWGHT_LOCAL)
       SWJY_LOCAL_PR = mxgetpr(SWJY_LOCAL)
-      THPATCH_LOCAL_PR = mxgetpr(THPATCH_LOCAL)
-      INVCOVP_LOCAL_PR = mxgetpr(INVCOVP_LOCAL)
-      BIIPATCH_LOCAL_PR = mxgetpr(BIIPATCH_LOCAL)
-
 C
 C DO THE ACTUAL COMPUTATIONS ALSO USING VAL
 C
-
 
         CALL CPVAWS2(%val(Y_IN_PR),
      +               NV_IN,
@@ -180,17 +149,9 @@ C
      +               %val(LWGHT_LOCAL_PR),
      +               %val(WGHT_IN_PR),
      +               %val(SWJY_LOCAL_PR),
-     +               NP1_IN,
-     +               NP2_IN,
-     +               NP3_IN,
-     +               %val(THPATCH_LOCAL_PR),
-     +               %val(INVCOVP_LOCAL_PR),
-     +               %val(BIIPATCH_LOCAL_PR))
+     +               PSIZE_IN)
 
        call mxDestroyArray(SWJY_LOCAL)
-       call mxDestroyArray(BIIPATCH_LOCAL)
-       call mxDestroyArray(INVCOVP_LOCAL)
-       call mxDestroyArray(THPATCH_LOCAL)
        call mxDestroyArray(LWGHT_LOCAL)
       CALL MEXPRINTF('iteration completed: time to return \n')
 
