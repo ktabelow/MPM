@@ -34,7 +34,12 @@ function PDcalculation(PMT, PA)
     % Creation of whole-brain and white-matter masks
     VG = spm_vol(PMT);
     dm = VG.dim;         % get volume spatial dimension
-    MTforA_vol = ACID_read_vols(VG, VG, interpcons); % TODO: use spm function here
+%    MTforA_vol = ACID_read_vols(VG, VG, interpcons); % TODO: use spm function here
+    MTforA_vol    = zeros(dm);
+    for p=1:dm(3)
+        M = VG.mat*spm_matrix([0 0 p]);
+        MTforA_vol(:,:,p) = spm_slice_vol(VG, VG.mat\M, dm(1:2),interpcons);
+    end
     Atmp = zeros(dm);
     % loop slicewise through the MT file
     % and mask all voxel within 5 voxel from the border
