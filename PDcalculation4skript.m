@@ -37,8 +37,13 @@ function [bfout,Vout] = PDcalculation4skript(PMT, PA, cpth, bf,Vout)
     dm = VG.dim;         % get volume spatial dimension
     if(~exist('bf','var'))
 
-        MTforA_vol = ACID_read_vols(VG, VG, interpcons); % TODO: use spm function here
-        Atmp = zeros(dm);
+        %MTforA_vol = ACID_read_vols(VG, VG, interpcons); % TODO: use spm function here
+        MTforA_vol    = zeros(dm);
+        for p=1:dm(3)
+            M = VG.mat*spm_matrix([0 0 p]);
+            MTforA_vol(:,:,p) = spm_slice_vol(VG, VG.mat\M, dm(1:2),interpcons);
+        end
+       Atmp = zeros(dm);
         % loop slicewise through the MT file
         % and mask all voxel within 5 voxel from the border
         % and cut MT value at threshMT
@@ -115,7 +120,13 @@ function [bfout,Vout] = PDcalculation4skript(PMT, PA, cpth, bf,Vout)
     % PA=spm_select('FPList',ptmp ,'^s.*_A.(img|nii)$');
         bf = fullfile(pA, spm_select('List', pA, ['^BiasField_masked_' fA eA]));
     else
-        WMmask = ACID_read_vols(Vout,Vout,1);
+        dm = Vout.dm;
+        %WMmask = ACID_read_vols(Vout,Vout,1);
+        WMmask    = zeros(dm);
+        for p=1:dm(3)
+            M = Vout.mat*spm_matrix([0 0 p]);
+            WMmask(:,:,p) = spm_slice_vol(Vout, Vout.mat\M, dm(1:2),1);
+        end
     end
     if(~isempty(cpth))
         bfout = [cpth filesep 'biasfield.nii'];
