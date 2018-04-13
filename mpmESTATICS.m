@@ -69,7 +69,8 @@ function [] = mpmESTATICS(job)
     % to assure a good smoothing    
     hmax = 1.25^(job.kstar/3);
     hakt = gethani (1, 1.25*hmax, 2, 1.25^job.kstar, [1 1], 1e-4);
-    hdelta = ceil(hakt); % height of half of the overlapping
+    hsigma = 2;
+    hdelta = max(hsigma, ceil(hakt)); % height of half of the overlapping
     
     % check for the input height and adjust it if too big or too small
     if abs(job.height)>job.sdim(3),
@@ -384,15 +385,15 @@ function [] = mpmESTATICS(job)
             %  occuring if all signals in a voxel are zero (border of volume)
             %  Are there any other cases?
             %  Then, smooth the inverse of covariance matrix (non-adaptatively)
-            for i=1:modelMPM.nv
-                for j=1:modelMPM.nv
-                    COVmatPart = squeeze(modelMPM.invCov(i,j,:,:,:));
-%                    thresh = 1000*median(median(median(COVmatPart, 'omitnan'), 'omitnan'), 'omitnan');
-%                    COVmatPart(COVmatPart > thresh) = 0;
-%                    modelMPM.invCov(i,j,:,:,:) = smooth3d_with_kern(COVmatPart, hdelta);
-                    modelMPM.invCov(i,j,:,:,:) = convn(COVmatPart, ones(hdelta*2+1, hdelta*2+1, hdelta*2+1)/(hdelta*2+1)^3, 'same');
-                end
-            end
+%            for i=1:modelMPM.nv
+%                for j=1:modelMPM.nv
+%                    COVmatPart = squeeze(modelMPM.invCov(i,j,:,:,:));
+%%                    thresh = 1000*median(median(median(COVmatPart, 'omitnan'), 'omitnan'), 'omitnan');
+%%                    COVmatPart(COVmatPart > thresh) = 0;
+%%                    modelMPM.invCov(i,j,:,:,:) = smooth3d_with_kern(COVmatPart, hdelta);
+%                    modelMPM.invCov(i,j,:,:,:) = convn(COVmatPart, ones(hdelta*2+1, hdelta*2+1, hdelta*2+1)/(hdelta*2+1)^3, 'same');
+%                end
+%            end
 %             modelMPM.invCov(1,1,:,:,:) = smooth3d_with_kern(squeeze(modelMPM.invCov(1,1,:,:,:)), hdelta);
 %             modelMPM.invCov(2,2,:,:,:) = smooth3d_with_kern(squeeze(modelMPM.invCov(2,2,:,:,:)), hdelta);
 %             modelMPM.invCov(1,2,:,:,:) = smooth3d_with_kern(squeeze(modelMPM.invCov(1,2,:,:,:)), hdelta);

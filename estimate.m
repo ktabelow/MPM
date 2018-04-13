@@ -157,7 +157,8 @@ end
         %res.sig2 = repelem(sig2,nv*nv);% unluckily is repelem not
         %available for matlab version older then 2015a
        
-        res.sig2 = kron(sig2,ones(1,nv*nv));
+        %res.sig2 = kron(sig2,ones(1,nv*nv));
+        res.sig2 = sig2;
         
         res.para=para;
         res.dD=dD;
@@ -192,7 +193,8 @@ end
         %res.sig2 = repelem(sig2,nv*nv); % unluckily is repelem not
         %available for matlab version older then 2015a
         
-        res.sig2 = kron(sig2,ones(1,nv*nv));
+        %res.sig2 = kron(sig2,ones(1,nv*nv));
+        res.sig2 = sig2;
         res.para=para;
         res.dD=dD;
         %res.omega=omega;
@@ -201,7 +203,8 @@ else
    
     res.coeff=zeros(nv*sdim(1)*sdim(2),1);
     res.invCov = sparse(nv*sdim(1)*sdim(2),nv*sdim(1)*sdim(2));
-    res.sig2=zeros(nv*nv*sdim(1)*sdim(2),1);
+    %res.sig2=zeros(nv*nv*sdim(1)*sdim(2),1);
+    res.sig2=zeros(sdim(1)*sdim(2),1);
 end
 
  end

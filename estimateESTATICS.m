@@ -116,7 +116,8 @@ zEnd = dataset.zEnd;
 % until now implemented only for levels containing one layer
 % numberLayers=1;
 coeff=zeros(nv*sdim(1)*sdim(2),(zEnd-zStart+1));
-sigma2 = zeros(nv*nv*sdim(1)*sdim(2),(zEnd-zStart+1));%
+%sigma2 = zeros(nv*nv*sdim(1)*sdim(2),(zEnd-zStart+1));%
+sigma2 = zeros(sdim(1)*sdim(2),(zEnd-zStart+1));%
 invCov=cell((zEnd-zStart+1)/1,1); %sdim(3)
 
 if verbose,
@@ -147,7 +148,8 @@ end
 
 
 coeff = reshape (coeff, [nv sdim(1) sdim(2) (zEnd-zStart+1)]);
-sigma2 = reshape (sigma2, [nv nv sdim(1) sdim(2) (zEnd-zStart+1)]);
+%sigma2 = reshape (sigma2, [nv nv sdim(1) sdim(2) (zEnd-zStart+1)]);
+sigma2 = reshape (sigma2, [sdim(1) sdim(2) (zEnd-zStart+1)]);
 if verbose
     fprintf('\n');
 end
@@ -175,6 +177,9 @@ for k=1:length(invCov)
         invC(:,:,:,:,k) = reshape(full(invCov{k}(vec)),[nv nv sdim(1) sdim(2)]);        
 end
 
+hsigma = 2;
+sigma2 = convn(sigma2, ones(hsigma*2+1, hsigma*2+1, hsigma*2+1)/(hsigma*2+1)^3, 'same');
+sigma2 = reshape(kron(reshape(sigma2, [1 sdim(1)*sdim(2)*(zEnd-zStart+1)]), ones(1, nv*nv)), [nv nv sdim(1) sdim(2) (zEnd-zStart+1)]);
 
 if verbose,
 fprintf('finished at: %s \n',datestr(now));
