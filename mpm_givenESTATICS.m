@@ -83,7 +83,7 @@ function [] = mpm_givenESTATICS(job)
     modelMPM.nFiles = meta.nFiles;
     modelMPM.t1Files = meta.t1Files;
     modelMPM.pdFiles = meta.pdFiles;
-    if modelMPM.nv==4,
+    if modelMPM.nv==4
          modelMPM.mtFiles = meta.mtFiles;
     end
     modelMPM.FA = meta.FA;
@@ -123,14 +123,14 @@ function [] = mpm_givenESTATICS(job)
     hdelta = ceil(hakt); % height of half of the overlapping
 
     % check for the input height and adjust it if too big or too small
-    if abs(job.height)>sdim(3),
+    if abs(job.height)>sdim(3)
         job.height = sdim(3);
-    elseif job.height<0,
+    elseif job.height<0
         job.height = abs(job.height);
     end
 
     % calculates the interval between the zStart of the different levels
-    if job.height>2*hdelta,
+    if job.height>2*hdelta
         interval = int64(job.height - 2*hdelta);
     else
         job.height = (job.height + 2*hdelta +2);
@@ -145,7 +145,7 @@ function [] = mpm_givenESTATICS(job)
     PD = zeros(sdim);
     delta = zeros(sdim);
 
-     if job.confInt==1,
+     if job.confInt==1
      R1_low = zeros(sdim);
      R1_up  = zeros(sdim);
      PD_low = zeros(sdim);
@@ -157,7 +157,7 @@ function [] = mpm_givenESTATICS(job)
 
     % looking for weights
     try
-        wghts=getWeights(meta.t1Files{1});
+        wghts=getWeights(modelMPM.t1Files{1});
     catch
     wghts = [];
     end
@@ -169,7 +169,7 @@ function [] = mpm_givenESTATICS(job)
     % produces the b1 correction field with the same dimensionality of the data
 
     if (isempty(job.b1FileA) || (length(job.b1FileA)==1 && strcmp(job.b1FileA{1},'')) ) || ...
-            (isempty(job.b1FileP) || (length(job.b1FileP)==1 && strcmp(job.b1FileP{1},'')) ),
+            (isempty(job.b1FileP) || (length(job.b1FileP)==1 && strcmp(job.b1FileP{1},'')) )
         job.b1File = [];
     else
         try
@@ -193,13 +193,13 @@ function [] = mpm_givenESTATICS(job)
     spm_progress_bar('Init',sdim(3),'planes completed');
 
     %% start iteration on all the levels
-    for startLayerVoxel = 1:interval:sdim(3),
+    for startLayerVoxel = 1:interval:sdim(3)
 
         spm_progress_bar('Set',startLayerVoxel);
 
         zStart = double(startLayerVoxel);
 %         fprintf('on level %d \n', zStart);
-        if sdim(3)-(startLayerVoxel + job.height)> 2*hdelta,
+        if sdim(3)-(startLayerVoxel + job.height)> 2*hdelta
             % in case the next starting point has enough planes after it
             zEnd = double(startLayerVoxel + job.height);
         else
@@ -216,25 +216,25 @@ function [] = mpm_givenESTATICS(job)
 %         else
             slices=zStart:zEnd; %1:sdim(3);
             %[mask(:,:,:),~] = loadImageSPM(fullfile(dir,[maskFile{1} '.nii']),'slices',slices);
-            if isfield(modelMPM, 'mask'),
+            if isfield(modelMPM, 'mask')
                 modelMPM= rmfield(modelMPM,'mask');
             end
             mask=meta.mask(:,:,slices);
             modelMPM.mask = mask;
             clear mask;
-            if isfield(modelMPM, 'modelCoeff'),
+            if isfield(modelMPM, 'modelCoeff')
                 modelMPM= rmfield(modelMPM,'modelCoeff');
             end
             modelCoeff(1,:,:,:) = meta.modelCoeff(1,:,:,slices);
             modelCoeff(2,:,:,:) = meta.modelCoeff(2,:,:,slices);
             modelCoeff(3,:,:,:) = meta.modelCoeff(3,:,:,slices);
-            if meta.nv==4,
+            if meta.nv==4
                 modelCoeff(4,:,:,:) = meta.modelCoeff(4,:,:,slices);
             end
             modelMPM.modelCoeff = modelCoeff;
             clear modelCoeff;
 
-            if isfield(modelMPM, 'invCov'),
+            if isfield(modelMPM, 'invCov')
                 modelMPM= rmfield(modelMPM,'invCov');
             end
             invCov=meta.invCov(:,:,:,:,slices);
@@ -244,7 +244,7 @@ function [] = mpm_givenESTATICS(job)
 %         end
 
          %% calculate the confidence interval
-        if job.confInt==1,
+        if job.confInt==1
             [R1_1,R1_2,PD_1,PD_2] = getConfidenceIntervall(modelMPM,'b1File',job.b1File);
         end
 
@@ -254,16 +254,7 @@ function [] = mpm_givenESTATICS(job)
         % function [modelS] = smoothESTATICSmask(model, varargin)
         % function [qi] = calculateQI(model, varargin)
         % (if kstar is 0, the smoothing step isn't done)
-        if job.kstar~=0,
-%            for i=1:modelMPM.nv
-%                for j=1:modelMPM.nv
-%                    COVmatPart = squeeze(modelMPM.invCov(i,j,:,:,:));
-%%                    thresh = 1000*median(median(median(COVmatPart, 'omitnan'), 'omitnan'), 'omitnan');
-%%                    COVmatPart(COVmatPart > thresh) = 0;
-%%                    modelMPM.invCov(i,j,:,:,:) = smooth3d_with_kern(COVmatPart, hdelta);
-%                    modelMPM.invCov(i,j,:,:,:) = convn(COVmatPart, ones(hdelta*2+1, hdelta*2+1, hdelta*2+1)/(hdelta*2+1)^3, 'same');
-%                end
-%            end
+        if job.kstar~=0
             modelMPMs_mask = smoothESTATICSmask(modelMPM, 'verbose', false, 'wghts', wghts, 'kstar',job.kstar, 'patchsize', job.patchsize,'lambda',job.lambda); 
             qiSnew = calculateQI(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
             qiSnewLinear = calculateQIlinear(modelMPMs_mask, 'TR2',job.tr2,'b1File',job.b1File , 'verbose', false);
@@ -284,7 +275,7 @@ function [] = mpm_givenESTATICS(job)
             if modelMPM.nv==4, deltaLinear(:,:,zStart:zEnd) = qiSnewLinear.delta; end%
             totalmask(:,:,zStart:zEnd) = qiSnew.model.mask;
 
-            if job.confInt==1,
+            if job.confInt==1
                 R1_low(:,:,zStart:zEnd) = R1_1;
                 R1_up(:,:,zStart:zEnd) = R1_2;
                 PD_low(:,:,zStart:zEnd) = PD_2;
@@ -301,7 +292,7 @@ function [] = mpm_givenESTATICS(job)
             if modelMPM.nv==4, deltaLinear(:,:,zStart+hdelta:zEnd) = qiSnewLinear.delta(:,:, 1+hdelta: (zEnd-zStart+1) ); end %
             totalmask(:,:,zStart+hdelta:zEnd) = qiSnew.model.mask(:,:, 1+hdelta: (zEnd-zStart+1) );
 
-            if job.confInt==1,
+            if job.confInt==1
                 R1_low(:,:,zStart+hdelta:zEnd) = R1_1(:,:, 1+hdelta: (zEnd-zStart+1) );
                 R1_up(:,:,zStart+hdelta:zEnd) = R1_2(:,:, 1+hdelta: (zEnd-zStart+1) );
                 PD_low(:,:,zStart+hdelta:zEnd) = PD_2(:,:, 1+hdelta: (zEnd-zStart+1) );
@@ -309,7 +300,7 @@ function [] = mpm_givenESTATICS(job)
             end
 
         end
-        if zEnd==sdim(3),
+        if zEnd==sdim(3)
                 break;
         end
 
@@ -327,7 +318,7 @@ function [] = mpm_givenESTATICS(job)
     if modelMPM.nv==4, delta(isnan(delta))=0; end
     if modelMPM.nv==4, deltaLinear(isnan(deltaLinear))=0; end
 
-    if job.confInt==1,
+    if job.confInt==1
         R1_low(isnan(R1_low))=0;
         R1_up(isnan(R1_up))=0;
         PD_low(isnan(PD_low))=0;
@@ -343,7 +334,7 @@ function [] = mpm_givenESTATICS(job)
     if modelMPM.nv==4, delta(totalmask<1)=0; end
     if modelMPM.nv==4, deltaLinear(totalmask<1)=0; end
 
-    if job.confInt==1,
+    if job.confInt==1
         R1_low(totalmask<1)=0;
         R1_up(totalmask<1)=0;
         PD_low(totalmask<1)=0;
@@ -354,19 +345,19 @@ function [] = mpm_givenESTATICS(job)
     try
     % write 3 or 4 files for R1, PD, R2star and in case delta
     % function []= write_small_to_file_nii(outputdir,filenamepr, big_volume,small_volume_data,zStart, zEnd, sdim)
-    write_small_to_file_nii(job.odir{1},'R1_', Vpd, R1, 1, sdim(3), sdim);
-    write_small_to_file_nii(job.odir{1},'R1linear_', Vpd, R1linear, 1, sdim(3), sdim);
-    write_small_to_file_nii(job.odir{1},'R2star_', Vpd, R2star, 1, sdim(3), sdim);
-    write_small_to_file_nii(job.odir{1},'A_', Vpd, PD, 1, sdim(3), sdim);
-    write_small_to_file_nii(job.odir{1},'Alinear_', Vpd, PDlinear, 1, sdim(3), sdim);
-    if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'MT_', Vpd, delta, 1, sdim(3), sdim); end
-    if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'MTlinear_', Vpd, deltaLinear, 1, sdim(3), sdim); end
+    write_small_to_file_nii(job.odir{1},'R1_', Vt1, R1, 1, sdim(3), sdim);
+    write_small_to_file_nii(job.odir{1},'R1linear_', Vt1, R1linear, 1, sdim(3), sdim);
+    write_small_to_file_nii(job.odir{1},'R2star_', Vt1, R2star, 1, sdim(3), sdim);
+    write_small_to_file_nii(job.odir{1},'A_', Vt1, PD, 1, sdim(3), sdim);
+    write_small_to_file_nii(job.odir{1},'Alinear_', Vt1, PDlinear, 1, sdim(3), sdim);
+    if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'MT_', Vt1, delta, 1, sdim(3), sdim); end
+    if modelMPM.nv==4,  write_small_to_file_nii(job.odir{1},'MTlinear_', Vt1, deltaLinear, 1, sdim(3), sdim); end
     
-    if job.confInt==1,
-        write_small_to_file_nii(job.odir{1},'R1_low_', Vpd, R1_low, 1, sdim(3), sdim);
-        write_small_to_file_nii(job.odir{1},'R1_up_', Vpd, R1_up, 1, sdim(3), sdim);
-        write_small_to_file_nii(job.odir{1},'A_low_', Vpd, PD_low, 1, sdim(3), sdim);
-        write_small_to_file_nii(job.odir{1},'A_up_', Vpd, PD_up, 1, sdim(3), sdim);
+    if job.confInt==1
+        write_small_to_file_nii(job.odir{1},'R1_low_', Vt1, R1_low, 1, sdim(3), sdim);
+        write_small_to_file_nii(job.odir{1},'R1_up_', Vt1, R1_up, 1, sdim(3), sdim);
+        write_small_to_file_nii(job.odir{1},'A_low_', Vt1, PD_low, 1, sdim(3), sdim);
+        write_small_to_file_nii(job.odir{1},'A_up_', Vt1, PD_up, 1, sdim(3), sdim);
 
     end
 
@@ -374,7 +365,7 @@ function [] = mpm_givenESTATICS(job)
         error('it was not possible to save the resulting .nii files. Check to have writing rights in the current directory')
     end
 
-    if job.confInt==1,
+    if job.confInt==1
 
                try
                meta.Properties.Writable = true;
