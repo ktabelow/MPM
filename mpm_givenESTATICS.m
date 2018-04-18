@@ -28,7 +28,7 @@
 %
 %  maskFile        - the complete name of the file containing the mask
 %  mask            - the mask
-%  invCov          - inverse covariance matrix
+%  sigma2i          - inverse error variances
 %  t1Files
 %  mtFiles         - original input files
 %  pdFiles
@@ -210,7 +210,7 @@ function [] = mpm_givenESTATICS(job)
         modelMPM.zStart = zStart;
         modelMPM.zEnd = zEnd;
 
-        %% read the mask, model coefficients and invCov between zStart and zEnd
+        %% read the mask, model coefficients and sigma2i between zStart and zEnd
 %         if isempty(meta.maskFile) || (length(meta.maskFile)==1 && strcmp(meta.maskFile{1},''))
 %             meta.mask=ones([sdim(1) sdim(2) zEnd-zStart+1]);
 %         else
@@ -234,12 +234,18 @@ function [] = mpm_givenESTATICS(job)
             modelMPM.modelCoeff = modelCoeff;
             clear modelCoeff;
 
-            if isfield(modelMPM, 'invCov')
-                modelMPM= rmfield(modelMPM,'invCov');
+%            if isfield(modelMPM, 'invCov'),
+%                modelMPM= rmfield(modelMPM,'invCov');
+%            end
+%            invCov=meta.invCov(:,:,:,:,slices);
+%            modelMPM.invCov=invCov;
+%            clear invCov;
+            if isfield(modelMPM, 'sigma2i'),
+                modelMPM= rmfield(modelMPM,'sigma2i');
             end
-            invCov=meta.invCov(:,:,:,:,slices);
-            modelMPM.invCov=invCov;
-            clear invCov;
+            sigma2i=meta.sigma2i(:,:,slices);
+            modelMPM.sigma2i=sigma2i;
+            clear sigma2i;
 
 %         end
 

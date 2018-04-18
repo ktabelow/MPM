@@ -231,11 +231,11 @@ function [] = mpmESTATICS(job)
     % 
     if job.saveESTA==1
         % prepare to save the whole invCov directly in the .mat file
-        invCov=zeros([dataset.nv dataset.nv job.sdim]);
+        sigma2i=zeros([job.sdim]);
         try
             [~,fname,~] = spm_fileparts(V.fname);
             filename = strcat(job.odir{1},filesep,'ESTATICS_model_',fname,'.mat');
-            save(filename,'invCov','-v7.3');
+            save(filename,'sigma2i','-v7.3');
             meta = matfile(filename,'Writable',true);
         
         catch ME
@@ -244,7 +244,7 @@ function [] = mpmESTATICS(job)
             job.saveESTA = 0;
       
         end
-        clear invCov;
+        clear sigma2i;
     end
     
     
@@ -410,7 +410,8 @@ function [] = mpmESTATICS(job)
             
             if job.saveESTA==1        
                try
-               meta.invCov(:,:,:,:,zStart:zEnd)=modelMPM.invCov;
+%               meta.invCov(:,:,:,:,zStart:zEnd)=modelMPM.invCov;
+               meta.sigma2i(:,:,zStart:zEnd)=modelMPM.sigma2i;
                catch ME
                    fprintf(ME.message);                   
                    fprintf('\nThere was a problem saving the ESTATICS model. Check to have enough free space and to be using at least version 7.3.\n');
@@ -437,7 +438,8 @@ function [] = mpmESTATICS(job)
             
             if job.saveESTA==1        
                try
-               meta.invCov(:,:,:,:,zStart+hdelta:zEnd)=modelMPM.invCov(:,:,:,:,1+hdelta: (zEnd-zStart+1) );
+%               meta.invCov(:,:,:,:,zStart:zEnd)=modelMPM.invCov;
+               meta.sigma2i(:,:,:,:,zStart:zEnd)=modelMPM.sigma2i;
                catch
                fprintf('There was a problem saving the ESTATICS model. Check to have enough free space and to be using at least version 7.3.');
                job.saveESTA = 0;      
@@ -518,8 +520,8 @@ function [] = mpmESTATICS(job)
         error('it was not possible to save the resulting .nii files. Check to have writing rights in the current directory')
     end
    % save mask in the .mat (in case we are saving the model)
-    if job.saveESTA==1   
-               clear invCov;
+    if job.saveESTA==1,   
+%               clear invCov;
                try
                meta.mask=totalmask;
                 

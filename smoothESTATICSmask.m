@@ -57,8 +57,10 @@ if ~isstruct(model)
     error('Wrong input data type, struct expected');
 end
 % to check if the model struct has at least the requested fields
-if ~isfield(model,{'modelCoeff','invCov','sdim','nFiles','mask','nv'})
-    error('Wrong input data type, struct with fields modelCoeff, invCov, sdim, nFiles, mask, nv expected');
+%if ~isfield(model,{'modelCoeff','invCov','sdim','nFiles','mask','nv'})
+if ~isfield(model,{'modelCoeff','sigma2i','sdim','nFiles','mask','nv'})
+%    error('Wrong input data type, struct with fields modelCoeff, invCov, sdim, nFiles, mask, nv expected');
+    error('Wrong input data type, struct with fields modelCoeff, sigma2i, sdim, nFiles, mask, nv expected');
 end
 
 %% sets the default parameters
@@ -132,9 +134,9 @@ y = tmp(:,model.mask>0);
 clear tmp
 % for the test function smooth, when zStart!= 1 or zEnd!=256
 % tmp2= reshape(model.invCov(:,:,:,:,zStart:zEnd),[nv nv n]);
-tmp2 = reshape(model.invCov,[nv*nv n]);
-si2 = tmp2(triu(ones(nv,nv))>0 , model.mask>0);
-clear tmp2
+%tmp2 = reshape(model.invCov,[nv*nv n]);
+%si20 = tmp2(triu(ones(nv,nv))>0 , model.mask>0);
+%clear tmp2
 nvd = nv*(nv+1)/2;
 
 % indices of voxel in mask within full cube
@@ -151,6 +153,7 @@ zobj.bi = ones([1 nmask]);
 zobj.theta = y;
 bi = zobj.bi;
 
+rbi = 10.;
 
 % set the number of usable threads (cores in R)
 nthreadsinuse=2*feature('numcores');
@@ -166,11 +169,26 @@ if verbose
     fprintf(msg);
     protocol=cell(1,kstar);
 end
+%% prepare for estimation of inverse covariance
+
+TE = model.TE./model.TEScale;
+sigma2i = model.sigma2i(model.mask>0);
+nv= model.nv;
+if nv==3 
+    INDICATOR = [ones(length(model.t1Files),1);2*ones(length(model.pdFiles),1)];
+else
+    INDICATOR = [ones(length(model.t1Files),1);2*ones(length(model.mtFiles),1); 3*ones(length(model.pdFiles),1)];
+end
+ndesign = length(INDICATOR);
 
 %% perform the iteration
 k = 1;
 
 while k<=kstar
+    % compute inverse covariance matrix
+    
+    [si2] = geticov(zobj.theta,TE,int32(INDICATOR),sigma2i,nv,nmask,ndesign);
+    biakt = zobj.bi.*zobj.bi./(zobj.bi+rbi);
     % determine the actual bandwidth for this step
     hakt = gethani (1, 1.25*hmax, 2, 1.25^k, wghts, 1e-4);
 
@@ -180,9 +198,9 @@ while k<=kstar
 
     % perform the actual adaptive smoothing
     if (patchsize==0)
-        [zobj.bi, zobj.theta] = vaws2(y, int32(iind), int32(jind), zobj.theta, si2, zobj.bi, wghts, nv, nvd, n1, n2, n3, nmask, hakt, lambda,  mccores);
+        [zobj.bi, zobj.theta] = vaws2(y, int32(iind), int32(jind), zobj.theta, si2, biakt, wghts, nv, nvd, n1, n2, n3, nmask, hakt, lambda,  mccores);
     else
-        [zobj.bi, zobj.theta] = vpaws2(y, int32(iind), int32(jind), zobj.theta, si2, zobj.bi, wghts, nv, nvd, n1, n2, n3, nmask, patchsize, hakt, lambda,  mccores);
+        [zobj.bi, zobj.theta] = vpaws2(y, int32(iind), int32(jind), zobj.theta, si2, biakt, wghts, nv, nvd, n1, n2, n3, nmask, patchsize, hakt, lambda,  mccores);
 
         zobj.theta = reshape(zobj.theta, [nv nmask]);
         zobj.bi = max(bi,zobj.bi);
