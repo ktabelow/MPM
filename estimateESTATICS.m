@@ -179,7 +179,7 @@ end
 
 hsigma = 2;
 sigma2 = convn(sigma2, ones(hsigma*2+1, hsigma*2+1, hsigma*2+1)/(hsigma*2+1)^3, 'same');
-sigma2 = reshape(kron(reshape(sigma2, [1 sdim(1)*sdim(2)*(zEnd-zStart+1)]), ones(1, nv*nv)), [nv nv sdim(1) sdim(2) (zEnd-zStart+1)]);
+%sigma2 = reshape(kron(reshape(sigma2, [1 sdim(1)*sdim(2)*(zEnd-zStart+1)]), ones(1, nv*nv)), [nv nv sdim(1) sdim(2) (zEnd-zStart+1)]);
 
 if verbose,
 fprintf('finished at: %s \n',datestr(now));
@@ -187,6 +187,8 @@ end
 
 model = dataset;
 model.modelCoeff = coeff;
+model.sigma2i = 1./sigma2;
+sigma2 = reshape(kron(reshape(sigma2, [1 sdim(1)*sdim(2)*(zEnd-zStart+1)]), ones(1, nv*nv)), [nv nv sdim(1) sdim(2) (zEnd-zStart+1)]);
 model.invCov = invC./sigma2;
 model.TEScale = TEScale;
 model.DataScale = DataScale;
