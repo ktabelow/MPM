@@ -150,10 +150,10 @@ jind(model.mask>0) = 1:nmask;
 
 % initialisation for first step (reduced in size)
 zobj.bi = ones([1 nmask]);
-zobj.theta = y;
+theta = y;
 bi = zobj.bi;
 
-rbi = 10.;
+rbi = 15.;% rbi > 1 adjust for effect of parameter estimates on inv. covariance
 
 % set the number of usable threads (cores in R)
 nthreadsinuse=2*feature('numcores');
@@ -187,8 +187,8 @@ k = 1;
 while k<=kstar
     % compute inverse covariance matrix
     
-    [si2] = geticov(zobj.theta,TE,int32(INDICATOR),sigma2i,nv,nmask,ndesign);
-    biakt = zobj.bi.*zobj.bi./(zobj.bi+rbi);
+    [si2] = geticov(theta,TE,int32(INDICATOR),sigma2i,nv,nmask,ndesign);
+    biakt = zobj.bi.*zobj.bi./(zobj.bi+rbi); % adjust for effect of parameter variability on inv. covariance
     % determine the actual bandwidth for this step
     hakt = gethani (1, 1.25*hmax, 2, 1.25^k, wghts, 1e-4);
 
@@ -198,13 +198,19 @@ while k<=kstar
 
     % perform the actual adaptive smoothing
     if (patchsize==0)
-        [zobj.bi, zobj.theta] = vaws2(y, int32(iind), int32(jind), zobj.theta, si2, biakt, wghts, nv, nvd, n1, n2, n3, nmask, hakt, lambda,  mccores);
+        [zobj.bi, zobj.theta] = vaws2(y, int32(iind), int32(jind), theta, si2, biakt, wghts, nv, nvd, n1, n2, n3, nmask, hakt, lambda,  mccores);
     else
-        [zobj.bi, zobj.theta] = vpaws2(y, int32(iind), int32(jind), zobj.theta, si2, biakt, wghts, nv, nvd, n1, n2, n3, nmask, patchsize, hakt, lambda,  mccores);
+        [zobj.bi, zobj.theta] = vpaws2(y, int32(iind), int32(jind), theta, si2, biakt, wghts, nv, nvd, n1, n2, n3, nmask, patchsize, hakt, lambda,  mccores);
 
         zobj.theta = reshape(zobj.theta, [nv nmask]);
+    % only update theta and bi if bi is increased, otherwise keep old
+    % estimates
+        theta(:,zobj.bi>bi) = zobj.theta(:,zobj.bi>bi);
         zobj.bi = max(bi,zobj.bi);
-        %bi = zobj.bi;
+        bi = zobj.bi;
+%        filename = strcat('/Users/polzehl/Daten/MPM/data2/tmp', filesep, 'bi_',string(k),'.mat');
+%        save(filename, 'bi');
+        
 
         % some verbose stuff
         if verbose
@@ -241,6 +247,8 @@ end
 theta = zeros(nv,n);
 bi = zeros(1, n);
 % fill in information and set correct dimension
+
+
 theta(:,model.mask>0) = zobj.theta;
 theta = reshape(theta, [nv n1 n2 n3]);
 bi(model.mask>0) = zobj.bi;
