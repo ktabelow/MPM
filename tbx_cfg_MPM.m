@@ -167,9 +167,9 @@ function MPM = tbx_cfg_MPM
 % ---------------------------------------------------------------------
     patchsize         = cfg_choice;
     patchsize.tag     = 'patchsize';
-    patchsize.name    = 'Patch size (p)';
+    patchsize.name    = 'Patch size';
     patchsize.help    = {'Cube of (2*p+1)^3 as patches for PAWS' ...
-                         'Recommended: 0/1 (higher values lead to high computational costs).'};
+                         'Choice of p = 0 (AWS), or 1 (PAWS).'};
     patchsize.values  = {aws_input paws_input};
     patchsize.val     = {paws_input};
 
@@ -505,13 +505,13 @@ function [] = spm_local_mpm(job)
     job.sdim = [0 0 0];
 
     if (isfield(job.patchsize, 'AWS'))
-        job.kstar = job.patchsize.PAWS.kstar
-        job.lambda = job.patchsize.PAWS.lambda
-        job.patchsize = 0
+        job.kstar = job.patchsize.PAWS.kstar;
+        job.lambda = job.patchsize.PAWS.lambda;
+        job.patchsize = 0;
     else
-        job.kstar = job.patchsize.PAWS.kstar
-        job.lambda = job.patchsize.PAWS.lambda
-        job.patchsize = 1
+        job.kstar = job.patchsize.PAWS.kstar;
+        job.lambda = job.patchsize.PAWS.lambda;
+        job.patchsize = 1;
     end
 
     mpm_assert_output_directory(job.odir{1});
@@ -527,13 +527,13 @@ function [] = spm_local_mpm_noMT(job)
     mpm_assert_output_directory(job.odir{1});
 
     if (isfield(job.patchsize, 'AWS'))
-        job.kstar = job.patchsize.PAWS.kstar
-        job.lambda = job.patchsize.PAWS.lambda
-        job.patchsize = 0
+        job.kstar = job.patchsize.PAWS.kstar;
+        job.lambda = job.patchsize.PAWS.lambda;
+        job.patchsize = 0;
     else
-        job.kstar = job.patchsize.PAWS.kstar
-        job.lambda = job.patchsize.PAWS.lambda
-        job.patchsize = 1
+        job.kstar = job.patchsize.PAWS.kstar;
+        job.lambda = job.patchsize.PAWS.lambda;
+        job.patchsize = 1;
     end
 
     job.mtFiles = [];
@@ -552,13 +552,13 @@ function [] = spm_local_mpm_givenESTATICS(job)
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
 
     if (isfield(job.patchsize, 'AWS'))
-        job.kstar = job.patchsize.PAWS.kstar
-        job.lambda = job.patchsize.PAWS.lambda
-        job.patchsize = 0
+        job.kstar = job.patchsize.PAWS.kstar;
+        job.lambda = job.patchsize.PAWS.lambda;
+        job.patchsize = 0;
     else
-        job.kstar = job.patchsize.PAWS.kstar
-        job.lambda = job.patchsize.PAWS.lambda
-        job.patchsize = 1
+        job.kstar = job.patchsize.PAWS.kstar;
+        job.lambda = job.patchsize.PAWS.lambda;
+        job.patchsize = 1;
     end
 
     mpm_assert_output_directory(job.odir{1});
