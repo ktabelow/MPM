@@ -439,9 +439,9 @@ function [] = mpmESTATICS(job)
             if job.saveESTA==1        
                try
 %               meta.invCov(:,:,:,:,zStart:zEnd)=modelMPM.invCov;
-               meta.sigma2i(:,:,:,:,zStart:zEnd)=modelMPM.sigma2i;
+               meta.sigma2i(:,:,zStart:zEnd)=modelMPM.sigma2i;
                catch
-               fprintf('There was a problem saving the ESTATICS model. Check to have enough free space and to be using at least version 7.3.');
+               fprintf('There was a problem while saving sigma2i. Check to have enough free space and to be using at least version 7.3.');
                job.saveESTA = 0;      
                end        
             end
