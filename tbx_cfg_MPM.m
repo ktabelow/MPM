@@ -90,6 +90,92 @@ function MPM = tbx_cfg_MPM
 % ---------------------------------------------------------------------
 % number of iteration of the smoothing algorithm
 % ---------------------------------------------------------------------
+    kstar0         = cfg_entry;
+    kstar0.tag     = 'kstar';
+    kstar0.name    = 'Number of iterations (kstar)';
+    kstar0.help    = {'Number of iteration of the smoothing algorithm.' ...
+                         'If 0 is given, no smoothing will be performed.' ...
+                         'A larger number of iterations leads to more smoothing in regions of homogeneous intensity. If smooth trends are in the data (which always are), the result for large values of kstar is a step-function and gives a cartoon-like impression of the images.' ...
+                         'Smaller values of kstar lead to lower amount of noise reduction and reduce the cartoon-like effects.' ...
+                         'For a non-adaptive version of the smoothing method (see parameter lamdba) kstar directly corresponds to the bandwidth of the non-adaptive kernel.'};
+    kstar0.strtype = 'e';
+    kstar0.num     = [1 1];
+    kstar0.val     = {16};
+
+% ---------------------------------------------------------------------
+% adaptation bandwidth of the smoothing algorithm
+% ---------------------------------------------------------------------
+    lambda0         = cfg_entry;
+    lambda0.tag     = 'lambda';
+    lambda0.name    = 'Adaptation bandwidth of the smoothing (lambda)';
+    lambda0.help    = {'Adaptation bandwidth of the smoothing algorithm' ...
+                          'The parameter steers the amount of adaptivity of the method. If lambda is 0 (zero) the method will not smooth at all and the resulting images are unchanged. If lambda is very large, say 1e20, then the procedure is non-adaptive and is equivalent to a non-adaptive kernel smoother with a bandwidth that corresponds to the number of iterations (kstar). A proper choice of lambda should (in theory) only depend on the type of noise (but not the SNR). In practise, values of about 10-20 give good results.'};
+    lambda0.strtype = 'e';
+    lambda0.num     = [0 Inf];
+    lambda0.val     = {15};
+% ---------------------------------------------------------------------
+% number of iteration of the smoothing algorithm
+% ---------------------------------------------------------------------
+    kstar1         = cfg_entry;
+    kstar1.tag     = 'kstar';
+    kstar1.name    = 'Number of iterations (kstar)';
+    kstar1.help    = {'Number of iteration of the smoothing algorithm.' ...
+                             'If 0 is given, no smoothing will be performed.' ...
+                             'A larger number of iterations leads to more smoothing in regions of homogeneous intensity. If smooth trends are in the data (which always are), the result for large values of kstar is a step-function and gives a cartoon-like impression of the images.' ...
+                             'Smaller values of kstar lead to lower amount of noise reduction and reduce the cartoon-like effects.' ...
+                             'For a non-adaptive version of the smoothing method (see parameter lamdba) kstar directly corresponds to the bandwidth of the non-adaptive kernel.'};
+    kstar1.strtype = 'e';
+    kstar1.num     = [1 1];
+    kstar1.val     = {25};
+
+% ---------------------------------------------------------------------
+% adaptation bandwidth of the smoothing algorithm
+% ---------------------------------------------------------------------
+    lambda1         = cfg_entry;
+    lambda1.tag     = 'lambda';
+    lambda1.name    = 'Adaptation bandwidth of the smoothing (lambda)';
+    lambda1.help    = {'Adaptation bandwidth of the smoothing algorithm' ...
+                              'The parameter steers the amount of adaptivity of the method. If lambda is 0 (zero) the method will not smooth at all and the resulting images are unchanged. If lambda is very large, say 1e20, then the procedure is non-adaptive and is equivalent to a non-adaptive kernel smoother with a bandwidth that corresponds to the number of iterations (kstar). A proper choice of lambda should (in theory) only depend on the type of noise (but not the SNR). In practise, values of about 10-20 give good results.'};
+    lambda1.strtype = 'e';
+    lambda1.num     = [0 Inf];
+    lambda1.val     = {20};
+
+% ---------------------------------------------------------------------
+% patchsize 0
+% ---------------------------------------------------------------------
+
+    aws_input           = cfg_branch;
+    aws_input.tag       = 'AWS';
+    aws_input.name      = 'AWS';
+    aws_input.help      = {'Select number of iterations and adaptation bandwidth'
+                           ['Please select ' ]};
+    aws_input.val       = {kstar0 lambda0};
+
+% ---------------------------------------------------------------------
+% patchsize 0
+% ---------------------------------------------------------------------
+
+    paws_input           = cfg_branch;
+    paws_input.tag       = 'PAWS';
+    paws_input.name      = 'PAWS';
+    paws_input.help      = {'Select number of iterations and adaptation bandwidth'
+                           ['Please select ' ]};
+    paws_input.val       = {kstar1 lambda1};
+
+% ---------------------------------------------------------------------
+% patch size for the smoothing algorithm
+% ---------------------------------------------------------------------
+    patchsize         = cfg_choice;
+    patchsize.tag     = 'patchsize';
+    patchsize.name    = 'Patch size (p)';
+    patchsize.help    = {'Cube of (2*p+1)^3 as patches for PAWS' ...
+                         'Recommended: 0/1 (higher values lead to high computational costs).'};
+    patchsize.values  = {aws_input paws_input};
+    patchsize.val     = {paws_input};
+
+% ---------------------------------------------------------------------
+% number of iteration of the smoothing algorithm
+% ---------------------------------------------------------------------
     kstar         = cfg_entry;
     kstar.tag     = 'kstar';
     kstar.name    = 'Number of iterations (kstar)';
@@ -101,18 +187,6 @@ function MPM = tbx_cfg_MPM
     kstar.strtype = 'e';
     kstar.num     = [1 1];
     kstar.val     = {16};
-
-% ---------------------------------------------------------------------
-% patch size for the smoothing algorithm
-% ---------------------------------------------------------------------
-    patchsize         = cfg_entry;
-    patchsize.tag     = 'patchsize';
-    patchsize.name    = 'Patch size (p)';
-    patchsize.help    = {'Cube of (2*p+1)^3 as patches for PAWS' ...
-                         'Recommended: 0/1 (higher values lead to high computational costs).'};
-    patchsize.strtype = 'e';
-    patchsize.num     = [1 1];
-    patchsize.val     = {0};
 
 % ---------------------------------------------------------------------
 % adaptation bandwidth of the smoothing algorithm
@@ -376,7 +450,7 @@ function MPM = tbx_cfg_MPM
      MT_branch.tag     = 'MT_branch';
      MT_branch.name    = 'Model with T1w, PDw and MTw volumes';
      MT_branch.val     = {t1Files mtFiles pdFiles maskFile odir tr2 coregIM saveESTA  ...
-                          confInt patchsize kstar lambda b1FileA b1FileP height tol  ...
+                          confInt patchsize b1FileA b1FileP height tol  ...
                           t1TR mtTR pdTR t1TE mtTE pdTE t1FA mtFA pdFA};
      MT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset with T1w, PDw and MTw volumes.'};
      MT_branch.prog    = @spm_local_mpm;
@@ -388,7 +462,7 @@ function MPM = tbx_cfg_MPM
      withoutMT_branch.tag     = 'withoutMT_branch';
      withoutMT_branch.name    = 'Model without MTw volumes';
      withoutMT_branch.val     = {t1Files pdFiles maskFile odir coregIM saveESTA  ...
-                                confInt patchsize kstar lambda b1FileA b1FileP height tol ...
+                                confInt patchsize b1FileA b1FileP height tol ...
                                 t1TR pdTR t1TE pdTE t1FA pdFA};
      withoutMT_branch.help    = {'This branch implements multi parameter mapping (MPM) for a dataset without MTw volumes.'};
      withoutMT_branch.prog    = @spm_local_mpm_noMT;
@@ -399,7 +473,7 @@ function MPM = tbx_cfg_MPM
      ESTAmodel_branch         = cfg_exbranch;
      ESTAmodel_branch.tag     = 'ESTAmodel_branch';
      ESTAmodel_branch.name    = 'Use an existing ESTATICS model';
-     ESTAmodel_branch.val     = {ESTAmodel odir patchsize kstar lambda b1FileA b1FileP tr2 height};
+     ESTAmodel_branch.val     = {ESTAmodel odir patchsize b1FileA b1FileP tr2 height};
      ESTAmodel_branch.help    = {'This branch implements the smoothing and final calculation of the quantitative maps R1, R2*, PD (and MT) given an existing ESTATICS model.'};
      ESTAmodel_branch.prog    = @spm_local_mpm_givenESTATICS;
 
@@ -430,6 +504,16 @@ function [] = spm_local_mpm(job)
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
     job.sdim = [0 0 0];
 
+    if (isfield(job.patchsize, 'AWS'))
+        job.kstar = job.patchsize.PAWS.kstar
+        job.lambda = job.patchsize.PAWS.lambda
+        job.patchsize = 0
+    else
+        job.kstar = job.patchsize.PAWS.kstar
+        job.lambda = job.patchsize.PAWS.lambda
+        job.patchsize = 1
+    end
+
     mpm_assert_output_directory(job.odir{1});
 
     mpmESTATICS(job);
@@ -441,6 +525,16 @@ function [] = spm_local_mpm_noMT(job)
 
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
     mpm_assert_output_directory(job.odir{1});
+
+    if (isfield(job.patchsize, 'AWS'))
+        job.kstar = job.patchsize.PAWS.kstar
+        job.lambda = job.patchsize.PAWS.lambda
+        job.patchsize = 0
+    else
+        job.kstar = job.patchsize.PAWS.kstar
+        job.lambda = job.patchsize.PAWS.lambda
+        job.patchsize = 1
+    end
 
     job.mtFiles = [];
     job.mtTR = [];
@@ -456,6 +550,16 @@ function [] = spm_local_mpm_givenESTATICS(job)
 
 
     if ~isdeployed, addpath(fullfile(spm('Dir'),'toolbox','MPM')); end
+
+    if (isfield(job.patchsize, 'AWS'))
+        job.kstar = job.patchsize.PAWS.kstar
+        job.lambda = job.patchsize.PAWS.lambda
+        job.patchsize = 0
+    else
+        job.kstar = job.patchsize.PAWS.kstar
+        job.lambda = job.patchsize.PAWS.lambda
+        job.patchsize = 1
+    end
 
     mpm_assert_output_directory(job.odir{1});
 
