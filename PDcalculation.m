@@ -57,8 +57,9 @@ function PDcalculation(PMT, PA)
         Atmp( : , : , p) = max(min(MTforA, threshMT), -threshMT);
     end
     % write to disk as <filename of the MT file> plus suffix '_MTforA'
-    VMTforA = my_write_vol_nii(Atmp, VG, '', '_MTforA');  % TODO: use spm function here
-
+    VG.fname = [VG.fname(1:end-4) '_MTforA.nii'];
+    VMTforA = spm_write_vol(VG, Atmp);
+    
     clear matlabbatch
     matlabbatch{1}.spm.spatial.preproc.channel.vols = {VMTforA.fname};
     matlabbatch{1}.spm.spatial.preproc.channel.write = [1 0]; % saving bias field
