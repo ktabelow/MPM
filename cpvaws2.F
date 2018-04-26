@@ -95,7 +95,7 @@ C$OMP& SHARED(thnew,bi,bin,nv,nvd,n1,n2,n3,hakt2,hmax2,theta,invcov,
 C$OMP& ih3,lwght,wght,y,swjy,nmask,psize,iii,jjj)
 C$OMP& FIRSTPRIVATE(ih1,ih2,lambda,aws,n12,
 C$OMP& model,spmin,spf,dlw1,clw1,dlw2,clw2,clw3,dlw12,w1,w2)
-C$OMP& PRIVATE(i1,i2,i3,iind,bii,biinv,swj,spmb,
+C$OMP& PRIVATE(i1,i2,i3,iind,swj,spmb,
 C$OMP& sij,wj,j3,jw3,jind3,z3,jwind3,j2,jw2,jind2,z2,jwind2,
 C$OMP& j1,jw1,jind,z1,z,thrednr,ip1,ip2,ip3,ipind,
 C$OMP& jp1,jp2,jp3,jpind,sijp,l,m,imask,jmask,ipmask,jpmask)
